@@ -10,10 +10,11 @@ tags:
   - research integrity
   - AI coding agents
 authors:
-  - name: TBD (the maintainer completes the author list, affiliations and ORCID identifiers)
+  - name: Muiz Khan
+    orcid: 0000-0003-2039-7079
     affiliation: 1
 affiliations:
-  - name: TBD
+  - name: Wayne State University
     index: 1
 date: 24 November 2026
 bibliography: paper.bib

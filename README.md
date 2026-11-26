@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-0.20.4%20beta-4c4fd9">
+  <img alt="version" src="https://img.shields.io/badge/version-0.20.5%20beta-4c4fd9">
   <img alt="python" src="https://img.shields.io/badge/python-3.11%2B-127a8a">
   <img alt="licence" src="https://img.shields.io/badge/licence-MIT-2f9e66">
   <img alt="tests" src="https://img.shields.io/badge/tests-1700%2B-2f9e66">
@@ -55,14 +55,14 @@ wherever required.
 
 ## 🚀 Quick start
 ```bash
-uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.4"     # or: pipx install "git+…@v0.20.4"
+uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.5"     # or: pipx install "git+…@v0.20.5"
 cd your-research-repo
 steward init --skills .agents/skills         # scaffold; never overwrites. Claude Code: --skills .claude/skills
 steward check --summary
 ```
 Then just ask your coding agent: **"Run the using-steward skill."** It runs the checks, reads the result and tells you
 what is ready. It is a development tool, never a runtime dependency. Pinning in a requirements file:
-`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.4` (not in package metadata: PyPI refuses
+`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.5` (not in package metadata: PyPI refuses
 direct references there).
 
 **Try it on real data** (0.20.0): a public GEO series, GSE7621 (Parkinson's disease substantia nigra, 25 samples),
@@ -265,7 +265,7 @@ python tools/measure_footprint.py --check
 tools/ci_local.sh                        # the same checks in Linux containers, on a clean export of HEAD
 ```
 
-> **Status: beta, latest release `v0.20.4`.** Usable and tested (1700+ tests on macOS; Linux in Docker), installed from
+> **Status: beta, latest release `v0.20.5`.** Usable and tested (1700+ tests on macOS; Linux in Docker), installed from
 > GitHub, not yet on PyPI. Configuration and report formats may still change before 1.0. See the
 > [changelog](CHANGELOG.md).
 

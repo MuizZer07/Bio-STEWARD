@@ -4,6 +4,17 @@ Pre-release. Not published on PyPI. Versions follow semantic versioning once rel
 
 ## Unreleased
 
+## 0.20.5 (2026-11-25): the author, for citation
+Per Muiz, 2026-11-25: "here is my orcid id … add this in the citation". Metadata only; no change to checks, formats or
+behaviour.
+
+### Changed
+- `CITATION.cff`, `pyproject.toml` and the JOSS draft name the author: Muiz Khan (ORCID 0000-0003-2039-7079), Wayne State
+ University. Zenodo reads `CITATION.cff` for the DOI record.
+
+### Upgrade notes (from 0.20.4)
+- None.
+
 ## 0.20.4 (2026-11-25): the public README and documentation, checked
 Pre-release, not on PyPI. Per Muiz, 2026-11-25: "make sure everything in the read me and docs are accurate.. also have
 a list of agents/capabilites it is offering". Documentation only; no change to checks, formats or behaviour.
