@@ -1,0 +1,311 @@
+{
+  "$defs": {
+    "ChecklistItem": {
+      "additionalProperties": false,
+      "properties": {
+        "item": {
+          "title": "Item",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "auto"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "item",
+        "kind"
+      ],
+      "title": "ChecklistItem",
+      "type": "object"
+    },
+    "VenueAnonymity": {
+      "additionalProperties": false,
+      "properties": {
+        "double_blind": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Double Blind"
+        }
+      },
+      "title": "VenueAnonymity",
+      "type": "object"
+    },
+    "VenueFigures": {
+      "additionalProperties": false,
+      "properties": {
+        "formats": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Formats"
+        },
+        "min_dpi": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Min Dpi"
+        }
+      },
+      "title": "VenueFigures",
+      "type": "object"
+    },
+    "VenueLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "abstract_words": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "const": "none",
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Abstract Words"
+        },
+        "pages_main": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "const": "none",
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Pages Main"
+        },
+        "pages_total": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "const": "none",
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Pages Total"
+        },
+        "title_words": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "const": "none",
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Title Words"
+        }
+      },
+      "title": "VenueLimits",
+      "type": "object"
+    },
+    "VenueRequired": {
+      "additionalProperties": false,
+      "properties": {
+        "declarations": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Declarations"
+        },
+        "sections": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Sections"
+        }
+      },
+      "title": "VenueRequired",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "anonymity": {
+      "$ref": "#/$defs/VenueAnonymity"
+    },
+    "checklist": {
+      "items": {
+        "$ref": "#/$defs/ChecklistItem"
+      },
+      "title": "Checklist",
+      "type": "array"
+    },
+    "figures": {
+      "$ref": "#/$defs/VenueFigures"
+    },
+    "kind": {
+      "enum": [
+        "preprint",
+        "conference",
+        "journal"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "limits": {
+      "$ref": "#/$defs/VenueLimits"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "required": {
+      "$ref": "#/$defs/VenueRequired"
+    },
+    "retrieved": {
+      "anyOf": [
+        {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "type": "string"
+        },
+        {
+          "enum": [
+            "TBD",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Retrieved"
+    },
+    "schema": {
+      "const": "steward.venue/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "source_url": {
+      "anyOf": [
+        {
+          "pattern": "^url:https?://\\S+$",
+          "type": "string"
+        },
+        {
+          "enum": [
+            "TBD",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Source Url"
+    }
+  },
+  "required": [
+    "schema",
+    "name",
+    "kind",
+    "source_url",
+    "retrieved"
+  ],
+  "title": "Venue",
+  "type": "object"
+}

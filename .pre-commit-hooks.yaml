@@ -1,0 +1,8 @@
+- id: steward-check
+  name: steward check (blocks on a FAIL in the gate)
+  description: Bio-STEWARD's checks; blocks a commit only when the gate is not eligible because of a FAIL.
+  entry: steward hooks run pre-commit --gate default
+  language: python
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit]

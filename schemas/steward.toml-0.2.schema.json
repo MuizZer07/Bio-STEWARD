@@ -1,0 +1,3061 @@
+{
+  "$defs": {
+    "AccrualSection": {
+      "additionalProperties": false,
+      "properties": {
+        "count_file": {
+          "title": "Count File",
+          "type": "string"
+        },
+        "minimum": {
+          "minimum": 1,
+          "title": "Minimum",
+          "type": "integer"
+        },
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stage",
+        "minimum",
+        "count_file"
+      ],
+      "title": "AccrualSection",
+      "type": "object"
+    },
+    "AgentsSection": {
+      "additionalProperties": false,
+      "description": "Multi-agent attribution and scores (REQ-016; R-62).",
+      "properties": {
+        "ledger": {
+          "default": "development/agents.jsonl",
+          "title": "Ledger",
+          "type": "string"
+        }
+      },
+      "title": "AgentsSection",
+      "type": "object"
+    },
+    "ArtifactRule": {
+      "additionalProperties": false,
+      "description": "Per-artifact audit rules (0.9.0 B1, REQ-002): for distributions whose file name matches `match`.",
+      "properties": {
+        "forbid": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbid",
+          "type": "array"
+        },
+        "match": {
+          "title": "Match",
+          "type": "string"
+        },
+        "require": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Require",
+          "type": "array"
+        }
+      },
+      "required": [
+        "match"
+      ],
+      "title": "ArtifactRule",
+      "type": "object"
+    },
+    "BenchmarkSection": {
+      "additionalProperties": false,
+      "properties": {
+        "require_leakage": {
+          "default": false,
+          "title": "Require Leakage",
+          "type": "boolean"
+        }
+      },
+      "title": "BenchmarkSection",
+      "type": "object"
+    },
+    "BoundarySection": {
+      "additionalProperties": false,
+      "description": "Dependency boundary (0.9.0 B3, REQ-005; R-56).",
+      "properties": {
+        "allow_groups": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allow Groups",
+          "type": "array"
+        },
+        "forbidden_distributions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden Distributions",
+          "type": "array"
+        },
+        "forbidden_imports": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden Imports",
+          "type": "array"
+        },
+        "packages": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Packages",
+          "type": "array"
+        },
+        "pyproject": {
+          "default": "pyproject.toml",
+          "title": "Pyproject",
+          "type": "string"
+        }
+      },
+      "required": [
+        "packages"
+      ],
+      "title": "BoundarySection",
+      "type": "object"
+    },
+    "BranchesSection": {
+      "additionalProperties": false,
+      "description": "Branch model (0.9.0 B6, REQ-009; R-59 and the pre-push check).",
+      "properties": {
+        "integration": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Integration"
+        },
+        "merge": {
+          "default": "any",
+          "enum": [
+            "no-ff",
+            "any"
+          ],
+          "title": "Merge",
+          "type": "string"
+        },
+        "protected": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Protected"
+        },
+        "release": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Release"
+        },
+        "release_tag_on": {
+          "default": "commit",
+          "enum": [
+            "commit",
+            "merged-parent"
+          ],
+          "title": "Release Tag On",
+          "type": "string"
+        },
+        "since": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Since"
+        },
+        "tag_pattern": {
+          "default": "v*",
+          "title": "Tag Pattern",
+          "type": "string"
+        },
+        "task_patterns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Task Patterns",
+          "type": "array"
+        }
+      },
+      "title": "BranchesSection",
+      "type": "object"
+    },
+    "ChangelogSection": {
+      "additionalProperties": false,
+      "description": "Changelog `Unreleased` rule (0.9.0 B5, REQ-008; R-58, advisory).",
+      "properties": {
+        "entry_pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entry Pattern"
+        },
+        "exclude": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exclude",
+          "type": "array"
+        },
+        "file": {
+          "default": "CHANGELOG.md",
+          "title": "File",
+          "type": "string"
+        },
+        "format": {
+          "const": "keep-a-changelog",
+          "default": "keep-a-changelog",
+          "title": "Format",
+          "type": "string"
+        },
+        "ready": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ready"
+        },
+        "tag_pattern": {
+          "default": "v*",
+          "title": "Tag Pattern",
+          "type": "string"
+        }
+      },
+      "title": "ChangelogSection",
+      "type": "object"
+    },
+    "Channel": {
+      "additionalProperties": false,
+      "description": "`[[channel]]`: a tool this project installs from two sources.",
+      "properties": {
+        "dev": {
+          "title": "Dev",
+          "type": "string"
+        },
+        "installer": {
+          "default": "uv-tool",
+          "enum": [
+            "uv-tool",
+            "pipx",
+            "pip"
+          ],
+          "title": "Installer",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "stable": {
+          "title": "Stable",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "stable",
+        "dev"
+      ],
+      "title": "Channel",
+      "type": "object"
+    },
+    "CleanSection": {
+      "additionalProperties": false,
+      "description": "Project storage cleanup (0.13.0; DESIGN_BRIEF_storage_cleanup).",
+      "properties": {
+        "paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Paths",
+          "type": "array"
+        },
+        "registry": {
+          "default": true,
+          "title": "Registry",
+          "type": "boolean"
+        }
+      },
+      "title": "CleanSection",
+      "type": "object"
+    },
+    "ContainersSection": {
+      "additionalProperties": false,
+      "description": "Container build contexts and compose parity (REQ-003, 005; R-64, R-65).",
+      "properties": {
+        "compose": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Compose",
+          "type": "array"
+        },
+        "contexts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Contexts",
+          "type": "array"
+        },
+        "dev_only": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dev Only",
+          "type": "array"
+        },
+        "max_unignored_mb": {
+          "default": 500,
+          "exclusiveMinimum": 0,
+          "title": "Max Unignored Mb",
+          "type": "number"
+        },
+        "ship_with_image": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Ship With Image",
+          "type": "array"
+        },
+        "urls": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Urls",
+          "type": "object"
+        },
+        "user_data": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "User Data",
+          "type": "object"
+        }
+      },
+      "title": "ContainersSection",
+      "type": "object"
+    },
+    "DataContract": {
+      "additionalProperties": false,
+      "properties": {
+        "adjusted_p_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Adjusted P Value"
+        },
+        "columns": {
+          "additionalProperties": {
+            "enum": [
+              "text",
+              "integer",
+              "number",
+              "boolean",
+              "ensembl",
+              "entrez",
+              "hgnc"
+            ],
+            "type": "string"
+          },
+          "title": "Columns",
+          "type": "object"
+        },
+        "format": {
+          "default": "tsv",
+          "enum": [
+            "tsv",
+            "csv",
+            "series_matrix"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "id_column": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id Column"
+        },
+        "log_fold_change": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Log Fold Change"
+        },
+        "metadata_columns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Metadata Columns",
+          "type": "array"
+        },
+        "na_values": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Na Values",
+          "type": "array"
+        },
+        "p_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "P Value"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "raw_counts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Raw Counts",
+          "type": "array"
+        },
+        "sample_sheet": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SampleSheet"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "DataContract",
+      "type": "object"
+    },
+    "DataSection": {
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "items": {
+            "$ref": "#/$defs/DataContract"
+          },
+          "title": "Contract",
+          "type": "array"
+        }
+      },
+      "title": "DataSection",
+      "type": "object"
+    },
+    "DependenciesSection": {
+      "additionalProperties": false,
+      "description": "Pinned-dependency upgrade parity (REQ-012; R-66).",
+      "properties": {
+        "pins": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Pins",
+          "type": "array"
+        },
+        "records": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Records",
+          "type": "array"
+        },
+        "tag_pattern": {
+          "default": "v*",
+          "title": "Tag Pattern",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pins"
+      ],
+      "title": "DependenciesSection",
+      "type": "object"
+    },
+    "DocsSection": {
+      "additionalProperties": false,
+      "description": "A documentation site for the project (0.11.0; R-69).",
+      "properties": {
+        "dir": {
+          "default": "docs",
+          "title": "Dir",
+          "type": "string"
+        },
+        "generated": {
+          "default": "docs/project",
+          "title": "Generated",
+          "type": "string"
+        },
+        "publish": {
+          "items": {
+            "enum": [
+              "overview",
+              "contracts",
+              "runs",
+              "values",
+              "releases",
+              "decisions",
+              "exchange",
+              "timeline",
+              "studies",
+              "research",
+              "comparisons",
+              "models"
+            ],
+            "type": "string"
+          },
+          "title": "Publish",
+          "type": "array"
+        },
+        "readme_report": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Readme Report"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "title": "DocsSection",
+      "type": "object"
+    },
+    "EvidenceSection": {
+      "additionalProperties": false,
+      "description": "Claim-to-evidence map (RELEASE_v0.6_SPEC §1.4).",
+      "properties": {
+        "claims": {
+          "default": "development/claims.toml",
+          "title": "Claims",
+          "type": "string"
+        }
+      },
+      "title": "EvidenceSection",
+      "type": "object"
+    },
+    "ExchangePeer": {
+      "additionalProperties": false,
+      "description": "A checkout or Git URL, and the revision that carries exchange records.",
+      "properties": {
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "ref": {
+          "default": "HEAD",
+          "title": "Ref",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        }
+      },
+      "title": "ExchangePeer",
+      "type": "object"
+    },
+    "ExchangeSection": {
+      "additionalProperties": false,
+      "description": "The exchange protocol (constitution Article V; DESIGN_exchange_protocol). The folder is always `exchange/`.",
+      "properties": {
+        "ack_days": {
+          "default": 14,
+          "minimum": 1,
+          "title": "Ack Days",
+          "type": "integer"
+        },
+        "code": {
+          "pattern": "^[A-Z]{2,6}$",
+          "title": "Code",
+          "type": "string"
+        },
+        "consumers": {
+          "items": {
+            "pattern": "^[A-Z]{2,6}$",
+            "type": "string"
+          },
+          "title": "Consumers",
+          "type": "array"
+        },
+        "delivery_days": {
+          "default": 14,
+          "minimum": 1,
+          "title": "Delivery Days",
+          "type": "integer"
+        },
+        "oneway_days": {
+          "default": 30,
+          "minimum": 1,
+          "title": "Oneway Days",
+          "type": "integer"
+        },
+        "peers": {
+          "patternProperties": {
+            "^[A-Z]{2,6}$": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/ExchangePeer"
+                }
+              ]
+            }
+          },
+          "title": "Peers",
+          "type": "object"
+        },
+        "uses": {
+          "patternProperties": {
+            "^[A-Z]{2,6}$": {
+              "type": "string"
+            }
+          },
+          "title": "Uses",
+          "type": "object"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "title": "ExchangeSection",
+      "type": "object"
+    },
+    "FrozenSet": {
+      "additionalProperties": false,
+      "description": "A set of files frozen together (REQ-011): agent prompts, tool definitions, configuration, golden fixtures.",
+      "properties": {
+        "files": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Files",
+          "type": "array"
+        },
+        "name": {
+          "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        },
+        "record": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Record"
+        }
+      },
+      "required": [
+        "name",
+        "files"
+      ],
+      "title": "FrozenSet",
+      "type": "object"
+    },
+    "GateSection": {
+      "additionalProperties": false,
+      "properties": {
+        "added": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Added",
+          "type": "array"
+        },
+        "min_evaluated": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Min Evaluated",
+          "type": "integer"
+        },
+        "require": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Require",
+          "type": "array"
+        }
+      },
+      "required": [
+        "require"
+      ],
+      "title": "GateSection",
+      "type": "object"
+    },
+    "GovernanceSection": {
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        }
+      },
+      "title": "GovernanceSection",
+      "type": "object"
+    },
+    "IntegritySection": {
+      "additionalProperties": false,
+      "description": "Research integrity (RELEASE_v0.5_SPEC §2).",
+      "properties": {
+        "datasets": {
+          "default": "development/datasets.toml",
+          "title": "Datasets",
+          "type": "string"
+        },
+        "decisions": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "default": "development/DECISIONS.md",
+          "title": "Decisions"
+        },
+        "decisions_base": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Decisions Base"
+        },
+        "decisions_format": {
+          "default": "free",
+          "enum": [
+            "free",
+            "template"
+          ],
+          "title": "Decisions Format",
+          "type": "string"
+        },
+        "ledger": {
+          "default": "development/integrity.jsonl",
+          "title": "Ledger",
+          "type": "string"
+        }
+      },
+      "title": "IntegritySection",
+      "type": "object"
+    },
+    "LicenceSection": {
+      "additionalProperties": false,
+      "description": "Licence governance (0.19.0, REQ-012; R-79 – R-82). Checks declared rules and package metadata; not legal\nadvice.",
+      "properties": {
+        "allow": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allow",
+          "type": "array"
+        },
+        "declared": {
+          "title": "Declared",
+          "type": "string"
+        },
+        "deny": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Deny",
+          "type": "array"
+        },
+        "distribution": {
+          "default": "internal",
+          "enum": [
+            "internal",
+            "network",
+            "public"
+          ],
+          "title": "Distribution",
+          "type": "string"
+        },
+        "exceptions": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exceptions"
+        },
+        "ignore_packages": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Ignore Packages",
+          "type": "array"
+        },
+        "lockfile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lockfile"
+        },
+        "notices": {
+          "default": "THIRD_PARTY_NOTICES.md",
+          "title": "Notices",
+          "type": "string"
+        },
+        "policy": {
+          "default": "weak-copyleft-ok",
+          "enum": [
+            "permissive-only",
+            "weak-copyleft-ok",
+            "gpl-compatible"
+          ],
+          "title": "Policy",
+          "type": "string"
+        },
+        "site_packages": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Site Packages",
+          "type": "array"
+        },
+        "third_party": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Third Party"
+        }
+      },
+      "required": [
+        "declared"
+      ],
+      "title": "LicenceSection",
+      "type": "object"
+    },
+    "ModelMetric": {
+      "additionalProperties": false,
+      "properties": {
+        "pointer": {
+          "pattern": "^(?:/(?:[^~/]|~[01])*)*$",
+          "title": "Pointer",
+          "type": "string"
+        },
+        "value": {
+          "pattern": "^-?[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pointer",
+        "value"
+      ],
+      "title": "ModelMetric",
+      "type": "object"
+    },
+    "ModelRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "title": "Contract",
+          "type": "string"
+        },
+        "intended_use": {
+          "title": "Intended Use",
+          "type": "string"
+        },
+        "known_limits": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Known Limits",
+          "type": "array"
+        },
+        "licence": {
+          "title": "Licence",
+          "type": "string"
+        },
+        "metrics": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ModelMetric"
+          },
+          "minProperties": 1,
+          "title": "Metrics",
+          "type": "object"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "run": {
+          "title": "Run",
+          "type": "string"
+        },
+        "split": {
+          "title": "Split",
+          "type": "string"
+        },
+        "training_studies": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Training Studies",
+          "type": "array"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "weights": {
+          "$ref": "#/$defs/ModelWeights"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "weights",
+        "training_studies",
+        "contract",
+        "split",
+        "run",
+        "metrics",
+        "intended_use",
+        "known_limits",
+        "licence"
+      ],
+      "title": "ModelRecord",
+      "type": "object"
+    },
+    "ModelWeights": {
+      "additionalProperties": false,
+      "properties": {
+        "md5": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{32}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Md5"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Size"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "title": "ModelWeights",
+      "type": "object"
+    },
+    "OccurrenceAllow": {
+      "additionalProperties": false,
+      "description": "One accepted occurrence of a term, narrower than a whole-file `allow` (0.12.0, REQ-009). Every condition\ngiven must hold; everything else in the file is scanned as usual.",
+      "properties": {
+        "context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Context"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sha256"
+        },
+        "term": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Term"
+        }
+      },
+      "required": [
+        "path",
+        "term"
+      ],
+      "title": "OccurrenceAllow",
+      "type": "object"
+    },
+    "PaperSection": {
+      "additionalProperties": false,
+      "description": "One paper (RELEASE_v0.2_SPEC §1). Paths are relative to ``dir``, which is relative to the repository root.",
+      "properties": {
+        "anonymity_file": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anonymity File"
+        },
+        "build_log": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Build Log"
+        },
+        "citations": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Citations"
+        },
+        "dir": {
+          "title": "Dir",
+          "type": "string"
+        },
+        "displays": {
+          "default": "displays.toml",
+          "title": "Displays",
+          "type": "string"
+        },
+        "main": {
+          "title": "Main",
+          "type": "string"
+        },
+        "main_ends_at": {
+          "default": "References",
+          "title": "Main Ends At",
+          "type": "string"
+        },
+        "mode": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "final"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "pdf": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pdf"
+        },
+        "placeholders": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Placeholders",
+          "type": "array"
+        },
+        "sources": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sources"
+        },
+        "spec": {
+          "default": "spec.toml",
+          "title": "Spec",
+          "type": "string"
+        },
+        "values": {
+          "default": "values.toml",
+          "title": "Values",
+          "type": "string"
+        },
+        "values_out": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Values Out"
+        },
+        "venue": {
+          "default": "venue.toml",
+          "title": "Venue",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dir",
+        "main"
+      ],
+      "title": "PaperSection",
+      "type": "object"
+    },
+    "PathsSection": {
+      "additionalProperties": false,
+      "properties": {
+        "contracts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Contracts",
+          "type": "array"
+        },
+        "prior_work": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Prior Work",
+          "type": "array"
+        },
+        "records": {
+          "default": "development",
+          "title": "Records",
+          "type": "string"
+        },
+        "records_required": {
+          "default": false,
+          "title": "Records Required",
+          "type": "boolean"
+        }
+      },
+      "title": "PathsSection",
+      "type": "object"
+    },
+    "PinDeprecation": {
+      "additionalProperties": false,
+      "description": "A pin announced for retirement (0.17.0, Muiz: \"deprecated soon\"): it stays installed and is reported while\nanything still depends on it.",
+      "properties": {
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "title": "PinDeprecation",
+      "type": "object"
+    },
+    "PinSpec": {
+      "additionalProperties": false,
+      "description": "A pinned dependency kept side by side with others (0.17.0, REQ-019).",
+      "properties": {
+        "artifact": {
+          "title": "Artifact",
+          "type": "string"
+        },
+        "callers": {
+          "anyOf": [
+            {
+              "enum": [
+                "module",
+                "references",
+                "both"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Callers"
+        },
+        "check_command": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Check Command"
+        },
+        "deprecated": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PinDeprecation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ignore_callers": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Ignore Callers",
+          "type": "array"
+        },
+        "install": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Install",
+          "type": "array"
+        },
+        "install_command": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Install Command"
+        },
+        "module": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Module"
+        },
+        "name": {
+          "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        },
+        "package": {
+          "title": "Package",
+          "type": "string"
+        },
+        "protects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Protects",
+          "type": "array"
+        },
+        "references": {
+          "items": {
+            "minLength": 3,
+            "type": "string"
+          },
+          "title": "References",
+          "type": "array"
+        },
+        "retire_when": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Retire When",
+          "type": "array"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sha256"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "package",
+        "version",
+        "artifact"
+      ],
+      "title": "PinSpec",
+      "type": "object"
+    },
+    "PinsSection": {
+      "additionalProperties": false,
+      "properties": {
+        "keep_dir": {
+          "default": "pins/retired",
+          "title": "Keep Dir",
+          "type": "string"
+        },
+        "ledger": {
+          "default": "development/pins.jsonl",
+          "title": "Ledger",
+          "type": "string"
+        }
+      },
+      "title": "PinsSection",
+      "type": "object"
+    },
+    "PolicySection": {
+      "additionalProperties": false,
+      "description": "Signed authorizations and the policy baseline (RELEASE_v0.4_SPEC §3).",
+      "properties": {
+        "allowed_signers": {
+          "default": "development/allowed_signers",
+          "title": "Allowed Signers",
+          "type": "string"
+        },
+        "baseline": {
+          "default": "origin/main",
+          "title": "Baseline",
+          "type": "string"
+        },
+        "ledger": {
+          "default": "development/authorizations.jsonl",
+          "title": "Ledger",
+          "type": "string"
+        },
+        "revoked": {
+          "default": "development/revoked.txt",
+          "title": "Revoked",
+          "type": "string"
+        },
+        "state": {
+          "default": "active",
+          "enum": [
+            "active",
+            "pending"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "title": "PolicySection",
+      "type": "object"
+    },
+    "Price": {
+      "additionalProperties": false,
+      "properties": {
+        "cache_read_per_1k": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cache Read Per 1K"
+        },
+        "cache_write_per_1k": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cache Write Per 1K"
+        },
+        "input_per_1k": {
+          "minimum": 0,
+          "title": "Input Per 1K",
+          "type": "number"
+        },
+        "output_per_1k": {
+          "minimum": 0,
+          "title": "Output Per 1K",
+          "type": "number"
+        },
+        "retrieved": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Retrieved",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "input_per_1k",
+        "output_per_1k",
+        "source",
+        "retrieved"
+      ],
+      "title": "Price",
+      "type": "object"
+    },
+    "PrivacySection": {
+      "additionalProperties": false,
+      "properties": {
+        "allow": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allow",
+          "type": "array"
+        },
+        "binary_excludes": {
+          "default": true,
+          "title": "Binary Excludes",
+          "type": "boolean"
+        },
+        "denylist_file": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Denylist File"
+        },
+        "exclude": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exclude",
+          "type": "array"
+        },
+        "include": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Include",
+          "type": "array"
+        },
+        "local_paths": {
+          "default": true,
+          "title": "Local Paths",
+          "type": "boolean"
+        }
+      },
+      "title": "PrivacySection",
+      "type": "object"
+    },
+    "PublishSection": {
+      "additionalProperties": false,
+      "description": "`[publish]` (0.19.0): where and how released versions are published (model A mirror or model B open).",
+      "properties": {
+        "author": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Author"
+        },
+        "binary": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Binary",
+          "type": "array"
+        },
+        "branch": {
+          "default": "main",
+          "title": "Branch",
+          "type": "string"
+        },
+        "changelog": {
+          "default": "CHANGELOG.md",
+          "title": "Changelog",
+          "type": "string"
+        },
+        "exclude": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exclude",
+          "type": "array"
+        },
+        "include": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Include",
+          "type": "array"
+        },
+        "mode": {
+          "default": "mirror",
+          "enum": [
+            "mirror",
+            "open"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "private_codes": {
+          "items": {
+            "pattern": "^[A-Z]{2,6}$",
+            "type": "string"
+          },
+          "title": "Private Codes",
+          "type": "array"
+        },
+        "redact_ids": {
+          "default": true,
+          "title": "Redact Ids",
+          "type": "boolean"
+        },
+        "remote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Remote"
+        },
+        "staging": {
+          "default": ".steward/publish",
+          "title": "Staging",
+          "type": "string"
+        }
+      },
+      "title": "PublishSection",
+      "type": "object"
+    },
+    "ReleaseChecks": {
+      "additionalProperties": false,
+      "properties": {
+        "expect": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expect",
+          "type": "array"
+        },
+        "same_version": {
+          "default": false,
+          "title": "Same Version",
+          "type": "boolean"
+        }
+      },
+      "title": "ReleaseChecks",
+      "type": "object"
+    },
+    "ReleaseSection": {
+      "additionalProperties": false,
+      "description": "Release integrity (RELEASE_v0.6_SPEC §2).",
+      "properties": {
+        "acks": {
+          "default": "development/fingerprint-acks.jsonl",
+          "title": "Acks",
+          "type": "string"
+        },
+        "artifact": {
+          "items": {
+            "$ref": "#/$defs/ArtifactRule"
+          },
+          "title": "Artifact",
+          "type": "array"
+        },
+        "bundles": {
+          "default": "dist/bundles",
+          "title": "Bundles",
+          "type": "string"
+        },
+        "checks": {
+          "$ref": "#/$defs/ReleaseChecks"
+        },
+        "dist": {
+          "default": "dist",
+          "title": "Dist",
+          "type": "string"
+        },
+        "exclude": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exclude",
+          "type": "array"
+        },
+        "findings": {
+          "default": "development/assessment/findings.toml",
+          "title": "Findings",
+          "type": "string"
+        },
+        "fingerprint": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fingerprint",
+          "type": "array"
+        },
+        "fingerprint_file": {
+          "default": "development/fingerprint.json",
+          "title": "Fingerprint File",
+          "type": "string"
+        },
+        "identities": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,31}$",
+            "type": "string"
+          },
+          "title": "Identities",
+          "type": "array"
+        },
+        "known_issues": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Known Issues"
+        },
+        "locks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Locks",
+          "type": "array"
+        },
+        "manifest": {
+          "default": "release-manifest.json",
+          "title": "Manifest",
+          "type": "string"
+        },
+        "protected": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Protected",
+          "type": "array"
+        },
+        "required": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required",
+          "type": "array"
+        },
+        "review_required": {
+          "default": false,
+          "title": "Review Required",
+          "type": "boolean"
+        },
+        "shipped_secret": {
+          "items": {
+            "$ref": "#/$defs/ShippedSecret"
+          },
+          "title": "Shipped Secret",
+          "type": "array"
+        },
+        "stopping_rule": {
+          "default": "none",
+          "enum": [
+            "none",
+            "no-blocking-no-wrong-result"
+          ],
+          "title": "Stopping Rule",
+          "type": "string"
+        }
+      },
+      "title": "ReleaseSection",
+      "type": "object"
+    },
+    "ReproSection": {
+      "additionalProperties": false,
+      "description": "Reproduction gate (0.9.0 B2, REQ-008; R-52).",
+      "properties": {
+        "contracts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Contracts",
+          "type": "array"
+        },
+        "ledger": {
+          "default": "development/repro.jsonl",
+          "title": "Ledger",
+          "type": "string"
+        }
+      },
+      "required": [
+        "contracts"
+      ],
+      "title": "ReproSection",
+      "type": "object"
+    },
+    "ResearchSection": {
+      "additionalProperties": false,
+      "description": "Research-direction records (0.18.0): literature reviews, novelty maps, gap and flaw lists, dead-end reviews.\nChecked by R-76 (advisory).",
+      "properties": {
+        "dir": {
+          "default": "development/research",
+          "title": "Dir",
+          "type": "string"
+        },
+        "stale_days": {
+          "default": 90,
+          "minimum": 1,
+          "title": "Stale Days",
+          "type": "integer"
+        }
+      },
+      "title": "ResearchSection",
+      "type": "object"
+    },
+    "RunSection": {
+      "additionalProperties": false,
+      "description": "`steward run` defaults (RELEASE_v0.4_SPEC §2). Command-line limits may only tighten these.",
+      "properties": {
+        "disk_free_mb": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Disk Free Mb"
+        },
+        "hang_cpu_s": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hang Cpu S"
+        },
+        "hang_s": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hang S"
+        },
+        "ledger": {
+          "default": "development/runs.jsonl",
+          "title": "Ledger",
+          "type": "string"
+        },
+        "logs": {
+          "default": ".steward/runs",
+          "title": "Logs",
+          "type": "string"
+        },
+        "mem_mb": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mem Mb"
+        },
+        "slots": {
+          "additionalProperties": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "title": "Slots",
+          "type": "object"
+        },
+        "slots_dir": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slots Dir"
+        },
+        "socket_timeout_s": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Socket Timeout S"
+        },
+        "wall_s": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wall S"
+        }
+      },
+      "title": "RunSection",
+      "type": "object"
+    },
+    "SampleSheet": {
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "default": "tsv",
+          "enum": [
+            "tsv",
+            "csv"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "id_column": {
+          "title": "Id Column",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "id_column"
+      ],
+      "title": "SampleSheet",
+      "type": "object"
+    },
+    "SessionSection": {
+      "additionalProperties": false,
+      "description": "Session sign-off and resumption (0.9.0 G; DESIGN_session_handoff S1 – S5; R-55, advisory).",
+      "properties": {
+        "budget_words": {
+          "default": 600,
+          "maximum": 1500,
+          "minimum": 50,
+          "title": "Budget Words",
+          "type": "integer"
+        },
+        "end_hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Hint"
+        },
+        "handoff": {
+          "default": "development/HANDOFF.md",
+          "title": "Handoff",
+          "type": "string"
+        },
+        "process": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Process",
+          "type": "array"
+        }
+      },
+      "title": "SessionSection",
+      "type": "object"
+    },
+    "ShippedSecret": {
+      "additionalProperties": false,
+      "description": "A credential a private package ships on purpose (REQ-006): reported, not refused, once decided.",
+      "properties": {
+        "authorization": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authorization"
+        },
+        "decision": {
+          "title": "Decision",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "reason",
+        "decision"
+      ],
+      "title": "ShippedSecret",
+      "type": "object"
+    },
+    "SkillsSection": {
+      "additionalProperties": false,
+      "description": "One canonical skills directory and its linked copies (0.9.0 B7, REQ-014; R-60).",
+      "properties": {
+        "canonical": {
+          "title": "Canonical",
+          "type": "string"
+        },
+        "copies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Copies",
+          "type": "array"
+        }
+      },
+      "required": [
+        "canonical"
+      ],
+      "title": "SkillsSection",
+      "type": "object"
+    },
+    "SpendSection": {
+      "additionalProperties": false,
+      "description": "Spend guard (RELEASE_v0.4_SPEC §4). Prices are per 1,000 tokens, in `currency`.",
+      "properties": {
+        "cap": {
+          "minimum": 0,
+          "title": "Cap",
+          "type": "number"
+        },
+        "currency": {
+          "default": "USD",
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "ledger": {
+          "default": "development/spend.jsonl",
+          "title": "Ledger",
+          "type": "string"
+        },
+        "prices": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Price"
+          },
+          "title": "Prices",
+          "type": "object"
+        }
+      },
+      "required": [
+        "cap"
+      ],
+      "title": "SpendSection",
+      "type": "object"
+    },
+    "StageDef": {
+      "additionalProperties": false,
+      "description": "One declared stage of a staged run (REQ-008).",
+      "properties": {
+        "go": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Go"
+        },
+        "name": {
+          "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        },
+        "reads": {
+          "enum": [
+            "metadata",
+            "restricted",
+            "outcomes"
+          ],
+          "title": "Reads",
+          "type": "string"
+        },
+        "shadow": {
+          "default": false,
+          "title": "Shadow",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "reads"
+      ],
+      "title": "StageDef",
+      "type": "object"
+    },
+    "StewardSection": {
+      "additionalProperties": false,
+      "properties": {
+        "constitution": {
+          "anyOf": [
+            {
+              "pattern": "^\\d+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Constitution"
+        },
+        "profile": {
+          "default": "exploratory",
+          "enum": [
+            "exploratory",
+            "confirmatory"
+          ],
+          "title": "Profile",
+          "type": "string"
+        },
+        "project": {
+          "title": "Project",
+          "type": "string"
+        },
+        "repo_id": {
+          "title": "Repo Id",
+          "type": "string"
+        },
+        "schema": {
+          "enum": [
+            "steward.toml/0.1",
+            "steward.toml/0.2"
+          ],
+          "title": "Schema",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema",
+        "repo_id",
+        "project"
+      ],
+      "title": "StewardSection",
+      "type": "object"
+    },
+    "StorageSection": {
+      "additionalProperties": false,
+      "description": "Large artifacts by hash and the resource audit (RELEASE_v0.8_SPEC).",
+      "properties": {
+        "artifacts": {
+          "default": "development/artifacts.toml",
+          "title": "Artifacts",
+          "type": "string"
+        },
+        "caps": {
+          "additionalProperties": {
+            "exclusiveMinimum": 0,
+            "type": "number"
+          },
+          "title": "Caps",
+          "type": "object"
+        },
+        "clean": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CleanSection"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "large_mb": {
+          "default": 50,
+          "exclusiveMinimum": 0,
+          "title": "Large Mb",
+          "type": "number"
+        }
+      },
+      "title": "StorageSection",
+      "type": "object"
+    },
+    "StrangerTestSection": {
+      "additionalProperties": false,
+      "description": "The stranger test (0.20.2, STW-041; R-87 advisory): an agent that has never seen the project tries to get value\nfrom it using only what a newcomer sees.",
+      "properties": {
+        "audience": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Audience"
+        },
+        "install": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Install"
+        },
+        "max_age_days": {
+          "default": 120,
+          "minimum": 1,
+          "title": "Max Age Days",
+          "type": "integer"
+        },
+        "may_read": {
+          "items": {
+            "type": "string"
+          },
+          "title": "May Read",
+          "type": "array"
+        },
+        "missions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Missions",
+          "type": "array"
+        },
+        "must_not_read": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Must Not Read",
+          "type": "array"
+        }
+      },
+      "title": "StrangerTestSection",
+      "type": "object"
+    },
+    "StudiesSection": {
+      "additionalProperties": false,
+      "description": "Study records (0.18.0): one TOML file per study (a reanalysis, an experiment, a claim and its plan) holding\nits inputs, references, tools, plan, results and the papers that cite it. Checked by R-75.",
+      "properties": {
+        "consistent": {
+          "items": {
+            "enum": [
+              "genome",
+              "annotation",
+              "id_namespace",
+              "databases",
+              "organism",
+              "taxon",
+              "coordinate_base",
+              "chromosome_naming"
+            ],
+            "type": "string"
+          },
+          "title": "Consistent",
+          "type": "array"
+        },
+        "dir": {
+          "default": "development/studies",
+          "title": "Dir",
+          "type": "string"
+        }
+      },
+      "title": "StudiesSection",
+      "type": "object"
+    },
+    "TalkSection": {
+      "additionalProperties": false,
+      "description": "One talk (RELEASE_v0.3_SPEC §1). Paths are relative to ``dir``.",
+      "properties": {
+        "build_log": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Build Log"
+        },
+        "dir": {
+          "title": "Dir",
+          "type": "string"
+        },
+        "displays": {
+          "default": "displays.toml",
+          "title": "Displays",
+          "type": "string"
+        },
+        "main": {
+          "default": "slides.tex",
+          "title": "Main",
+          "type": "string"
+        },
+        "mode": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "final"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "paper": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paper"
+        },
+        "pdf": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pdf"
+        },
+        "plan": {
+          "default": "talk.toml",
+          "title": "Plan",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dir"
+      ],
+      "title": "TalkSection",
+      "type": "object"
+    },
+    "TasksSection": {
+      "additionalProperties": false,
+      "description": "Task board (0.9.0 B4, REQ-007; R-57).",
+      "properties": {
+        "archive": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Archive",
+          "type": "array"
+        },
+        "board": {
+          "title": "Board",
+          "type": "string"
+        },
+        "closed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Closed",
+          "type": "array"
+        },
+        "id_pattern": {
+          "default": "[A-Z]+-\\d{3}",
+          "title": "Id Pattern",
+          "type": "string"
+        },
+        "specs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Specs",
+          "type": "array"
+        },
+        "statuses": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Statuses",
+          "type": "array"
+        }
+      },
+      "required": [
+        "specs",
+        "board"
+      ],
+      "title": "TasksSection",
+      "type": "object"
+    },
+    "TermList": {
+      "additionalProperties": false,
+      "description": "A named term list (0.8.1: SR-004, AR-04). Public lists are published policy, so their hits show the term.",
+      "properties": {
+        "allow": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allow",
+          "type": "array"
+        },
+        "allow_occurrence": {
+          "items": {
+            "$ref": "#/$defs/OccurrenceAllow"
+          },
+          "title": "Allow Occurrence",
+          "type": "array"
+        },
+        "case_sensitive": {
+          "default": false,
+          "title": "Case Sensitive",
+          "type": "boolean"
+        },
+        "exclude": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exclude",
+          "type": "array"
+        },
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "include": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Include",
+          "type": "array"
+        },
+        "name": {
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$",
+          "title": "Name",
+          "type": "string"
+        },
+        "patterns": {
+          "default": false,
+          "title": "Patterns",
+          "type": "boolean"
+        },
+        "public": {
+          "default": false,
+          "title": "Public",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "file"
+      ],
+      "title": "TermList",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "accrual": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AccrualSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "agents": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AgentsSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "benchmark": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BenchmarkSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "boundary": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BoundarySection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "branches": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BranchesSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "changelog": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ChangelogSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "channel": {
+      "items": {
+        "$ref": "#/$defs/Channel"
+      },
+      "title": "Channel",
+      "type": "array"
+    },
+    "containers": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ContainersSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "data": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DataSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "dependencies": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DependenciesSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "docs": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DocsSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "evidence": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EvidenceSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "exchange": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExchangeSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "frozen": {
+      "items": {
+        "$ref": "#/$defs/FrozenSet"
+      },
+      "title": "Frozen",
+      "type": "array"
+    },
+    "gates": {
+      "additionalProperties": {
+        "$ref": "#/$defs/GateSection"
+      },
+      "title": "Gates",
+      "type": "object"
+    },
+    "governance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GovernanceSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "integrity": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/IntegritySection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "licence": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LicenceSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "model": {
+      "items": {
+        "$ref": "#/$defs/ModelRecord"
+      },
+      "title": "Model",
+      "type": "array"
+    },
+    "paper": {
+      "additionalProperties": {
+        "$ref": "#/$defs/PaperSection"
+      },
+      "title": "Paper",
+      "type": "object"
+    },
+    "paths": {
+      "$ref": "#/$defs/PathsSection"
+    },
+    "pin": {
+      "items": {
+        "$ref": "#/$defs/PinSpec"
+      },
+      "title": "Pin",
+      "type": "array"
+    },
+    "pins": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PinsSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "policy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PolicySection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "privacy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PrivacySection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "publish": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PublishSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "release": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReleaseSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "repro": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReproSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "research": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ResearchSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "run": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RunSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "session": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SessionSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "skills": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SkillsSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "spend": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SpendSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "stages": {
+      "items": {
+        "$ref": "#/$defs/StageDef"
+      },
+      "title": "Stages",
+      "type": "array"
+    },
+    "stages_ledger": {
+      "default": "development/stages.jsonl",
+      "title": "Stages Ledger",
+      "type": "string"
+    },
+    "steward": {
+      "$ref": "#/$defs/StewardSection"
+    },
+    "storage": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StorageSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "stranger_test": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StrangerTestSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "studies": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StudiesSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "talk": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TalkSection"
+      },
+      "title": "Talk",
+      "type": "object"
+    },
+    "tasks": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TasksSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "terms": {
+      "items": {
+        "$ref": "#/$defs/TermList"
+      },
+      "title": "Terms",
+      "type": "array"
+    }
+  },
+  "required": [
+    "steward"
+  ],
+  "title": "StewardConfig",
+  "type": "object"
+}

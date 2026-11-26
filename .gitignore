@@ -1,0 +1,26 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+*.env
+
+# Documentation is tracked (overrides a global *.md ignore)
+!*.md
+!**/*.md
+
+# Build and tool state
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.steward/
+
+# Files the example and the tests need, re-included despite common global ignores (*.pdf, *.lock, *.log).
+# Red-team A5 / C2: a clean checkout must contain everything `steward check` and the tests read.
+!examples/**/*.pdf
+!examples/**/*.lock
+!examples/**/*.log
+!tests/fixtures/
+!tests/fixtures/**

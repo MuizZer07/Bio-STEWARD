@@ -1,0 +1,33 @@
+# Paper spec for the worked biology example: a reanalysis of a public GEO series.
+schema = "steward.paper_spec/0.1"
+type   = "preprint"
+title_candidates = ["A provenance-checked reanalysis of Parkinson's disease substantia nigra expression (GSE7621)"]
+story  = "A public microarray series is fetched with its checksum, its samples are checked against their metadata, and a pre-written differential-expression plan is run; every number in the text comes from a recorded file."
+never_claim = ["a new biological finding (this reproduces the workflow on published data)", "a causal role for any gene"]
+limitations = ["No processing batch is recorded for the series", "Postmortem interval and age are not modelled", "MAS 5.0 signals are used as deposited"]
+data_availability = "data-availability.md"
+
+[[questions]]
+id   = "Q1"
+text = "Which probe sets differ between Parkinson's disease and control substantia nigra in GSE7621?"
+
+[[contributions]]
+id       = "C1"
+text     = "A reanalysis whose inputs, samples, method and numbers are each checked"
+strength = "explores"
+evidence = ["value:n_significant"]
+
+[[sections]]
+id    = "methods"
+title = "Methods"
+purpose = "State the data, the samples and the test"
+
+[[sections]]
+id    = "results"
+title = "Results"
+purpose = "Report the numbers the plan names"
+
+[[sections]]
+id    = "limits"
+title = "Limitations"
+purpose = "State every limitation"

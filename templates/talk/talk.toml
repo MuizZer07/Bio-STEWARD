@@ -1,0 +1,27 @@
+# Presentation plan (schema steward.talk/0.1). Fill it before building slides; `steward talk plan` lists what is
+# missing and suggests an outline. The research stage is confirmed by a human, never inferred.
+schema       = "steward.talk/0.1"
+stage        = "TBD"          # concept | feasibility | development | evaluation | completed | published
+stage_source = "proposed"     # set to "confirmed" once the presenter confirms the stage
+purpose      = "TBD"          # e.g. progress-update, conference-talk, defense, proposal, design-review
+feedback     = "TBD"          # open | targeted | informational | defense
+audience     = "TBD"          # specialist | technical | interdisciplinary | public
+duration_min = "TBD"
+format       = "talk"         # talk | poster | lightning | demo
+max_slides   = "auto"         # or an integer
+evidence     = []             # e.g. ["contract:my-benchmark", "paper:main"]
+unresolved_decisions = []     # required for feedback = "targeted"
+
+# [[outline]]                 # filled by `steward talk plan --write-outline`, then edited freely
+# role  = "problem"
+# title = "Why this matters"
+
+# [[claims]]                  # each claim a slide makes, with its status and evidence
+# id       = "c1"
+# text     = "Donor-level splits remove optimistic bias"
+# status   = "preliminary"    # proposed | implemented | preliminary | validated | published | unknown
+# evidence = ["contract:my-benchmark", "value:auroc_test"]
+# where    = "slide: results"
+
+# [overrides]                 # preferences for this talk only (style keys; see `steward talk prefs`)
+# style.density = "sparse"

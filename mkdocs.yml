@@ -1,0 +1,78 @@
+# The Bio-STEWARD user guide (0.10.0 U3). Build: pip install mkdocs-material && mkdocs build --strict
+# Published on GitHub Pages when the repository is public (DESIGN_BRIEF_public_release §3).
+site_name: Bio-STEWARD
+site_description: The engineering and integrity layer for agentic computational biology
+repo_url: https://github.com/MuizZer07/Bio-STEWARD
+theme:
+  name: material
+  features: [navigation.sections, navigation.instant, navigation.top, content.code.copy, content.tabs.link, search.highlight]
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: indigo
+      toggle: { icon: material/weather-night, name: Dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: indigo
+      toggle: { icon: material/weather-sunny, name: Light mode }
+  icon:
+    repo: fontawesome/brands/github
+extra_css: [assets/extra.css]
+nav:
+  - Start: index.md
+  - Recipes: recipes.md
+  - Works with: works-with.md
+  - Quick starts:
+      - Core: quickstart.md
+      - Paper: quickstart-paper.md
+      - Talk: quickstart-talk.md
+  - Worked example: worked-example.md
+  - Guides:
+      - Plan a benchmark: guides/benchmark.md
+      - Keep paper numbers true to results: guides/paper.md
+      - Freeze, seal and approve: guides/integrity.md
+      - Sign ahead, or sign later: guides/signing-ahead.md
+      - Clean up a project's storage: guides/storage-cleanup.md
+      - Retire a pinned dependency: guides/pins.md
+      - Keep the research record: guides/research-records.md
+      - Work with public data: guides/public-data.md
+      - Record and publish model cards: guides/model-records.md
+      - Check table data contracts: guides/data-contracts.md
+      - Compare two pipeline runs: guides/pipeline-comparisons.md
+      - Govern licences from the first commit: guides/licence.md
+      - Publish stable releases, keep development private: guides/publish.md
+      - Run a stranger test before a release: guides/stranger-test.md
+      - Plan to a deadline: guides/timeline.md
+      - Run a supervised sprint: guides/sprint.md
+      - Track tokens per task: guides/tokens.md
+      - Progress Audit: guides/progress-audit.md
+      - GitHub Action, pre-commit and the plugin: guides/integrations.md
+      - Release software and containers: guides/release.md
+      - Single-project governance: guides/single-project.md
+      - Multi-project governance: guides/multi-project.md
+      - Publish your project's documentation: guides/project-site.md
+      - CI and the approval key: ci.md
+  - Concepts: concepts.md
+  - Principles: principles.md
+  - Troubleshooting: troubleshooting.md
+  - Reference:
+      - Rules: reference/rules.md
+      - Commands: reference/commands.md
+markdown_extensions:
+  - admonition
+  - tables
+  - toc
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.tabbed: { alternate_style: true }
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format

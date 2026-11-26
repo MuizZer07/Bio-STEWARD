@@ -1,0 +1,57 @@
+# Values registry (schema steward.values/0.1): every number the paper reports comes from a file.
+# Paths are relative to the repository root. Regenerate paper/values.tex with:  steward paper values --write
+schema = "steward.values/0.1"
+
+[values.n_samples]
+source = "data/samples.csv"
+count  = "rows"
+
+[values.n_donors]
+source = "data/samples.csv"
+count  = "unique:donor_id"
+
+[values.samples_per_donor]
+derive = "{n_samples} / {n_donors}"
+format = "{:.0f}"
+
+[values.n_train_samples]
+source = "benchmarks/splits/train.txt"
+count  = "rows"
+
+[values.n_val_samples]
+source = "benchmarks/splits/validation.txt"
+count  = "rows"
+
+[values.n_test_samples]
+source = "benchmarks/splits/test.txt"
+count  = "rows"
+
+[values.n_train_donors]
+derive = "{n_train_samples} / {samples_per_donor}"
+format = "{:.0f}"
+
+[values.n_val_donors]
+derive = "{n_val_samples} / {samples_per_donor}"
+format = "{:.0f}"
+
+[values.n_test_donors]
+derive = "{n_test_samples} / {samples_per_donor}"
+format = "{:.0f}"
+
+[values.alpha]
+source  = "benchmarks/expr-clf.contract.toml"
+pointer = "/comparison/alpha"   # JSON pointers work on .json and .toml sources
+
+[values.resamples]
+source  = "benchmarks/expr-clf.contract.toml"
+pointer = "/comparison/resamples"
+
+[values.min_gain]
+source  = "benchmarks/expr-clf.contract.toml"
+pointer = "/thresholds/0/value"
+
+[[assert]]
+expr = "{n_train_samples} + {n_val_samples} + {n_test_samples} == {n_samples}"
+
+[[assert]]
+expr = "{n_train_donors} + {n_val_donors} + {n_test_donors} == {n_donors}"

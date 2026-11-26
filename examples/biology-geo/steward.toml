@@ -1,0 +1,138 @@
+# steward configuration (schema steward.toml/0.2). Unknown keys are rejected: a typo fails `steward check`.
+[steward]
+schema  = "steward.toml/0.2"
+repo_id = "c77f22b4-23a5-45c2-bdc7-a2b9dba8c46f"       # written by `steward init`; never change it
+project = "biology-geo"
+profile = "exploratory"       # "exploratory" or "confirmatory" (confirmatory requires a contract and a prior-work record)
+constitution = "2"         # the Bio-STEWARD constitution this repository follows (`steward constitution`)
+
+[paths]
+contracts  = ["benchmarks/**/*.contract.toml"]
+prior_work = ["development/prior_work/**/*.prior.toml"]
+
+# Keep private terms (internal project names, collaborator names, unpublished identifiers) out of the repository.
+# Put one term per line in the denylist file; it lives in .steward/ and is never committed. Reports show where a
+# term was found, never the term itself.
+# [privacy]
+# denylist_file = ".steward/private/denylist.txt"
+# include = ["**/*"]
+# exclude = [".git/**", ".steward/**"]
+
+# Named term lists (several allowed). A private list's hits show only list:line; a public list is published policy,
+# so its hits show the term. A plain line matches whole words; `substr:TEXT` matches inside identifiers; with
+# patterns = true each line is a regular expression. `allow` exempts whole files (R-07 and the release audit);
+# allow_occurrence accepts one occurrence in context instead, and scans the rest of the file as usual.
+# [[terms]]
+# name = "policy"
+# file = "development/policy-terms.txt"   # committed when public = true; keep private lists under .steward/
+# public = true
+# include = ["**/*"]
+# exclude = [".git/**", ".steward/**"]
+# allow = []
+# [[terms.allow_occurrence]]             # belongs to the [[terms]] table above
+# path = "**/assets/index-*.css"
+# term = 1                                # the list line (as reported, list:line); avoids naming the term here
+# context = "img,svg,{term},audio"        # literal text that must surround the occurrence
+# max = 1                                 # optional: at most this many per file
+# sha256 = "…"                            # optional: only while the file has exactly these bytes
+
+# Requests and release notices between projects (constitution Article V). `steward exchange init` creates exchange/.
+# [exchange]
+# code = "ABC"                            # this project's code: 2 - 6 capital letters
+# peers = { XYZ = "../other-project" }    # projects whose committed outbox `steward exchange pull` reads
+# consumers = ["XYZ"]                     # projects that receive this project's release notices
+# uses = { XYZ = "v1.2.0" }               # the version of each project this one uses
+# ack_days = 14                           # days to decide a received item
+
+# Pinned dependencies kept side by side (several versions of one library, because frozen records depend on the exact
+# version). A pin is deprecated first (still installed, reported while code imports it), then retire-eligible when
+# every retire_when condition holds; `steward pins retire NAME` (with a signed pin.retire approval) keeps the artifact,
+# its manifest and checksum, and removes the install. Recommended policy:
+#   no code calls it, and a newer pin is installed          -> retire_when = ["no_callers", "superseded_by:<version>"]
+#   only finished audits used it                            -> retire_when = ["no_callers", "after:<audit record>"]
+#   a lock or freeze depends on it                          -> retire_when = ["after:milestone:<the paper or release>"]
+#   the current pin                                          -> retire_when = ["never"]
+# [[pin]]
+# name = "lib-1-0"
+# package = "lib"
+# version = "1.0"
+# artifact = "vendor/wheels/lib-1.0-py3-none-any.whl"
+# module = "lib_1_0"                        # its import name: who still calls it
+# install = ["vendor/lib_1_0"]              # removed on retirement (installs, scripts, version-specific code, tests)
+# protects = []                            # records that depend on this exact version (then add an after: condition)
+# retire_when = ["no_callers", "superseded_by:2.0"]
+# deprecated = { reason = "replaced by 2.0", target = "2.0" }
+# install_command = "pip install --target vendor/lib_1_0 {artifact}"   # restore
+# check_command = "python -c 'import sys; sys.path.insert(0, \"vendor/lib_1_0\"); import lib'"  # restore: required
+
+# Licence governance (0.19.0, R-79 – R-82): the declared licence, the distribution state and a policy; dependencies,
+# copied or ported code and headers are checked from the first commit. Not legal advice.
+# [licence]
+# declared = "MIT"                        # SPDX expression, as in LICENSE and the package metadata
+# distribution = "internal"               # internal | network | public (stricter to the right)
+# policy = "weak-copyleft-ok"             # permissive-only | weak-copyleft-ok | gpl-compatible
+# lockfile = "uv.lock"                    # or poetry.lock, requirements.txt; else every installed package
+# site_packages = [".venv/lib/python3*/site-packages"]   # the project's own environment
+# deny = ["AGPL-3.0*", "SSPL-*"]
+# exceptions = "development/licence-exceptions.toml"
+# third_party = "development/third-party.toml"
+
+# Study records (0.18.0, R-75): one file per study with its inputs (accessions, fingerprints), references (genome,
+# annotation, identifier namespace, database versions), tools, plan, results and citing papers.
+#   steward study new ID --title "…"   then   steward study fingerprint ID --write
+# [studies]
+# dir = "development/studies"
+# consistent = ["genome", "annotation"]   # references every active study must share
+
+# Research-direction records (0.18.0, R-76, advisory): literature reviews, novelty maps, gaps and flaws, dead ends.
+#   steward research new review ID --title "…"   (or novelty, gaps, dead-end)
+# [research]
+# dir = "development/research"
+# stale_days = 90                          # a literature review older than this is due for a re-run
+
+# Citation verification (0.18.0, R-77, optional per paper): add to a [paper.NAME] table
+#   citations = "citations.toml"           then   steward paper citations NAME --fetch
+
+# Gates decide; the summary only describes. Without a [gates.default] table, the default gate requires every rule.
+# Choose the gate by the kind of work (policy), never by how much output or context you can afford:
+#   steward check --summary --gate routine
+# [gates.default]
+# require = ["R-01", "R-02", "R-03", "R-04", "R-05", "R-06", "R-07"]
+#
+# Presets (uncomment to use). Every gate must require R-01.
+# [gates.routine]        # everyday code changes: whatever records exist must be consistent
+# require = ["R-01", "R-02", "R-03", "R-05", "R-07"]
+# [gates.confirmatory]   # before a confirmatory run: contract and prior-work record must exist and be complete
+# require = ["R-01", "R-02", "R-03", "R-04", "R-05", "R-06", "R-07"]
+# [gates.release]        # before a release; release-specific rules join this gate in a later version
+# require = ["R-01", "R-02", "R-03", "R-04", "R-05", "R-06", "R-07"]
+# [gates.submission]     # before submitting a paper: run `steward check --final --gate submission`
+# require = ["R-01", "R-07", "R-08", "R-09", "R-12"]
+
+[studies]
+dir = "development/studies"
+
+[research]
+dir = "development/research"
+
+# The tables this reanalysis writes are checked on every `steward check` (R-83).
+[[data.contract]]
+path = "results/de.tsv"
+id_column = "probe_id"
+columns = { probe_id = "text", mean_control = "number", mean_pd = "number", t = "number" }
+p_value = "p_value"
+adjusted_p_value = "adj_p_value"
+log_fold_change = "log2_fold_change"
+
+[[data.contract]]
+path = "results/top_genes.tsv"           # the supplement-like table a reader copies into a spreadsheet
+id_column = "probe_id"
+columns = { probe_id = "text", gene_symbol = "hgnc", all_symbols = "text" }
+p_value = "p_value"
+adjusted_p_value = "adj_p_value"
+log_fold_change = "log2_fold_change"
+
+[paper.main]                 # PaperKit, Markdown
+dir  = "paper"
+main = "main.md"
+mode = "draft"

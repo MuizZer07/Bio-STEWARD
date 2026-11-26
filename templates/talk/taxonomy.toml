@@ -1,0 +1,36 @@
+# Research stages, purposes and feedback modes (DESIGN_v0.7 §2). Data, not code: projects may extend it.
+# A stage's ceiling is the highest claim status a slide may use without evidence that satisfies it.
+claim_order = ["proposed", "implemented", "preliminary", "validated", "published"]
+feedback = ["open", "targeted", "informational", "defense"]
+purposes = ["brainstorm", "proposal", "design-review", "progress-update", "preliminary-results", "conference-talk",
+            "journal-seminar", "defense", "poster", "lightning", "software-demo", "public-communication"]
+
+[stages.concept]
+label = "Concept / ideation"
+ceiling = "proposed"
+[stages.feasibility]
+label = "Feasibility / proof of concept"
+ceiling = "preliminary"
+[stages.development]
+label = "Active development"
+ceiling = "preliminary"
+[stages.evaluation]
+label = "Experimental evaluation"
+ceiling = "preliminary"
+[stages.completed]
+label = "Completed research"
+ceiling = "validated"
+[stages.published]
+label = "Published research"
+ceiling = "published"
+
+# Combinations that are allowed but unusual: the plan is flagged for confirmation, never refused.
+[[unusual]]
+stage = "concept"
+purpose = "defense"
+[[unusual]]
+stage = "concept"
+purpose = "conference-talk"
+[[unusual]]
+stage = "published"
+purpose = "brainstorm"

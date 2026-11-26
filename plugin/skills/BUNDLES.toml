@@ -1,0 +1,37 @@
+# Skill bundles (DESIGN_v0.7 H2). Install only the kits you use: harnesses preload every installed skill's
+# description, so each bundle has its own always-loaded budget (tools/measure_footprint.py).
+#   steward init --skills .agents/skills --kits core,paper
+# Every budget names the decision that set it (checked by tests against development/DECISIONS.md). Raising a budget
+# needs a new recorded decision; tools/measure_footprint.py warns at 90 % so trimming or merging comes first.
+[core]
+budget_words = 325
+decision     = "2026-11-23 — core budget 325 for the container-release and dependency-upgrade skills"
+skills = ["using-steward", "task-lifecycle", "benchmark-contract", "prior-work-grounding",
+          "signature-and-attribution", "negative-results", "run-estimate", "no-paid-tests", "change-impact",
+          "red-team-review", "container-release", "dependency-upgrade"]
+
+[paper]
+budget_words = 200
+decision     = "2026-11-23 — pushed; presentation-kit recommendations accepted; PaperKit v0.2.1"
+skills = ["paper-kit", "submission-readiness", "number-crosscheck", "figures-and-tables",
+          "manuscript-drafting", "manuscript-review"]
+
+[talk]
+budget_words = 120
+decision     = "2026-11-23 — pushed; presentation-kit recommendations accepted; PaperKit v0.2.1"
+skills = ["presentation-planning", "presentation-building", "presentation-review"]
+
+[manage]
+budget_words = 80
+decision     = "2026-11-24 — progress-audit skill in a new [manage] bundle, budget 80"
+skills = ["progress-audit"]
+
+[research]
+budget_words = 60
+decision     = "2026-11-24 — research-review skill in a new [research] bundle, budget 60"
+skills = ["research-review"]
+
+[licence]
+budget_words = 50
+decision     = "2026-11-25 — licence-compliance skill in a new [licence] bundle, budget 50"
+skills = ["licence-compliance"]

@@ -1,0 +1,375 @@
+{
+  "$defs": {
+    "PAccessibility": {
+      "additionalProperties": false,
+      "properties": {
+        "alt_text": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Alt Text"
+        },
+        "min_contrast": {
+          "anyOf": [
+            {
+              "maximum": 21,
+              "minimum": 1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Contrast"
+        }
+      },
+      "title": "PAccessibility",
+      "type": "object"
+    },
+    "PFigures": {
+      "additionalProperties": false,
+      "properties": {
+        "max_panels": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Panels"
+        },
+        "prefer": {
+          "anyOf": [
+            {
+              "enum": [
+                "plots",
+                "tables"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prefer"
+        }
+      },
+      "title": "PFigures",
+      "type": "object"
+    },
+    "PLanguage": {
+      "additionalProperties": false,
+      "properties": {
+        "avoid": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Avoid"
+        },
+        "spelling": {
+          "anyOf": [
+            {
+              "enum": [
+                "en-GB",
+                "en-US"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spelling"
+        },
+        "tone": {
+          "anyOf": [
+            {
+              "enum": [
+                "formal",
+                "conversational"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tone"
+        }
+      },
+      "title": "PLanguage",
+      "type": "object"
+    },
+    "PMotion": {
+      "additionalProperties": false,
+      "properties": {
+        "transitions": {
+          "anyOf": [
+            {
+              "enum": [
+                "none",
+                "minimal",
+                "rich"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transitions"
+        }
+      },
+      "title": "PMotion",
+      "type": "object"
+    },
+    "PNotes": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "none",
+                "bullets",
+                "script"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mode"
+        }
+      },
+      "title": "PNotes",
+      "type": "object"
+    },
+    "PPalette": {
+      "additionalProperties": false,
+      "properties": {
+        "accent": {
+          "anyOf": [
+            {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accent"
+        },
+        "background": {
+          "anyOf": [
+            {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Background"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        }
+      },
+      "title": "PPalette",
+      "type": "object"
+    },
+    "PStory": {
+      "additionalProperties": false,
+      "properties": {
+        "depth": {
+          "anyOf": [
+            {
+              "enum": [
+                "overview",
+                "standard",
+                "deep"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Depth"
+        },
+        "takeaways": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Takeaways"
+        }
+      },
+      "title": "PStory",
+      "type": "object"
+    },
+    "PStyle": {
+      "additionalProperties": false,
+      "properties": {
+        "aspect": {
+          "anyOf": [
+            {
+              "enum": [
+                "16:9",
+                "4:3"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Aspect"
+        },
+        "density": {
+          "anyOf": [
+            {
+              "enum": [
+                "sparse",
+                "balanced",
+                "dense"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Density"
+        },
+        "theme": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Theme"
+        }
+      },
+      "title": "PStyle",
+      "type": "object"
+    },
+    "PTypography": {
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Family"
+        },
+        "min_font_pt": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Font Pt"
+        }
+      },
+      "title": "PTypography",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "accessibility": {
+      "$ref": "#/$defs/PAccessibility"
+    },
+    "figures": {
+      "$ref": "#/$defs/PFigures"
+    },
+    "language": {
+      "$ref": "#/$defs/PLanguage"
+    },
+    "motion": {
+      "$ref": "#/$defs/PMotion"
+    },
+    "notes": {
+      "$ref": "#/$defs/PNotes"
+    },
+    "palette": {
+      "$ref": "#/$defs/PPalette"
+    },
+    "story": {
+      "$ref": "#/$defs/PStory"
+    },
+    "style": {
+      "$ref": "#/$defs/PStyle"
+    },
+    "typography": {
+      "$ref": "#/$defs/PTypography"
+    }
+  },
+  "title": "Prefs",
+  "type": "object"
+}

@@ -1,0 +1,72 @@
+# Benchmark contract (schema steward.contract/0.1). Copy to benchmarks/<name>.contract.toml and fill it in.
+# Fields that are not yet decided stay "TBD" (reported INCOMPLETE). Fields that cannot be known stay "unknown"
+# (reported UNKNOWN). Never invent a value to make a check pass.
+schema   = "steward.contract/0.1"
+id       = "replace-me"                 # lowercase id, unique in the repository
+title    = "Replace with what is being compared"
+analysis = "exploratory"                # "exploratory" or "confirmatory" (decided before outcomes are seen)
+
+[[datasets]]
+id      = "replace-me"
+version = "TBD"
+sha256  = "TBD"                         # 64 hex characters of the dataset file or archive
+source  = "TBD"                         # where it comes from (accession, URL, internal path)
+
+[splits]
+group_key = "TBD"                       # e.g. "donor_id"; "none" if samples are independent
+time_key  = "none"                      # e.g. "collected"; with temporal = true, train precedes test
+# metadata  = "data/samples.csv"        # one row per sample; lets R-45 check group overlap and time order
+# id_column = "id"                      # the sample ID column in metadata
+# temporal  = false                     # true: train precedes dev / validation, which precede test
+
+[[splits.sets]]
+name     = "train"
+role     = "train"                      # train | dev | validation | test
+ids_file = "TBD"                        # file listing one sample ID per line
+
+[[splits.sets]]
+name     = "test"
+role     = "test"
+ids_file = "TBD"
+
+[[baselines]]
+name      = "replace-me"
+reference = "TBD"                       # doi:…, pmid:…, arxiv:…, url:https://… or "internal"
+version   = "TBD"
+
+[metrics]
+primary = "replace-me"
+
+[[metrics.defs]]
+name           = "replace-me"
+definition     = "TBD"
+implementation = "TBD"                  # path to the code that computes it
+
+[comparison]
+method    = "TBD"                       # e.g. "paired_bootstrap_ci"
+seed      = "TBD"
+resamples = "TBD"
+alpha     = "TBD"
+
+[[thresholds]]
+metric     = "replace-me"
+comparator = ">="
+value      = "TBD"
+against    = "baseline:replace-me"      # or "absolute"
+
+[exclusions]
+rules = []
+
+[outputs]
+required = "TBD"                        # list of result files the evaluation must produce
+
+# Leakage (R-49): declare every type as checked (with evidence) or not_applicable (with a reason). A type you leave
+# out stays unknown. Uncomment and fill in:
+# [leakage]
+# near_duplicate    = { status = "TBD", reason = "…" }        # near-identical samples on both sides of a split
+# batch_confounding = { status = "TBD", evidence = "…" }      # batch aligned with the label
+# preprocessing_fit = { status = "TBD", reason = "…" }        # normalisation or feature selection fitted on test
+# label_leakage     = { status = "TBD", reason = "…" }        # features derived from the label
+# test_tuning       = { status = "TBD", reason = "…" }        # hyperparameters chosen on the test split
+# undeclared_groups = { status = "TBD", evidence = "…" }      # donors, patients or studies not in the split group
+# test_reuse        = { status = "TBD", reason = "…" }        # the test split used in earlier comparisons

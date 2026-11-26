@@ -1,0 +1,278 @@
+{
+  "$defs": {
+    "Claim": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "implemented",
+            "preliminary",
+            "validated",
+            "published",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "where": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Where"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "status"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "Outline": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "title"
+      ],
+      "title": "Outline",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "audience": {
+      "anyOf": [
+        {
+          "enum": [
+            "specialist",
+            "technical",
+            "interdisciplinary",
+            "public"
+          ],
+          "type": "string"
+        },
+        {
+          "enum": [
+            "TBD",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Audience"
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/Claim"
+      },
+      "title": "Claims",
+      "type": "array"
+    },
+    "context_profile": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Context Profile"
+    },
+    "duration_min": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "enum": [
+            "TBD",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Duration Min"
+    },
+    "evidence": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "feedback": {
+      "anyOf": [
+        {
+          "enum": [
+            "open",
+            "targeted",
+            "informational",
+            "defense"
+          ],
+          "type": "string"
+        },
+        {
+          "enum": [
+            "TBD",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Feedback"
+    },
+    "format": {
+      "default": "talk",
+      "enum": [
+        "talk",
+        "poster",
+        "lightning",
+        "demo"
+      ],
+      "title": "Format",
+      "type": "string"
+    },
+    "max_slides": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "const": "auto",
+          "type": "string"
+        }
+      ],
+      "default": "auto",
+      "title": "Max Slides"
+    },
+    "outline": {
+      "items": {
+        "$ref": "#/$defs/Outline"
+      },
+      "title": "Outline",
+      "type": "array"
+    },
+    "overrides": {
+      "additionalProperties": true,
+      "title": "Overrides",
+      "type": "object"
+    },
+    "pattern": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Pattern"
+    },
+    "purpose": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            "TBD",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Purpose"
+    },
+    "required_sections": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Required Sections",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.talk/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "stage": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            "TBD",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Stage"
+    },
+    "stage_source": {
+      "enum": [
+        "confirmed",
+        "proposed"
+      ],
+      "title": "Stage Source",
+      "type": "string"
+    },
+    "unresolved_decisions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Unresolved Decisions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "stage",
+    "stage_source",
+    "purpose",
+    "feedback",
+    "audience",
+    "duration_min"
+  ],
+  "title": "TalkPlan",
+  "type": "object"
+}

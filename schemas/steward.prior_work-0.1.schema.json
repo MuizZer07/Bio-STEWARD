@@ -1,0 +1,217 @@
+{
+  "$defs": {
+    "ClaimedDifference": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "anyOf": [
+            {
+              "items": {
+                "pattern": "^contract:.+$",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Evidence"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "statement",
+        "evidence"
+      ],
+      "title": "ClaimedDifference",
+      "type": "object"
+    },
+    "ComparisonRow": {
+      "additionalProperties": false,
+      "properties": {
+        "dimension": {
+          "title": "Dimension",
+          "type": "string"
+        },
+        "ours": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Ours"
+        },
+        "theirs": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  "TBD",
+                  "unknown"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "title": "Theirs",
+          "type": "object"
+        }
+      },
+      "required": [
+        "dimension",
+        "ours"
+      ],
+      "title": "ComparisonRow",
+      "type": "object"
+    },
+    "Judgment": {
+      "additionalProperties": false,
+      "properties": {
+        "novelty": {
+          "title": "Novelty",
+          "type": "string"
+        }
+      },
+      "required": [
+        "novelty"
+      ],
+      "title": "Judgment",
+      "type": "object"
+    },
+    "Work": {
+      "additionalProperties": false,
+      "properties": {
+        "citation": {
+          "title": "Citation",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "identifier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Identifier"
+        },
+        "relation": {
+          "enum": [
+            "closest_method",
+            "baseline",
+            "related"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Summary"
+        }
+      },
+      "required": [
+        "id",
+        "citation",
+        "identifier",
+        "relation",
+        "summary"
+      ],
+      "title": "Work",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "claimed_differences": {
+      "items": {
+        "$ref": "#/$defs/ClaimedDifference"
+      },
+      "title": "Claimed Differences",
+      "type": "array"
+    },
+    "comparisons": {
+      "items": {
+        "$ref": "#/$defs/ComparisonRow"
+      },
+      "title": "Comparisons",
+      "type": "array"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "judgment": {
+      "$ref": "#/$defs/Judgment"
+    },
+    "question": {
+      "title": "Question",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.prior_work/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "works": {
+      "items": {
+        "$ref": "#/$defs/Work"
+      },
+      "minItems": 1,
+      "title": "Works",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "id",
+    "question",
+    "works",
+    "judgment"
+  ],
+  "title": "PriorWork",
+  "type": "object"
+}

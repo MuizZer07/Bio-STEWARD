@@ -1,0 +1,163 @@
+{
+  "$defs": {
+    "Milestone": {
+      "additionalProperties": false,
+      "properties": {
+        "buffer_days": {
+          "default": 0,
+          "maximum": 365,
+          "minimum": 0,
+          "title": "Buffer Days",
+          "type": "integer"
+        },
+        "due": {
+          "format": "date-time",
+          "title": "Due",
+          "type": "string"
+        },
+        "final": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Final"
+        },
+        "gate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gate"
+        },
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "kind": {
+          "default": "other",
+          "enum": [
+            "submission",
+            "preprint",
+            "release",
+            "review",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "needs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Needs",
+          "type": "array"
+        },
+        "outcome": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Outcome"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tasks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tasks",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "due"
+      ],
+      "title": "Milestone",
+      "type": "object"
+    },
+    "Outcome": {
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "title": "Decision",
+          "type": "string"
+        },
+        "on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "On"
+        },
+        "state": {
+          "enum": [
+            "met",
+            "moved",
+            "dropped"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "decision"
+      ],
+      "title": "Outcome",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "milestone": {
+      "items": {
+        "$ref": "#/$defs/Milestone"
+      },
+      "title": "Milestone",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.milestones/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema"
+  ],
+  "title": "MilestonesFile",
+  "type": "object"
+}

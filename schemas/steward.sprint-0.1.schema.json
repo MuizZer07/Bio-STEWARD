@@ -1,0 +1,230 @@
+{
+  "$defs": {
+    "Limits": {
+      "additionalProperties": false,
+      "properties": {
+        "idle_minutes": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Idle Minutes"
+        },
+        "wall_minutes": {
+          "default": 60,
+          "exclusiveMinimum": 0,
+          "title": "Wall Minutes",
+          "type": "number"
+        }
+      },
+      "title": "Limits",
+      "type": "object"
+    },
+    "SprintMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "dispatch": {
+          "default": "order",
+          "enum": [
+            "order",
+            "auto"
+          ],
+          "title": "Dispatch",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "max_parallel": {
+          "default": 1,
+          "maximum": 16,
+          "minimum": 1,
+          "title": "Max Parallel",
+          "type": "integer"
+        },
+        "milestone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Milestone"
+        },
+        "window": {
+          "$ref": "#/$defs/Window"
+        }
+      },
+      "required": [
+        "id",
+        "window"
+      ],
+      "title": "SprintMeta",
+      "type": "object"
+    },
+    "Task": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "items": {
+            "type": "string"
+          },
+          "title": "After",
+          "type": "array"
+        },
+        "agent": {
+          "default": "shell",
+          "enum": [
+            "claude-code",
+            "codex",
+            "shell"
+          ],
+          "title": "Agent",
+          "type": "string"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Command"
+        },
+        "done": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Done",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "limits": {
+          "$ref": "#/$defs/Limits"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "needs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Needs",
+          "type": "array"
+        },
+        "prompt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompt"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "worktree": {
+          "default": true,
+          "title": "Worktree",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "title"
+      ],
+      "title": "Task",
+      "type": "object"
+    },
+    "Window": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "Window",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "steward.sprint/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "sprint": {
+      "$ref": "#/$defs/SprintMeta"
+    },
+    "task": {
+      "items": {
+        "$ref": "#/$defs/Task"
+      },
+      "title": "Task",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "sprint"
+  ],
+  "title": "SprintFile",
+  "type": "object"
+}

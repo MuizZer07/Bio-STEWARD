@@ -1,0 +1,17 @@
+# >>> steward
+.steward/
+# <<< steward
+# LaTeX build by-products (main.pdf and main.log are kept: the checks read them)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.out
+talks/progress-update/*.aux
+talks/progress-update/*.fdb_latexmk
+talks/progress-update/*.fls
+talks/progress-update/*.nav
+talks/progress-update/*.out
+talks/progress-update/*.snm
+talks/progress-update/*.toc

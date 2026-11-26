@@ -1,0 +1,4 @@
+:root { --md-primary-fg-color: #127a8a; --md-accent-fg-color: #4c4fd9; }
+.tagline { font-size: 1.15rem; margin: 0.4rem 0 1.2rem; }
+.md-typeset .grid.cards > ul > li { border-radius: 14px; }
+.md-typeset img[src$="hero.svg"], .md-typeset img[src$="demo.svg"] { border-radius: 14px; }

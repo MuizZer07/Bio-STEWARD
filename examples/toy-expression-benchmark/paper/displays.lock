@@ -1,0 +1,37 @@
+{
+  "displays": {
+    "donors_figure": {
+      "inputs": {
+        "benchmarks/splits/test.txt": "8b58a9bd5469f0c408441a012eddc22b8a3ecdf072748ab6cb41f603070f1464",
+        "benchmarks/splits/train.txt": "23073b182f2c142c25bcac14d8e765293c39fa35507a2c680bc9aedf31a435a4",
+        "benchmarks/splits/validation.txt": "936f74965870a9ddf3fcdae48e9ad4459eb9fdd0fc56943190f7a857ddecced7"
+      },
+      "output": {
+        "paper/figures/donors.tex": "bd2e9d3097ea993c774026389622a91c6c360092d298f45e9a7e8911c86a2b80"
+      },
+      "params": {
+        "mode": "figure"
+      },
+      "script": {
+        "analysis/make_displays.py": "f377c14f7a281950973516c797d3cdb68ac4d2dfed2cbd11c492ecda3d732296"
+      }
+    },
+    "splits_table": {
+      "inputs": {
+        "benchmarks/splits/test.txt": "8b58a9bd5469f0c408441a012eddc22b8a3ecdf072748ab6cb41f603070f1464",
+        "benchmarks/splits/train.txt": "23073b182f2c142c25bcac14d8e765293c39fa35507a2c680bc9aedf31a435a4",
+        "benchmarks/splits/validation.txt": "936f74965870a9ddf3fcdae48e9ad4459eb9fdd0fc56943190f7a857ddecced7"
+      },
+      "output": {
+        "paper/tables/splits.tex": "d399442187b0a25bb1952775c473c204014b43fe2a8aef41e5a0a93256fe6e3f"
+      },
+      "params": {
+        "mode": "table"
+      },
+      "script": {
+        "analysis/make_displays.py": "f377c14f7a281950973516c797d3cdb68ac4d2dfed2cbd11c492ecda3d732296"
+      }
+    }
+  },
+  "schema": "steward.displays_lock/0.1"
+}

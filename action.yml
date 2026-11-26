@@ -1,0 +1,56 @@
+name: Bio-STEWARD check
+description: Run steward check on the repository and fail unless the chosen gate is ELIGIBLE
+branding:
+  icon: check-circle
+  color: green
+inputs:
+  gate:
+    description: The gate to evaluate (from steward.toml)
+    default: default
+  final:
+    description: '"true" or "false": the final checks of a submission (steward check --final)'
+    default: "false"
+  python-version:
+    description: Python for the toolkit (3.11 or newer)
+    default: "3.12"
+outputs:
+  eligible:
+    description: '"true" when the gate is ELIGIBLE, "false" when it is not; absent when setup or installation failed'
+    value: ${{ steps.check.outputs.eligible }}
+  report:
+    description: The full JSON report, in a runner-owned folder outside the checkout
+    value: ${{ steps.check.outputs.report }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0 (node24); Y5: pinned by commit
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install the toolkit at the version of this action, in its own environment
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+      # Y1 (0.16.0): from a runner-owned folder, never the checkout, in isolated mode, into a dedicated venv
+      run: |
+        set -euo pipefail
+        cd "$RUNNER_TEMP"
+        python -I -m venv "$RUNNER_TEMP/steward-venv"
+        "$RUNNER_TEMP/steward-venv/bin/python" -I -m pip install --quiet "$ACTION_PATH"
+    - name: steward check
+      id: check
+      shell: bash
+      env:
+        GATE: ${{ inputs.gate }}
+        FINAL: ${{ inputs.final }}
+      run: |
+        set -euo pipefail
+        case "$FINAL" in true|false) ;; *) echo "::error::final must be \"true\" or \"false\", not \"$FINAL\""; exit 2;; esac
+        dir="$(mktemp -d "$RUNNER_TEMP/steward-report.XXXXXX")"   # Y2: a fresh folder the checkout cannot link
+        report="$dir/report.json"
+        args=(check --summary --gate "$GATE" --output "$report")
+        if [ "$FINAL" = "true" ]; then args+=(--final); fi
+        code=0
+        "$RUNNER_TEMP/steward-venv/bin/steward" "${args[@]}" || code=$?
+        if [ "$code" -eq 0 ]; then eligible=true; else eligible=false; fi
+        { echo "eligible=$eligible"; echo "report=$report"; } >> "$GITHUB_OUTPUT"
+        exit "$code"

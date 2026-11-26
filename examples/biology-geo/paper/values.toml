@@ -1,0 +1,22 @@
+# Values registry (schema steward.values/0.1): every number the paper reports comes from a file.
+schema = "steward.values/0.1"
+
+[values.n_control]
+source  = "results/summary.toml"
+pointer = "/samples_control"
+
+[values.n_pd]
+source  = "results/summary.toml"
+pointer = "/samples_pd"
+
+[values.n_tested]
+source  = "results/summary.toml"
+pointer = "/probes_tested"
+
+[values.n_significant]
+source  = "results/summary.toml"
+pointer = "/probes_adj_p_below_0_05"
+
+[values.n_samples]
+source = "data/samples.tsv"
+count  = "rows"

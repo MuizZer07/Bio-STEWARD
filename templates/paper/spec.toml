@@ -1,0 +1,38 @@
+# Paper spec (schema steward.paper_spec/0.1). Write it before drafting; the human approves it.
+# "TBD" = not decided yet (INCOMPLETE); "unknown" = cannot be known now (UNKNOWN).
+schema = "steward.paper_spec/0.1"
+type   = "preprint"                     # preprint | conference | journal | thesis | other
+title_candidates = "TBD"                # e.g. ["Title A", "Title B"]; the authors choose
+story  = "TBD"                          # one paragraph: problem, gap, what was done, what it shows, why it matters
+never_claim = []                        # statements the paper must not make (e.g. "outperforms all methods")
+limitations = "TBD"                     # every known limitation, as a list of strings
+# Top-level keys must stay above the [[tables]] below (TOML assigns later keys to the last table).
+
+[[questions]]
+id   = "Q1"
+text = "TBD"
+
+[[contributions]]
+id       = "C1"
+text     = "TBD"
+strength = "explores"                   # demonstrates | suggests | explores; must match the evidence
+evidence = "TBD"                        # e.g. ["contract:my-benchmark", "value:auroc_test", "display:fig2"]
+
+[[sections]]
+id    = "intro"
+title = "Introduction"
+
+[[sections]]
+id    = "methods"
+title = "Methods"
+
+[[sections]]
+id    = "results"
+title = "Results"
+
+[[sections]]
+id    = "discussion"
+title = "Discussion"
+
+[names]                                 # fixed names and definitions used consistently in text, figures and tables
+# "method name" = "TBD"

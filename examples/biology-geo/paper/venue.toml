@@ -1,0 +1,23 @@
+# Venue profile for the example: a generic preprint (fictional source on the reserved example.org domain).
+schema     = "steward.venue/0.1"
+name       = "Generic preprint server (example)"
+kind       = "preprint"
+source_url = "url:https://example.org/fictional/preprint-guidelines"
+retrieved  = "2026-11-25"
+
+[limits]
+pages_main     = "none"
+pages_total    = "none"
+abstract_words = "none"
+title_words    = "none"
+
+[anonymity]
+double_blind = false
+
+[required]
+sections     = ["Limitations", "Data availability"]
+declarations = ["Competing interests"]
+
+[figures]
+formats = ["pdf", "svg"]
+min_dpi = 300

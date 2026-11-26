@@ -1,0 +1,34 @@
+# steward configuration (schema steward.toml/0.2). Unknown keys are rejected: a typo fails `steward check`.
+[steward]
+schema  = "steward.toml/0.2"
+repo_id = "78b19ff4-f1a8-4bb0-9d52-ab2fb34311c0"       # written by `steward init`; never change it
+project = "toy-expression-benchmark"
+profile = "confirmatory"       # "exploratory" or "confirmatory" (confirmatory requires a contract and a prior-work record)
+constitution = "2"         # the Bio-STEWARD constitution this repository follows
+
+[paths]
+contracts  = ["benchmarks/**/*.contract.toml"]
+prior_work = ["development/prior_work/**/*.prior.toml"]
+
+# Keep private terms (internal project names, collaborator names, unpublished identifiers) out of the repository.
+# Put one term per line in the denylist file; it lives in .steward/ and is never committed. Reports show where a
+# term was found, never the term itself.
+# [privacy]
+# denylist_file = ".steward/private/denylist.txt"
+# include = ["**/*"]
+# exclude = [".git/**", ".steward/**"]
+
+# Gates decide; the summary only describes. Without a [gates.default] table, the default gate requires every rule.
+# [gates.default]
+# require = ["R-01", "R-02", "R-03", "R-04", "R-05", "R-06", "R-07"]
+
+[paper.main]                 # PaperKit: LaTeX is the primary format
+dir  = "paper"
+main = "main.tex"
+mode = "draft"              # `steward check --final` before submission
+
+[talk.progress-update]       # PresentationKit: Beamer is the primary format
+dir   = "talks/progress-update"
+main  = "slides.tex"
+paper = "main"              # share the paper's values registry and display manifest
+mode  = "draft"

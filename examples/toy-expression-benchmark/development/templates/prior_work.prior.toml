@@ -1,0 +1,25 @@
+# Prior-work record (schema steward.prior_work/0.1). Copy to development/prior_work/<name>.prior.toml.
+# Use "unknown" for an identifier you could not find; never invent a citation or identifier.
+schema   = "steward.prior_work/0.1"
+id       = "replace-me"
+question = "Replace with the research question this record grounds"
+
+[[works]]
+id         = "W1"
+citation   = "Replace with the full citation"
+identifier = "TBD"                      # doi:10.…, pmid:…, arxiv:…, url:https://… or "unknown"
+relation   = "closest_method"           # closest_method | baseline | related
+summary    = "TBD"
+
+[[comparisons]]
+dimension = "Replace with a methodological dimension"
+ours      = "TBD"
+theirs    = { W1 = "TBD" }
+
+[[claimed_differences]]
+id        = "D1"
+statement = "Replace with one claimed difference"
+evidence  = "TBD"                       # e.g. ["contract:my-benchmark"]; links are checked from v0.4
+
+[judgment]
+novelty = "pending"                     # human judgment only; tools never assess it

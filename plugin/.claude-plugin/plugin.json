@@ -1,0 +1,13 @@
+{
+  "name": "bio-steward",
+  "description": "Deterministic guardrails for agent-driven research in computational biology: run and read steward checks, plan benchmarks, keep paper numbers true to their results, freeze, seal and approve, release, and audit progress. The steward command must be installed.",
+  "version": "0.20.3",
+  "license": "MIT",
+  "keywords": [
+    "computational-biology",
+    "reproducibility",
+    "benchmarking",
+    "research-integrity",
+    "agents"
+  ]
+}

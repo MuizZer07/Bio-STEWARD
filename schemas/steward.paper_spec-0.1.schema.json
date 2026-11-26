@@ -1,0 +1,266 @@
+{
+  "$defs": {
+    "Contribution": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "anyOf": [
+            {
+              "items": {
+                "pattern": "^(contract|value|display|run|claim):.+$",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Evidence"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "strength": {
+          "enum": [
+            "demonstrates",
+            "suggests",
+            "explores"
+          ],
+          "title": "Strength",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Text"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "strength"
+      ],
+      "title": "Contribution",
+      "type": "object"
+    },
+    "Question": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Text"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "SectionPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "purpose": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Purpose"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title"
+      ],
+      "title": "SectionPlan",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contributions": {
+      "items": {
+        "$ref": "#/$defs/Contribution"
+      },
+      "title": "Contributions",
+      "type": "array"
+    },
+    "data_availability": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Data Availability"
+    },
+    "limitations": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "enum": [
+            "TBD",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Limitations"
+    },
+    "names": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "enum": [
+              "TBD",
+              "unknown"
+            ],
+            "type": "string"
+          }
+        ]
+      },
+      "title": "Names",
+      "type": "object"
+    },
+    "never_claim": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Never Claim",
+      "type": "array"
+    },
+    "questions": {
+      "items": {
+        "$ref": "#/$defs/Question"
+      },
+      "title": "Questions",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.paper_spec/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "sections": {
+      "items": {
+        "$ref": "#/$defs/SectionPlan"
+      },
+      "title": "Sections",
+      "type": "array"
+    },
+    "story": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "enum": [
+            "TBD",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Story"
+    },
+    "title_candidates": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "enum": [
+            "TBD",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      ],
+      "title": "Title Candidates"
+    },
+    "type": {
+      "enum": [
+        "preprint",
+        "conference",
+        "journal",
+        "thesis",
+        "other"
+      ],
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "type",
+    "title_candidates",
+    "story",
+    "limitations"
+  ],
+  "title": "PaperSpec",
+  "type": "object"
+}

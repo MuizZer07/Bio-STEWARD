@@ -1,0 +1,20 @@
+# Values registry (schema steward.values/0.1): every number the paper reports comes from a file (R-10).
+# Paths are relative to the repository root. After a result changes:  steward paper values --write
+# The text refers to a key as \val{key} (LaTeX) or {{< var key >}} (Markdown, Quarto).
+schema = "steward.values/0.1"
+
+# [values.n_samples]                 # a count of rows in a table
+# source = "data/samples.tsv"
+# count  = "rows"                     # or "unique:<column>"
+#
+# [values.auroc]                      # a number in a JSON or TOML result, by RFC 6901 pointer
+# source  = "results/metrics.json"
+# pointer = "/test/auroc"
+# format  = "{:.3f}"
+#
+# [values.top_gene_lfc]               # one cell of a CSV/TSV table
+# source = "results/de.tsv"
+# csv    = { row = "gene=TP53", col = "log2_fold_change" }
+#
+# [values.gain]                       # derived from other keys
+# derive = "{auroc} - 0.5"

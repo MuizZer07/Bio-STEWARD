@@ -1,0 +1,55 @@
+% Example preprint (synthetic, fictional). Build: latexmk -pdf main.tex
+% Every number comes from paper/values.toml through \val{key}; regenerate with `steward paper values --write`.
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage[numbers]{natbib}
+\usepackage{hyperref}
+\input{values}
+
+\title{Donor-level splits for a synthetic responder benchmark}
+\author{Example Author}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Benchmarks with several samples per donor can report optimistic scores when samples of one donor fall in both the
+training and the test split. We describe a donor-level evaluation design for a synthetic responder-classification
+task, fixed before any model is trained. This document reports the design only; results will follow a declared
+comparison procedure.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+Donor-aware models have been proposed for expression data \citep{exampleA2025}, and logistic regression remains a
+common baseline \citep{exampleC2024}. Section~\ref{sec:methods} states the design and Section~\ref{sec:limits} its
+limitations.
+
+\section{Benchmark design}\label{sec:methods}
+The synthetic dataset has \val{n_donors} donors with \val{samples_per_donor} samples each. All samples of a donor are assigned to one split
+(Table~\ref{tab:splits}, Figure~\ref{fig:donors}). The primary metric is the area under the ROC curve, compared with a paired bootstrap (\val{resamples} resamples,
+$\alpha = \val{alpha}$); the candidate must exceed logistic regression by at least \val{min_gain}.
+
+\begin{table}[t]
+\centering
+\caption{Donor-level splits.}\label{tab:splits}
+\input{tables/splits}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\input{figures/donors}
+\caption{Donors per split.}\label{fig:donors}
+\end{figure}
+
+\section{Limitations}\label{sec:limits}
+The data are synthetic and carry no biological meaning. No results are reported at this stage.
+
+\section*{Competing interests}
+None (fictional example).
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+\end{document}

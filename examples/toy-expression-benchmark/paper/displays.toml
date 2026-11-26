@@ -1,0 +1,19 @@
+# Display manifest (schema steward.displays/0.1): every figure and table is built by a script from declared inputs.
+# Paths are relative to the repository root. After rebuilding a display: steward paper displays --record
+schema = "steward.displays/0.1"
+
+[displays.splits_table]
+kind   = "table"
+output = "paper/tables/splits.tex"
+script = "analysis/make_displays.py"
+inputs = ["benchmarks/splits/train.txt", "benchmarks/splits/validation.txt", "benchmarks/splits/test.txt"]
+params = { mode = "table" }
+label  = "tab:splits"
+
+[displays.donors_figure]
+kind   = "figure"
+output = "paper/figures/donors.tex"
+script = "analysis/make_displays.py"
+inputs = ["benchmarks/splits/train.txt", "benchmarks/splits/validation.txt", "benchmarks/splits/test.txt"]
+params = { mode = "figure" }
+label  = "fig:donors"

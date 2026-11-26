@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bio-steward"
+version = "0.20.3"
+description = "The engineering and integrity layer for agentic computational biology: deterministic checks, signed approvals and research records for AI-assisted science."
+readme = "docs/pypi.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.6,<3", "psutil>=5.9"]
+keywords = ["computational biology", "bioinformatics", "ai agents", "agentic engineering", "research integrity",
+            "benchmark leakage", "provenance", "agent skills", "claude code", "llm evaluation"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Environment :: Console",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing",
+]
+
+[project.urls]
+Homepage = "https://github.com/MuizZer07/Bio-STEWARD"
+Documentation = "https://github.com/MuizZer07/Bio-STEWARD/blob/main/docs/index.md"
+Changelog = "https://github.com/MuizZer07/Bio-STEWARD/blob/main/CHANGELOG.md"
+Issues = "https://github.com/MuizZer07/Bio-STEWARD/issues"
+
+[project.optional-dependencies]
+# The exact pydantic pin keeps the committed JSON Schemas (schemas/) byte-stable in CI.
+dev = ["pytest>=8", "skills-ref>=0.1", "pydantic==2.14.4", "pypdf>=4", "python-pptx>=0.6", "pyyaml>=6"]
+# PaperKit PDF and image checks (G3). Without it, PDF text comes from `pdftotext` if installed, otherwise UNKNOWN.
+paper = ["pypdf>=4", "Pillow>=10"]
+# PresentationKit: PDF layout checks (pypdf) and PPTX decks (python-pptx).
+talk = ["pypdf>=4", "python-pptx>=0.6"]
+# Container checks (0.9.0, REQ-005): compose files are YAML. Without it, R-65 is UNKNOWN.
+containers = ["pyyaml>=6"]
+
+[project.scripts]
+steward = "steward.cli:main"
+
+# Explicit distribution boundary (red-team A4): the source archive ships the package, its data, tests and the example,
+# never development/ (plans, decisions, assessments) or local state. `steward release audit` checks the result.
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/skills", "/templates", "/schemas", "/tests", "/examples", "/tools", "/README.md", "/docs/pypi.md",
+           "/docs/assets", "/LICENSE",
+           "/CHANGELOG.md", "/CITATION.cff", "/CONSTITUTION.md", "/pyproject.toml"]
+exclude = ["/development", "/.github", "/.steward", "**/.steward", "**/__pycache__", "**/*.pyc", "**/.DS_Store",
+           "**/*.aux", "**/*.fls", "**/*.fdb_latexmk"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/steward"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "steward/_bundled/skills"
+"templates" = "steward/_bundled/templates"
+"CONSTITUTION.md" = "steward/_bundled/CONSTITUTION.md"
+"examples/biology-geo" = "steward/_bundled/examples/biology-geo"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,33 @@
+# Prior-work record for the toy expression benchmark.
+# FICTIONAL: these works do not exist. Identifiers use the reserved example.org domain (RFC 2606) so they can never
+# point at a real publication.
+schema   = "steward.prior_work/0.1"
+id       = "expr-clf"
+question = "Does a donor-aware classifier predict responders from expression better than logistic regression?"
+
+[[works]]
+id         = "W1"
+citation   = "Example A, Example B. A fictional donor-aware expression classifier. Example Journal, 2025."
+identifier = "url:https://example.org/fictional/donor-aware-classifier"
+relation   = "closest_method"
+summary    = "Fictional work: mixed-effects classifier with a donor random effect."
+
+[[works]]
+id         = "W2"
+citation   = "Example C. Fictional logistic-regression baselines for expression data. Example Proceedings, 2024."
+identifier = "url:https://example.org/fictional/logistic-baselines"
+relation   = "baseline"
+summary    = "Fictional work: regularised logistic regression on log expression."
+
+[[comparisons]]
+dimension = "Handling of repeated samples per donor"
+ours      = "Donor-level splits and donor-aware model"
+theirs    = { W1 = "Donor random effect, sample-level splits", W2 = "Ignores donor structure" }
+
+[[claimed_differences]]
+id        = "D1"
+statement = "Donor-level splitting avoids optimistic AUROC from donor leakage."
+evidence  = ["contract:expr-clf"]
+
+[judgment]
+novelty = "pending"

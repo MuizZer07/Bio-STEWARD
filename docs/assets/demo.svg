@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" width="100%" role="img" aria-label="Terminal: steward check --summary reports a donor shared by train and test, a changed GEO input that makes a paper stale, and test cases public before a model's cutoff; the gate is not eligible.">
+  <style>
+    text { font-family: 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace; font-size: 15px; white-space: pre; }
+    .p { fill: #7ee2b8; } .c { fill: #e8ebf2; } .m { fill: #8b93a7; }
+    .f { fill: #ff7b72; font-weight: 700; } .i { fill: #f2cc60; font-weight: 700; } .ok { fill: #7ee2b8; font-weight: 700; }
+    .g { fill: #ff7b72; font-weight: 700; }
+    .l { opacity: 1; animation: show 14s infinite both; }
+    .l1 { animation-delay: -7.70s; }
+    .l2 { animation-delay: -6.93s; }
+    .l3 { animation-delay: -6.16s; }
+    .l4 { animation-delay: -5.39s; }
+    .l5 { animation-delay: -4.62s; }
+    .l6 { animation-delay: -3.85s; }
+    .l7 { animation-delay: -3.08s; }
+    .l8 { animation-delay: -2.31s; }
+    .l9 { animation-delay: -1.54s; }
+    @keyframes show { 0% { opacity: 0; } 2% { opacity: 1; } 62% { opacity: 1; } 66% { opacity: 0; } 100% { opacity: 0; } }
+    .cursor { animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .l { animation: none; opacity: 1; } .cursor { animation: none; } }
+  </style>
+  <rect width="960" height="360" rx="14" fill="#0f1219"/>
+  <rect width="960" height="38" rx="14" fill="#1b2030"/>
+  <rect y="24" width="960" height="14" fill="#1b2030"/>
+  <circle cx="24" cy="19" r="6" fill="#ff5f57"/><circle cx="44" cy="19" r="6" fill="#febc2e"/><circle cx="64" cy="19" r="6" fill="#28c840"/>
+  <text x="480" y="24" text-anchor="middle" class="m" font-size="13">your-research-repo — steward</text>
+
+  <text x="24" y="76" class="l l1"><tspan class="p">$</tspan><tspan class="c"> steward check --summary</tspan></text>
+  <text x="24" y="110" class="l l2"><tspan class="m">Summary:</tspan><tspan class="c"> PASS 31 · </tspan><tspan class="f">FAIL 2</tspan><tspan class="c"> · </tspan><tspan class="i">INCOMPLETE 1</tspan><tspan class="c"> · UNKNOWN 0 · NOT_APPLICABLE 44</tspan></text>
+  <text x="24" y="144" class="l l3"><tspan class="f">FAIL      </tspan><tspan class="c">R-45 benchmark.splits   </tspan><tspan class="m">donor D07 is in train and in test</tspan></text>
+  <text x="24" y="172" class="l l4"><tspan class="f">FAIL      </tspan><tspan class="c">R-75 studies.records    </tspan><tspan class="m">GSE input changed since it was recorded</tspan></text>
+  <text x="24" y="196" class="l l5"><tspan class="m">                                    → paper "main" cites a stale study</tspan></text>
+  <text x="24" y="224" class="l l6"><tspan class="i">INCOMPLETE</tspan><tspan class="c"> R-78 benchmark.llm_eval </tspan><tspan class="m">12 of 40 test cases public before the cutoff</tspan></text>
+  <text x="24" y="262" class="l l7"><tspan class="g">Gate default: NOT ELIGIBLE</tspan><tspan class="c"> (2 blocking)</tspan></text>
+  <text x="24" y="296" class="l l8"><tspan class="m">Details: steward report .steward/report.json --rule R-45</tspan></text>
+  <text x="24" y="330" class="l l9"><tspan class="p">$</tspan><tspan class="c cursor"> ▌</tspan></text>
+</svg>

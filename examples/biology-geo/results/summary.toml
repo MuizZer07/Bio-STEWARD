@@ -1,0 +1,4 @@
+samples_control = 9
+samples_pd = 16
+probes_tested = 6899
+probes_adj_p_below_0_05 = 106

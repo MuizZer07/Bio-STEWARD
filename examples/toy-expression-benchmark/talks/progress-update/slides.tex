@@ -1,0 +1,48 @@
+% Lab progress update (synthetic example). Build: latexmk -pdf slides.tex
+% Numbers come from the paper's values registry; the table from its display manifest.
+\documentclass[aspectratio=169]{beamer}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\input{../../paper/values}
+\title{Donor-level splits for a synthetic responder benchmark}
+\subtitle{Progress update}
+\author{Example Author}
+\date{}
+\begin{document}
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Why donor-level splits}
+  \begin{itemize}
+    \item Several samples per donor can leak between training and test.
+    \item The benchmark keeps every donor in one split.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Benchmark design}
+  \begin{itemize}
+    \item \val{n_donors} donors, \val{samples_per_donor} samples each.
+    \item Paired bootstrap with \val{resamples} resamples, $\alpha = \val{alpha}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{What exists}
+  \centering
+  \input{../../paper/tables/splits}
+  \note{Contract and splits are frozen in the plan; no model has been trained yet.}
+\end{frame}
+
+\begin{frame}{Decisions we need}
+  \begin{itemize}
+    \item Bootstrap resamples: keep 2000 or raise to 5000? % literal-ok: options under discussion, not results
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Next steps}
+  \begin{itemize}
+    \item Train the baselines under controlled runs.
+    \item Report results only from registered values.
+  \end{itemize}
+\end{frame}
+\end{document}

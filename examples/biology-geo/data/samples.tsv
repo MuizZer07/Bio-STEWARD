@@ -1,0 +1,26 @@
+sample	title	organism	tissue	condition	sex
+GSM184354	Substantia nigra normal rep1	Homo sapiens	substantia nigra	control	female
+GSM184355	Substantia nigra normal rep2	Homo sapiens	substantia nigra	control	male
+GSM184356	Substantia nigra normal rep3	Homo sapiens	substantia nigra	control	female
+GSM184357	Substantia nigra normal rep4	Homo sapiens	substantia nigra	control	female
+GSM184358	Substantia nigra normal rep5	Homo sapiens	substantia nigra	control	female
+GSM184359	Substantia nigra normal rep6	Homo sapiens	substantia nigra	control	female
+GSM184360	Substantia nigra normal rep7	Homo sapiens	substantia nigra	control	male
+GSM184361	Substantia nigra normal rep8	Homo sapiens	substantia nigra	control	male
+GSM184362	Substantia nigra normal rep9	Homo sapiens	substantia nigra	control	male
+GSM184363	Substantia nigra PD rep1	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184364	Substantia nigra PD rep2	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184365	Substantia nigra PD rep3	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184366	Substantia nigra PD rep4	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184367	Substantia nigra PD rep5	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184368	Substantia nigra PD rep6	Homo sapiens	substantia nigra	parkinsons_disease	female
+GSM184369	Substantia nigra PD rep7	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184370	Substantia nigra PD rep8	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184371	Substantia nigra PD rep9	Homo sapiens	substantia nigra	parkinsons_disease	female
+GSM184372	Substantia nigra PD rep10	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184373	Substantia nigra PD rep11	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184374	Substantia nigra PD rep12	Homo sapiens	substantia nigra	parkinsons_disease	female
+GSM184375	Substantia nigra PD rep13	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184376	Substantia nigra PD rep14	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184377	Substantia nigra PD rep15	Homo sapiens	substantia nigra	parkinsons_disease	male
+GSM184378	Substantia nigra PD rep16	Homo sapiens	substantia nigra	parkinsons_disease	male

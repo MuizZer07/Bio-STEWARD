@@ -1,0 +1,32 @@
+# Venue profile (schema steward.venue/0.1). Copy every rule from the venue's CURRENT call or author guide, and record
+# where and when you read it. Rules change; a profile without a source is reported UNKNOWN.
+schema     = "steward.venue/0.1"
+name       = "Generic preprint server"  # e.g. the venue's name and year
+kind       = "preprint"                 # preprint | conference | journal
+source_url = "TBD"                      # "url:https://…" of the call or author guidelines
+retrieved  = "TBD"                      # date you read it, YYYY-MM-DD
+
+[limits]                                # integers, "none", "TBD" or "unknown"
+pages_main     = "none"
+pages_total    = "none"
+abstract_words = "TBD"
+title_words    = "none"
+
+[anonymity]
+double_blind = false
+
+[required]
+sections     = "TBD"                    # e.g. ["Data availability", "Code availability"]
+declarations = "TBD"                    # e.g. ["Competing interests", "Author contributions", "Funding"]
+
+[figures]
+formats = ["pdf", "png"]
+min_dpi = 300
+
+[[checklist]]
+item = "All authors approved the final version"
+kind = "human"
+
+[[checklist]]
+item = "steward check --final reports an eligible submission gate"
+kind = "auto"

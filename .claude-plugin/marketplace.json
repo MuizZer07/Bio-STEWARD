@@ -1,0 +1,13 @@
+{
+  "name": "bio-steward",
+  "owner": {
+    "name": "Bio-STEWARD maintainers"
+  },
+  "plugins": [
+    {
+      "name": "bio-steward",
+      "source": "./plugin",
+      "description": "Bio-STEWARD skills for agent-driven computational-biology research (the steward CLI must be installed); the payload is plugin/: the skills and the manifest only."
+    }
+  ]
+}

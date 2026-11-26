@@ -1,0 +1,35 @@
+# Paper spec for the toy expression benchmark (fictional example).
+schema = "steward.paper_spec/0.1"
+type   = "preprint"
+title_candidates = ["Donor-level splits for a synthetic responder benchmark"]
+story  = "Repeated samples per donor can inflate benchmark scores when donors cross splits. This example fixes a donor-level evaluation design before any model is trained, so later results can be compared against a declared plan."
+never_claim = ["any biological finding (the data are synthetic)", "that the candidate model outperforms the baselines (no results yet)"]
+limitations = ["Synthetic data only", "Results are not reported at this stage"]
+
+[[questions]]
+id   = "Q1"
+text = "Does a donor-aware classifier exceed logistic regression by at least 0.05 AUROC under donor-level splits?"
+
+[[contributions]]
+id       = "C1"
+text     = "A frozen, donor-level benchmark design for the responder task"
+strength = "explores"
+evidence = ["contract:expr-clf"]
+
+[[sections]]
+id    = "intro"
+title = "Introduction"
+purpose = "Motivate donor-level splitting"
+
+[[sections]]
+id    = "methods"
+title = "Benchmark design"
+purpose = "State data, splits, baselines, metric and comparison"
+
+[[sections]]
+id    = "limits"
+title = "Limitations"
+purpose = "State every limitation"
+
+[names]
+"donor-level split" = "a split in which all samples of one donor are in the same partition"

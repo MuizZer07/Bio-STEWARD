@@ -1,0 +1,29 @@
+name: Bug report
+description: A check, a command or a guide does something it should not
+labels: [bug]
+body:
+  - type: checkboxes
+    id: false_pass
+    attributes:
+      label: Kind
+      options:
+        - label: This is a false PASS (a check passes when it should not)
+  - type: input
+    id: version
+    attributes:
+      label: Version (steward --version)
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+      description: The smallest synthetic project that shows it. Never real data, names or credentials.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: "`steward check --summary`, or the command's output, with private terms and paths removed"
+      render: text

@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use Bio-STEWARD in your work, please cite the software as below."
+title: "Bio-STEWARD: research-engineering checks and Agent Skills for computational biology"
+type: software
+version: 0.20.3
+date-released: 2026-11-25
+license: MIT
+repository-code: "https://github.com/MuizZer07/Bio-STEWARD"
+authors:
+  - name: "The Bio-STEWARD contributors"

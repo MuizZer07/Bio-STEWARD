@@ -1,0 +1,21 @@
+name: Feature or rule
+description: A new check, command or guide
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: The research need
+      description: What goes wrong today, in an agent-driven computational-biology project, without it?
+    validations:
+      required: true
+  - type: textarea
+    id: shape
+    attributes:
+      label: Proposed shape
+      description: What would be checked, from which files; what a PASS would mean and would not mean.
+  - type: textarea
+    id: verify
+    attributes:
+      label: How to verify it
+      description: Synthetic cases that should pass and fail.

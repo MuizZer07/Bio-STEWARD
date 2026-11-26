@@ -1,0 +1,100 @@
+{
+  "$defs": {
+    "DatasetDef": {
+      "additionalProperties": false,
+      "properties": {
+        "consumers": {
+          "additionalProperties": {
+            "enum": [
+              "development",
+              "sealed",
+              "spent",
+              "census-only",
+              "reserved"
+            ],
+            "type": "string"
+          },
+          "title": "Consumers",
+          "type": "object"
+        },
+        "identifier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Identifier"
+        },
+        "paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Paths",
+          "type": "array"
+        },
+        "role": {
+          "enum": [
+            "development",
+            "sealed",
+            "spent",
+            "census-only",
+            "reserved"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "TBD",
+          "title": "Sha256"
+        }
+      },
+      "required": [
+        "role",
+        "identifier"
+      ],
+      "title": "DatasetDef",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "datasets": {
+      "additionalProperties": {
+        "$ref": "#/$defs/DatasetDef"
+      },
+      "title": "Datasets",
+      "type": "object"
+    },
+    "schema": {
+      "const": "steward.datasets/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema"
+  ],
+  "title": "DatasetsFile",
+  "type": "object"
+}

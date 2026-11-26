@@ -1,0 +1,35 @@
+# Structural patterns: ordered section roles, not rigid slide templates. The first matching [[select]] wins;
+# a plan may name any pattern, or write its own [[outline]].
+[patterns.concept]
+roles = ["problem", "gap", "hypothesis", "approach", "feasibility"]
+[patterns.progress]
+roles = ["motivation", "architecture", "implemented", "preliminary-results", "challenges", "next-steps"]
+[patterns.completed-paper]
+roles = ["problem", "contributions", "method", "experimental-design", "results", "discussion", "limitations", "conclusions"]
+[patterns.defense]
+roles = ["problem", "literature-gap", "research-questions", "contributions", "methodology", "evidence", "limitations", "conclusions"]
+[patterns.lightning]
+roles = ["problem", "approach", "key-result", "takeaway"]
+
+[[select]]
+purpose = ["defense"]
+pattern = "defense"
+[[select]]
+purpose = ["lightning", "poster"]
+pattern = "lightning"
+[[select]]
+stage = ["concept", "feasibility"]
+pattern = "concept"
+[[select]]
+stage = ["development", "evaluation"]
+pattern = "progress"
+[[select]]
+stage = ["completed", "published"]
+pattern = "completed-paper"
+
+# Roles the feedback mode adds (appended before the last role unless present). Informational adds none.
+[feedback_roles]
+open = ["input-needed"]
+targeted = ["decisions-needed"]
+defense = ["qa-backup"]
+informational = []

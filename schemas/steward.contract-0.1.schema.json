@@ -1,0 +1,822 @@
+{
+  "$defs": {
+    "Baseline": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Reference"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Version"
+        }
+      },
+      "required": [
+        "name",
+        "reference",
+        "version"
+      ],
+      "title": "Baseline",
+      "type": "object"
+    },
+    "Comparison": {
+      "additionalProperties": false,
+      "properties": {
+        "alpha": {
+          "anyOf": [
+            {
+              "exclusiveMaximum": 1,
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Alpha"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Method"
+        },
+        "output": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output"
+        },
+        "resamples": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Resamples"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Seed"
+        }
+      },
+      "required": [
+        "method",
+        "seed",
+        "resamples",
+        "alpha"
+      ],
+      "title": "Comparison",
+      "type": "object"
+    },
+    "Dataset": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Sha256"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Source"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Version"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256",
+        "source"
+      ],
+      "title": "Dataset",
+      "type": "object"
+    },
+    "Exclusions": {
+      "additionalProperties": false,
+      "properties": {
+        "excluded_ids_file": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Excluded Ids File"
+        },
+        "rules": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Rules",
+          "type": "array"
+        }
+      },
+      "title": "Exclusions",
+      "type": "object"
+    },
+    "LeakageDecl": {
+      "additionalProperties": false,
+      "description": "v0.7: a declaration about a leakage type that cannot be detected from identifiers (R-49). Not a check.",
+      "properties": {
+        "evidence": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evidence"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "status": {
+          "enum": [
+            "checked",
+            "not_applicable"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "LeakageDecl",
+      "type": "object"
+    },
+    "LlmEval": {
+      "additionalProperties": false,
+      "description": "Evaluating language models on scientific cases (0.18.0, R-78): contamination by publication date, leakage of a\nstudy (group) across tuning and test, prompts frozen, and no model judging itself.",
+      "properties": {
+        "cases": {
+          "title": "Cases",
+          "type": "string"
+        },
+        "group_column": {
+          "default": "group",
+          "title": "Group Column",
+          "type": "string"
+        },
+        "id_column": {
+          "default": "id",
+          "title": "Id Column",
+          "type": "string"
+        },
+        "models": {
+          "items": {
+            "$ref": "#/$defs/LlmModel"
+          },
+          "minItems": 1,
+          "title": "Models",
+          "type": "array"
+        },
+        "prompts": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompts"
+        },
+        "published_column": {
+          "default": "published",
+          "title": "Published Column",
+          "type": "string"
+        },
+        "split_column": {
+          "default": "split",
+          "title": "Split Column",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cases",
+        "models"
+      ],
+      "title": "LlmEval",
+      "type": "object"
+    },
+    "LlmModel": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "default": "candidate",
+          "enum": [
+            "candidate",
+            "judge"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "training_cutoff": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Training Cutoff"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "LlmModel",
+      "type": "object"
+    },
+    "MetricDef": {
+      "additionalProperties": false,
+      "properties": {
+        "definition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Definition"
+        },
+        "implementation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Implementation"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "definition",
+        "implementation"
+      ],
+      "title": "MetricDef",
+      "type": "object"
+    },
+    "Metrics": {
+      "additionalProperties": false,
+      "properties": {
+        "defs": {
+          "items": {
+            "$ref": "#/$defs/MetricDef"
+          },
+          "minItems": 1,
+          "title": "Defs",
+          "type": "array"
+        },
+        "primary": {
+          "title": "Primary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary",
+        "defs"
+      ],
+      "title": "Metrics",
+      "type": "object"
+    },
+    "Outputs": {
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Required"
+        }
+      },
+      "title": "Outputs",
+      "type": "object"
+    },
+    "Results": {
+      "additionalProperties": false,
+      "description": "v0.7: a results matrix {split: {method: {metric: number}}}; methods are the baselines and \"candidate\".",
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "splits": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Splits"
+        }
+      },
+      "required": [
+        "file"
+      ],
+      "title": "Results",
+      "type": "object"
+    },
+    "SplitSet": {
+      "additionalProperties": false,
+      "properties": {
+        "ids_file": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Ids File"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "train",
+            "dev",
+            "validation",
+            "test"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "role",
+        "ids_file"
+      ],
+      "title": "SplitSet",
+      "type": "object"
+    },
+    "Splits": {
+      "additionalProperties": false,
+      "properties": {
+        "group_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "none",
+          "title": "Group Key"
+        },
+        "id_column": {
+          "default": "id",
+          "title": "Id Column",
+          "type": "string"
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metadata"
+        },
+        "sets": {
+          "items": {
+            "$ref": "#/$defs/SplitSet"
+          },
+          "minItems": 1,
+          "title": "Sets",
+          "type": "array"
+        },
+        "temporal": {
+          "default": false,
+          "title": "Temporal",
+          "type": "boolean"
+        },
+        "time_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "default": "none",
+          "title": "Time Key"
+        }
+      },
+      "required": [
+        "sets"
+      ],
+      "title": "Splits",
+      "type": "object"
+    },
+    "Threshold": {
+      "additionalProperties": false,
+      "properties": {
+        "against": {
+          "pattern": "^(absolute|baseline:.+)$",
+          "title": "Against",
+          "type": "string"
+        },
+        "comparator": {
+          "enum": [
+            ">=",
+            ">",
+            "<=",
+            "<"
+          ],
+          "title": "Comparator",
+          "type": "string"
+        },
+        "metric": {
+          "title": "Metric",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "TBD",
+                "unknown"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "metric",
+        "comparator",
+        "value",
+        "against"
+      ],
+      "title": "Threshold",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "analysis": {
+      "enum": [
+        "exploratory",
+        "confirmatory"
+      ],
+      "title": "Analysis",
+      "type": "string"
+    },
+    "baselines": {
+      "items": {
+        "$ref": "#/$defs/Baseline"
+      },
+      "minItems": 1,
+      "title": "Baselines",
+      "type": "array"
+    },
+    "comparison": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Comparison"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "datasets": {
+      "items": {
+        "$ref": "#/$defs/Dataset"
+      },
+      "minItems": 1,
+      "title": "Datasets",
+      "type": "array"
+    },
+    "exclusions": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Exclusions"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "id": {
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "leakage": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/LeakageDecl"
+              },
+              {
+                "enum": [
+                  "TBD",
+                  "unknown"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Leakage"
+    },
+    "llm_eval": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LlmEval"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "metrics": {
+      "$ref": "#/$defs/Metrics"
+    },
+    "minimum_units": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Minimum Units"
+    },
+    "outputs": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Outputs"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "power_target": {
+      "default": 0.8,
+      "exclusiveMinimum": 0,
+      "maximum": 1,
+      "title": "Power Target",
+      "type": "number"
+    },
+    "results": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Results"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema": {
+      "const": "steward.contract/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "splits": {
+      "$ref": "#/$defs/Splits"
+    },
+    "thresholds": {
+      "items": {
+        "$ref": "#/$defs/Threshold"
+      },
+      "title": "Thresholds",
+      "type": "array"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "id",
+    "title",
+    "analysis",
+    "datasets",
+    "splits",
+    "baselines",
+    "metrics"
+  ],
+  "title": "Contract",
+  "type": "object"
+}

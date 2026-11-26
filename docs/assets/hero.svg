@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="100%" role="img" aria-label="Your agents do the science; Bio-STEWARD keeps it checkable: plans, runs, data, numbers and records flow through deterministic checks into checkable science.">
+  <style>
+    .bg { fill: #f6f8fb; } .card { fill: #ffffff; stroke: #dfe4ec; } .ink { fill: #1d2330; } .muted { fill: #5b6475; }
+    .pill { fill: #eef2f8; } .flow { stroke: #9aa6ba; }
+    .core { fill: url(#core); } .coretext { fill: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0f1219; } .card { fill: #171b25; stroke: #2a3040; } .ink { fill: #e8ebf2; } .muted { fill: #a3abba; }
+      .pill { fill: #222838; } .flow { stroke: #4f5a70; }
+    }
+    text { font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+    .dash { stroke-dasharray: 6 8; animation: move 1.6s linear infinite; }
+    @keyframes move { to { stroke-dashoffset: -28; } }
+    @media (prefers-reduced-motion: reduce) { .dash { animation: none; } }
+  </style>
+  <defs>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#127a8a"/><stop offset="1" stop-color="#4c4fd9"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a96ab"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1200" height="380" rx="22"/>
+
+  <!-- left: the work -->
+  <rect class="card" x="40" y="60" width="300" height="262" rx="16"/>
+  <text class="muted" x="62" y="96" font-size="13" letter-spacing="1.5">YOUR AGENTS &amp; YOU</text>
+  <g font-size="16" class="ink">
+    <rect class="pill" x="62" y="114" width="256" height="34" rx="9"/><text x="78" y="137">🧪  plan a benchmark</text>
+    <rect class="pill" x="62" y="156" width="256" height="34" rx="9"/><text x="78" y="179">⚙️  run analyses &amp; models</text>
+    <rect class="pill" x="62" y="198" width="256" height="34" rx="9"/><text x="78" y="221">🧬  reanalyse public data</text>
+    <rect class="pill" x="62" y="240" width="256" height="34" rx="9"/><text x="78" y="263">📝  write the paper &amp; talk</text>
+  </g>
+  <text class="muted" x="62" y="304" font-size="13">fast, and sometimes wrong</text>
+
+  <line class="flow dash" x1="350" y1="191" x2="440" y2="191" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- centre: the checks -->
+  <rect class="core" x="452" y="40" width="296" height="302" rx="22"/>
+  <text class="coretext" x="600" y="92" font-size="30" font-weight="700" text-anchor="middle">Bio-STEWARD</text>
+  <text class="coretext" x="600" y="118" font-size="14" text-anchor="middle" opacity="0.9">deterministic checks · signed approvals</text>
+  <g font-size="15" class="coretext">
+    <text x="486" y="162">✓ plans fixed before results</text>
+    <text x="486" y="192">✓ runs under limits, recorded</text>
+    <text x="486" y="222">✓ held-out data sealed</text>
+    <text x="486" y="252">✓ every number traced to a run</text>
+    <text x="486" y="282">✓ studies &amp; decisions on record</text>
+    <text x="486" y="312">✓ spend and policy need your key</text>
+  </g>
+
+  <line class="flow dash" x1="758" y1="191" x2="848" y2="191" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- right: the outcome -->
+  <rect class="card" x="860" y="60" width="300" height="262" rx="16"/>
+  <text class="muted" x="882" y="96" font-size="13" letter-spacing="1.5">CHECKABLE SCIENCE</text>
+  <g font-size="16" class="ink">
+    <text x="882" y="136">📊  numbers match their results</text>
+    <text x="882" y="176">🔒  no leaked test set</text>
+    <text x="882" y="216">🗂️  data &amp; tools on record</text>
+    <text x="882" y="256">🤝  humans approve what matters</text>
+  </g>
+  <rect x="882" y="278" width="150" height="30" rx="15" fill="#2f9e66"/>
+  <text x="957" y="298" font-size="14" font-weight="600" fill="#ffffff" text-anchor="middle">Gate: ELIGIBLE</text>
+</svg>

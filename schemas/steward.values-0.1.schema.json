@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "Assertion": {
+      "additionalProperties": false,
+      "properties": {
+        "expr": {
+          "title": "Expr",
+          "type": "string"
+        },
+        "tol": {
+          "default": 0.0,
+          "minimum": 0,
+          "title": "Tol",
+          "type": "number"
+        }
+      },
+      "required": [
+        "expr"
+      ],
+      "title": "Assertion",
+      "type": "object"
+    },
+    "CsvCell": {
+      "additionalProperties": false,
+      "properties": {
+        "col": {
+          "title": "Col",
+          "type": "string"
+        },
+        "row": {
+          "title": "Row",
+          "type": "string"
+        }
+      },
+      "required": [
+        "row",
+        "col"
+      ],
+      "title": "CsvCell",
+      "type": "object"
+    },
+    "ValueDef": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Count"
+        },
+        "csv": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CsvCell"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "derive": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Derive"
+        },
+        "format": {
+          "default": "{}",
+          "title": "Format",
+          "type": "string"
+        },
+        "pointer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pointer"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        }
+      },
+      "title": "ValueDef",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "assert": {
+      "items": {
+        "$ref": "#/$defs/Assertion"
+      },
+      "title": "Assert",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.values/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "values": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ValueDef"
+      },
+      "title": "Values",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema"
+  ],
+  "title": "ValuesFile",
+  "type": "object"
+}

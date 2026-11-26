@@ -1,0 +1,35 @@
+# Presentation plan for a lab progress update on the toy benchmark (fictional example).
+schema       = "steward.talk/0.1"
+stage        = "development"
+stage_source = "confirmed"      # confirmed by the presenter (2026-01-15)
+purpose      = "progress-update"
+feedback     = "targeted"
+audience     = "technical"
+duration_min = 10
+format       = "talk"
+max_slides   = "auto"
+evidence     = ["contract:expr-clf", "paper:main"]
+unresolved_decisions = ["Bootstrap resamples: keep 2000 or raise to 5000?"]
+
+[[outline]]
+role  = "motivation"
+title = "Why donor-level splits"
+[[outline]]
+role  = "architecture"
+title = "Benchmark design"
+[[outline]]
+role  = "implemented"
+title = "What exists"
+[[outline]]
+role  = "decisions-needed"
+title = "Decisions we need"
+[[outline]]
+role  = "next-steps"
+title = "Next steps"
+
+[[claims]]
+id       = "c1"
+text     = "The benchmark contract and donor-level splits are fixed before training"
+status   = "implemented"
+evidence = ["contract:expr-clf"]
+where    = "slide: What exists"
