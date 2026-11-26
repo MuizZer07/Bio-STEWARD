@@ -28,6 +28,7 @@ nav:
       - Core: quickstart.md
       - Paper: quickstart-paper.md
       - Talk: quickstart-talk.md
+  - What it offers: capabilities.md
   - Worked example: worked-example.md
   - Guides:
       - Plan a benchmark: guides/benchmark.md

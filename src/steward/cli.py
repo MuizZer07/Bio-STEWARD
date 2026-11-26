@@ -37,7 +37,7 @@ class _Parser(argparse.ArgumentParser):
 
 QUIET_BREAKERS = {"R-53.undelivered", "R-53.upgrade_available"}  # AF19: advice that --quiet must never hide
 
-HELP_GROUPS = """Commands by what you do (0.20.0):
+HELP_GROUPS = """Commands by what you do:
   Start            init · example · check · explain · report
   Plan             benchmark · study · research · timeline · sprint
   Run              run · diff · compare · shards · stage · tokens

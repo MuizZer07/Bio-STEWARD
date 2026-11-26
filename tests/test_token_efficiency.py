@@ -125,6 +125,7 @@ def test_F2_footprint_budgets_hold():
     assert measure_footprint.violations(measure_footprint.measure()) == []
 
 
+@pytest.mark.skipif(not (REPO / "development/DECISIONS.md").is_file(), reason="the development records are private (a public clone)")
 def test_budget_guard_requires_recorded_decisions():
     m = measure_footprint.measure()
     m["always_loaded"]["bundles"]["core"]["decision"] = "2099-01-01 — a decision nobody recorded"

@@ -3,7 +3,13 @@
 Step by step, for a project that adopts the toolkit. `OWNER/REPO` is the toolkit's repository and `vX.Y.Z` the tag
 you pin; replace both. Each step says what happens when it is missing.
 
-## 1. Install in CI while the toolkit repository is private
+## 1. Install in CI
+The toolkit is public on GitHub; pin a release tag:
+```bash
+pipx install "git+https://github.com/MuizZer07/Bio-STEWARD.git@vX.Y.Z"
+```
+
+### From a private fork or mirror
 A private repository needs a token to install from. Use a fine-grained personal access token, never a classic one.
 
 1. **Create the token** (GitHub → Settings → Developer settings → Fine-grained tokens):
@@ -21,7 +27,6 @@ A private repository needs a token to install from. Use a fine-grained personal 
    rather than continue (the default for a failed step). Never let a missing token turn into a skipped gate.
 5. **To rotate:** create the new token, replace the secret's value, run the workflow once, then delete the old token.
 
-When the toolkit is public, drop the token: `pipx install "git+https://github.com/OWNER/REPO.git@vX.Y.Z"`.
 
 ## 2. A workflow
 ```yaml

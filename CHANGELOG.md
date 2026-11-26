@@ -4,6 +4,26 @@ Pre-release. Not published on PyPI. Versions follow semantic versioning once rel
 
 ## Unreleased
 
+## 0.20.4 (2026-11-25): the public README and documentation, checked
+Pre-release, not on PyPI. Per Muiz, 2026-11-25: "make sure everything in the read me and docs are accurate.. also have
+a list of agents/capabilites it is offering". Documentation only; no change to checks, formats or behaviour.
+
+### Added
+- [What it offers](docs/capabilities.md): the agents it works with, its 24 Agent Skills by kit, its commands by what
+ you do and its 81 rules by area, generated from the toolkit (`tools/build_capabilities.py`; a test keeps it current).
+- `tools/check_docs.py` and a test: every link in the public README and docs reaches a published file, every documented
+ command and option exists, every rule ID named exists.
+
+### Fixed
+- README: a plain version badge (the status badge's escaping was fragile), current test count, the newer commands in
+ the command table (`data fetch`, `example`, `check --rule`, `compare`, `tokens`, `licence`, `release go-public`,
+ `stranger-test`); the roadmap removed; no link into the private development records.
+- The paper guide named `paper displays --lock`; the option is `--record`.
+- The CI guide installs from the public repository first; the token steps are for a private fork.
+
+### Upgrade notes (from 0.20.3)
+- None.
+
 ## 0.20.3 (2026-11-25): public on GitHub; going public with a release mirror, for any project
 Pre-release, not on PyPI. Per Muiz, 2026-11-25: "make this Bio-STEWARD-dev and Bio-STEWARD for the public one.. add
 this in the release option 1 feature in the package as well". The first public release: development continues in a

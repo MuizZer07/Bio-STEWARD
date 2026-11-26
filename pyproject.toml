@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bio-steward"
-version = "0.20.3"
+version = "0.20.4"
 description = "The engineering and integrity layer for agentic computational biology: deterministic checks, signed approvals and research records for AI-assisted science."
 readme = "docs/pypi.md"
 license = "MIT"

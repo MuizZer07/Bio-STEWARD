@@ -13,7 +13,7 @@ expected. Never include real data or credentials.
 ## What happens
 - A first response within **3 days**; a fix or a documented mitigation for a confirmed issue in the next release.
 - The fix comes with a regression test, and the changelog names the issue once a fixed release is out.
-- Supported versions: the latest release only, while the toolkit is a pre-release (0.x).
+- Supported versions: the latest release only, while the toolkit is in beta (0.x).
 
 ## Known limits
 The changelog's "Known issues" tables list what is not yet fixed, with what to do until it is.

@@ -29,7 +29,7 @@ def test_the_readme_states_the_current_version_and_rule_count():
     from steward.rules import RULES
     text = (REPO / "README.md").read_text()
     assert f"deterministic%20rules-{len(RULES)}-" in text and f"Rules ({len(RULES)})" in text
-    assert f"pre--release%20{__version__}" in text and f"latest tag `v{__version__}`" in text
+    assert f"version-{__version__}%20beta" in text and f"latest release `v{__version__}`" in text
     for r in ("R-83", "R-84", "R-85", "R-86", "R-79"):
         assert r in text.split("📐 Rules")[1].split("</details>")[0], r
 

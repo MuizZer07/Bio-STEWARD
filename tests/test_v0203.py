@@ -72,6 +72,8 @@ def test_the_public_export_names_no_adopter(tmp_path):
 
     from steward import publish as pb
     from steward.models import load_config
+    if not (REPO / "steward.toml").is_file():
+        pytest.skip("this project's own configuration is private (a public clone)")
     cfg = load_config(REPO)
     if cfg.exchange is None or cfg.publish is None:
         pytest.skip("not this repository's own configuration")

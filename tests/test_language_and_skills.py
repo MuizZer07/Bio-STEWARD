@@ -81,6 +81,7 @@ def test_A5_C2_nothing_the_example_or_tests_need_is_git_ignored():
     assert needed == [], f"git-ignored files the example or tests need: {needed}"
 
 
+@pytest.mark.skipif(not (REPO / "development/DECISIONS.md").is_file(), reason="the development records are private (a public clone)")
 def test_v090_the_core_budget_is_325_by_a_recorded_decision():
     import tomllib
     b = tomllib.loads((REPO / "skills/BUNDLES.toml").read_text())["core"]

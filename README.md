@@ -10,16 +10,17 @@
 </p>
 
 <p align="center">
-  <img alt="status" src="https://img.shields.io/badge/status-pre--release%200.20.3-4c4fd9">
+  <img alt="version" src="https://img.shields.io/badge/version-0.20.4%20beta-4c4fd9">
   <img alt="python" src="https://img.shields.io/badge/python-3.11%2B-127a8a">
   <img alt="licence" src="https://img.shields.io/badge/licence-MIT-2f9e66">
-  <img alt="tests" src="https://img.shields.io/badge/tests-1400%2B-2f9e66">
+  <img alt="tests" src="https://img.shields.io/badge/tests-1700%2B-2f9e66">
   <img alt="agent skills" src="https://img.shields.io/badge/Agent%20Skills-24-e08a1e">
   <img alt="rules" src="https://img.shields.io/badge/deterministic%20rules-81-1d2330">
 </p>
 
 <p align="center">
   <a href="docs/index.md">User guide</a> ·
+  <a href="docs/capabilities.md">What it offers</a> ·
   <a href="docs/quickstart.md">Quick start</a> ·
   <a href="docs/works-with.md">Works with</a> ·
   <a href="docs/principles.md">Principles</a> ·
@@ -32,7 +33,8 @@
 > 24 portable [Agent Skills](https://agentskills.io/), a [GitHub Action](action.yml),
 > [pre-commit hooks](.pre-commit-hooks.yaml) and a [Claude Code plugin](plugin/). It keeps a deterministic record of
 > what was planned, run, frozen, found and claimed, and refuses the controlled operations (runs, unsealing, spend,
-> policy changes) that you did not approve.
+> policy changes) that you did not approve. **Everything it offers** (the agents it works with, its 24 skills by kit,
+> its commands and its 81 rules) is on one page: [docs/capabilities.md](docs/capabilities.md).
 
 <p align="center"><img src="docs/assets/demo.svg" alt="steward check catching a leaked donor, a changed GEO input and contaminated LLM test cases" width="92%"></p>
 
@@ -53,14 +55,14 @@ wherever required.
 
 ## 🚀 Quick start
 ```bash
-uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.3"     # or: pipx install "git+…@v0.20.3"
+uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.4"     # or: pipx install "git+…@v0.20.4"
 cd your-research-repo
 steward init --skills .agents/skills         # scaffold; never overwrites. Claude Code: --skills .claude/skills
 steward check --summary
 ```
 Then just ask your coding agent: **"Run the using-steward skill."** It runs the checks, reads the result and tells you
 what is ready. It is a development tool, never a runtime dependency. Pinning in a requirements file:
-`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.3` (not in package metadata: PyPI refuses
+`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.4` (not in package metadata: PyPI refuses
 direct references there).
 
 **Try it on real data** (0.20.0): a public GEO series, GSE7621 (Parkinson's disease substantia nigra, 25 samples),
@@ -197,14 +199,19 @@ Quarto or Pandoc. See [docs/works-with.md](docs/works-with.md).
 
 | Command | Purpose |
 |---|---|
-| `steward init [--paper] [--talk NAME] [--skills DIR --kits …]` | Scaffold the configuration, templates and skills; never overwrites |
-| `steward check [AREA…] [--final] [--summary] [--output FILE]` | Evaluate the rules (read-only) |
+| `steward init [--for GOAL] [--paper] [--talk NAME] [--skills DIR --kits …]` | Scaffold the configuration, templates and skills; never overwrites |
+| `steward example biology DIR` | A real public GEO series, checked end to end, to try it on |
+| `steward check [AREA…] [--rule R-xx] [--final] [--summary] [--output FILE]` | Evaluate the rules (read-only); `--rule` shows one rule with every detail |
 | `steward report FILE [--format md\|text\|summary] [--rule R-xx]` | Render a saved report |
 | `steward run [limits] [--slot] [--input/--output/--metrics] -- CMD` | Controlled execution with a run record |
 | `steward diff run A B` / `diff runs [--svg]` / `diff impact` | Repeatability; runs side by side and charted; change impact |
-| `steward study new\|list\|show\|fingerprint` | Study records: inputs, references, tools, results, papers |
+| `steward data fetch SOURCE:ACCESSION --study ID` | Download public data (GEO, ENA/SRA, ArrayExpress, Zenodo, URL) and record its provenance |
+| `steward study new\|add-input\|list\|show\|fingerprint` | Study records: inputs, conventions, samples, references, tools, results, papers |
 | `steward research new\|list` | Literature reviews, novelty maps, gaps, dead-end reviews |
 | `steward task brief\|template` | Dispatch briefs for Codex, Gemini, Claude or any agent |
+| `steward compare record` | Two pipelines side by side: agreement and every disagreement |
+| `steward tokens report\|check` | Token use per task, from the agents' own logs |
+| `steward licence inventory\|notices` | Licence governance: dependencies, copied code, notices |
 | `steward paper values\|displays\|citations\|manifest` | Values registry, display lock, citation record, submission manifest |
 | `steward talk plan\|prefs\|values\|export` | Talk planning and export |
 | `steward authorize pin\|prepare\|sign\|verify\|pending\|sign-pending` | Signed human approvals, now or later |
@@ -214,7 +221,9 @@ Quarto or Pandoc. See [docs/works-with.md](docs/works-with.md).
 | `steward docs init\|build` | A documentation site for your project, with charts and study cards |
 | `steward timeline` / `sprint …` / `audit progress` | Deadlines, supervised sprints, the Progress Audit |
 | `steward exchange …` / `constitution` | Requests and release notices between projects; the constitution |
-| `steward release …` / `pins …` / `storage …` / `hooks …` / `session …` / `mcp` | Releases, pinned dependencies, storage, git hooks, handoffs, the read-only MCP server |
+| `steward release publish\|status\|go-public` | Publish releases to a public repository, development private (model A) |
+| `steward stranger-test brief\|record` | A newcomer's first hour with a release, by an agent that has never seen it |
+| `steward release …` / `pins …` / `storage …` / `hooks …` / `session …` / `channel` / `mcp` | Release integrity, pinned dependencies, storage, git hooks, handoffs, install channels, the read-only MCP server |
 
 </details>
 
@@ -238,30 +247,14 @@ Every rule: `steward explain R-xx`. The full reference: [docs/reference/rules.md
 
 </details>
 
-<details>
-<summary><b>🗺️ Roadmap</b></summary>
-
-| Version | Theme | State |
-|---|---|---|
-| 0.1 – 0.5 | Process kit, PaperKit, PresentationKit, run safety and approvals, research integrity | Built |
-| 0.6 – 0.9 | Evidence and release integrity; benchmarks; storage, MCP and the constitution; exchange between projects | Tagged |
-| 0.10 – 0.15 | Hardening; project documentation sites; deferred signing; storage cleanup, milestones, sprints; the Progress Audit | Tagged |
-| 0.16 | Public-beta preparation: community files, GitHub Action, pre-commit, plugin, JOSS draft | 0.16.0 tagged |
-| 0.17 | Pinned-dependency retirement | 0.17.0 tagged |
-| 0.18 | Study and research records, dispatch briefs, charts, LLM-evaluation hygiene, citation records; adopter feedback; the new README and site | 0.18.0 tagged |
-| 0.19 | Licence governance, release publishing to a public mirror, install channels, request delivery, token use per task, interactive READMEs, onboarding | 0.19.0 |
-| 0.20 | Biology: public data fetched with provenance, data contracts, conventions and sample metadata, data availability, model records, pipeline comparisons, a real GEO worked example | 0.20.0 |
-| public beta | Repository public, PyPI, Zenodo, marketplaces (decision D3) | Prepared |
-| 1.0 | Stable formats, public release | Designed |
-
-</details>
-
 ## 📖 Documentation
 - [The user guide](docs/index.md): quick starts, recipes, guides, concepts and the rule reference.
 - The worked examples: [a public GEO series, checked end to end](examples/biology-geo/) and
   [the toy benchmark](examples/toy-expression-benchmark/), stage by stage.
 - [CONSTITUTION.md](CONSTITUTION.md): one process for the toolkit and every project that adopts it.
-- [development/](development/): design documents, decisions and independent reviews; the project uses its own process.
+- [What it offers](docs/capabilities.md): the agents, skills, commands and rules on one page.
+- The project develops in a private repository under its own process; each release is published here with its
+  [changelog](CHANGELOG.md) entry, including what the independent reviews of that release found.
 
 ## 🛠️ Development
 ```bash
@@ -272,7 +265,8 @@ python tools/measure_footprint.py --check
 tools/ci_local.sh                        # the same checks in Linux containers, on a clean export of HEAD
 ```
 
-> **Status: pre-release, latest tag `v0.20.3`.** Usable and tested (1600+ tests on macOS; Linux in Docker), not yet
-> on PyPI. Configuration and report formats may still change before 1.0. See the [changelog](CHANGELOG.md).
+> **Status: beta, latest release `v0.20.4`.** Usable and tested (1700+ tests on macOS; Linux in Docker), installed from
+> GitHub, not yet on PyPI. Configuration and report formats may still change before 1.0. See the
+> [changelog](CHANGELOG.md).
 
-**Licence:** MIT. Contributions are welcome after the public release; until then, issues and ideas are welcome.
+**Licence:** MIT. Issues and ideas are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
