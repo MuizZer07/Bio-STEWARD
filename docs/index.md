@@ -7,8 +7,12 @@ hide:
 
 ![Your agents do the science; Bio-STEWARD keeps it checkable](assets/hero.svg)
 
-<p class="tagline"><b>The engineering and integrity layer for agentic computational biology.</b><br>
-Your agents move fast. Your science stays checkable.</p>
+<p class="tagline"><b>Bio-STEWARD: Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and
+Development</b><br>The engineering and integrity layer for agentic computational biology. Your agents move fast. Your
+science stays checkable.</p>
+
+Cite it: [doi:10.5281/zenodo.24548977](https://doi.org/10.5281/zenodo.24548977) (every version; see
+[CITATION.cff](https://github.com/MuizZer07/Bio-STEWARD/blob/main/CITATION.cff)).
 
 Bio-STEWARD keeps a deterministic record of what was planned, run, frozen, found and claimed, and refuses what you
 did not approve. It checks files, never the science: a PASS means your files agree with the rules you declared.
@@ -25,7 +29,7 @@ is something your agent can do for you; the commands are shown so you can check 
 
 ## Install
 ```bash
-pipx install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.5"   # a development tool, pinned to a tag
+pipx install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.6"   # a development tool, pinned to a tag
 steward init --skills .agents/skills                                       # configuration, templates and skills
 steward check --summary
 ```

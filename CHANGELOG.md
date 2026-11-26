@@ -4,6 +4,23 @@ Pre-release. Not published on PyPI. Versions follow semantic versioning once rel
 
 ## Unreleased
 
+## 0.20.6 (2026-11-26): the full name, and the DOI
+Per Muiz, 2026-11-26: "you didnt mention what STEWARD stand for in any of the places.. this is important … add doi to
+the public repo and everywhere"; "in the readme add if someone uses this toolkit, they should cite it". Metadata and
+documentation only; no change to checks, formats or behaviour.
+
+### Changed
+- The full name, **Bio-STEWARD: Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and
+ Development**, with its subtitle, *The engineering and integrity layer for agentic computational biology*, in
+ `CITATION.cff` (the Zenodo title), the README, the documentation home, the PyPI description, the Claude Code plugin
+ and the JOSS draft.
+- The concept DOI, [10.5281/zenodo.24548977](https://doi.org/10.5281/zenodo.24548977) (every version): a README badge,
+ a **Cite** section with a BibTeX entry and a request to cite the toolkit when it is used, `doi:` and keywords in
+ `CITATION.cff` (GitHub's "Cite this repository"), the documentation home and the PyPI page.
+
+### Upgrade notes (from 0.20.5)
+- None.
+
 ## 0.20.5 (2026-11-25): the author, for citation
 Per Muiz, 2026-11-25: "here is my orcid id … add this in the citation". Metadata only; no change to checks, formats or
 behaviour.

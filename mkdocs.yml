@@ -1,7 +1,7 @@
 # The Bio-STEWARD user guide (0.10.0 U3). Build: pip install mkdocs-material && mkdocs build --strict
 # Published on GitHub Pages when the repository is public (DESIGN_BRIEF_public_release §3).
 site_name: Bio-STEWARD
-site_description: The engineering and integrity layer for agentic computational biology
+site_description: "Bio-STEWARD (Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and Development): the engineering and integrity layer for agentic computational biology"
 repo_url: https://github.com/MuizZer07/Bio-STEWARD
 theme:
   name: material

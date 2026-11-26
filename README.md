@@ -10,8 +10,9 @@
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-0.20.5%20beta-4c4fd9">
+  <img alt="version" src="https://img.shields.io/badge/version-0.20.6%20beta-4c4fd9">
   <img alt="python" src="https://img.shields.io/badge/python-3.11%2B-127a8a">
+  <a href="https://doi.org/10.5281/zenodo.24548977"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.24548977.svg"></a>
   <img alt="licence" src="https://img.shields.io/badge/licence-MIT-2f9e66">
   <img alt="tests" src="https://img.shields.io/badge/tests-1700%2B-2f9e66">
   <img alt="agent skills" src="https://img.shields.io/badge/Agent%20Skills-24-e08a1e">
@@ -29,12 +30,16 @@
   <a href="SECURITY.md">Security</a>
 </p>
 
-> **Your agents move fast. Your science stays checkable.** Bio-STEWARD is a small command-line tool (`steward`),
+> **Your agents move fast. Your science stays checkable.** Bio-STEWARD (Scientific Toolkit for Engineering, Workflow
+> Assurance, Reproducibility, and Development) is a small command-line tool (`steward`),
 > 24 portable [Agent Skills](https://agentskills.io/), a [GitHub Action](action.yml),
 > [pre-commit hooks](.pre-commit-hooks.yaml) and a [Claude Code plugin](plugin/). It keeps a deterministic record of
 > what was planned, run, frozen, found and claimed, and refuses the controlled operations (runs, unsealing, spend,
 > policy changes) that you did not approve. **Everything it offers** (the agents it works with, its 24 skills by kit,
 > its commands and its 81 rules) is on one page: [docs/capabilities.md](docs/capabilities.md).
+>
+> **Using Bio-STEWARD in your work? Please cite it:** [doi:10.5281/zenodo.24548977](https://doi.org/10.5281/zenodo.24548977)
+> (BibTeX and details under [Cite](#-cite)).
 
 <p align="center"><img src="docs/assets/demo.svg" alt="steward check catching a leaked donor, a changed GEO input and contaminated LLM test cases" width="92%"></p>
 
@@ -55,14 +60,14 @@ wherever required.
 
 ## 🚀 Quick start
 ```bash
-uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.5"     # or: pipx install "git+…@v0.20.5"
+uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.6"     # or: pipx install "git+…@v0.20.6"
 cd your-research-repo
 steward init --skills .agents/skills         # scaffold; never overwrites. Claude Code: --skills .claude/skills
 steward check --summary
 ```
 Then just ask your coding agent: **"Run the using-steward skill."** It runs the checks, reads the result and tells you
 what is ready. It is a development tool, never a runtime dependency. Pinning in a requirements file:
-`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.5` (not in package metadata: PyPI refuses
+`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.6` (not in package metadata: PyPI refuses
 direct references there).
 
 **Try it on real data** (0.20.0): a public GEO series, GSE7621 (Parkinson's disease substantia nigra, 25 samples),
@@ -256,6 +261,26 @@ Every rule: `steward explain R-xx`. The full reference: [docs/reference/rules.md
 - The project develops in a private repository under its own process; each release is published here with its
   [changelog](CHANGELOG.md) entry, including what the independent reviews of that release found.
 
+## 📝 Cite
+
+If you use Bio-STEWARD in your work (a study, a benchmark, a paper, a thesis, or a pipeline built with it), please
+cite it. GitHub's **Cite this repository** button gives the same entry, from [CITATION.cff](CITATION.cff):
+
+> Khan, M. *Bio-STEWARD: Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and Development.*
+> Zenodo. [doi:10.5281/zenodo.24548977](https://doi.org/10.5281/zenodo.24548977)
+
+```bibtex
+@software{bio_steward,
+  author    = {Khan, Muiz},
+  title     = {{Bio-STEWARD: Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and Development}},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24548977},
+  url       = {https://github.com/MuizZer07/Bio-STEWARD}
+}
+```
+
+The DOI above always resolves to the latest version; each release also has its own DOI on its Zenodo page.
+
 ## 🛠️ Development
 ```bash
 pip install -e ".[dev]"
@@ -265,7 +290,7 @@ python tools/measure_footprint.py --check
 tools/ci_local.sh                        # the same checks in Linux containers, on a clean export of HEAD
 ```
 
-> **Status: beta, latest release `v0.20.5`.** Usable and tested (1700+ tests on macOS; Linux in Docker), installed from
+> **Status: beta, latest release `v0.20.6`.** Usable and tested (1700+ tests on macOS; Linux in Docker), installed from
 > GitHub, not yet on PyPI. Configuration and report formats may still change before 1.0. See the
 > [changelog](CHANGELOG.md).
 

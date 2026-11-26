@@ -16,7 +16,7 @@ jobs:
           fetch-tags: true
           persist-credentials: false              # the token is not left in the checkout
       - id: steward
-        uses: MuizZer07/Bio-STEWARD@v0.20.5      # pin a tag you reviewed, or its commit SHA
+        uses: MuizZer07/Bio-STEWARD@v0.20.6      # pin a tag you reviewed, or its commit SHA
         with:
           gate: default                           # or routine, release, submission …
           final: "false"                          # "true" or "false" only; "true" for a submission's final checks

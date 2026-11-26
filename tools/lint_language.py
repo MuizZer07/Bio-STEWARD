@@ -43,11 +43,17 @@ def files(root: Path) -> list[Path]:
     return out
 
 
+# The toolkit's own name (Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and Development),
+# also when a line break falls inside it: a name, not a claim.
+NAME = re.compile(r"Assurance,\s+Reproducibility,\s+and\b")
+
+
 def lint_text(text: str) -> list[tuple[int, str, str]]:
     found = []
     for n, line in enumerate(text.splitlines(), start=1):
         if ALLOW_MARKER in line:
             continue
+        line = NAME.sub("Assurance, and", line)
         for pat, why in DISALLOWED:
             m = pat.search(line)
             if m:

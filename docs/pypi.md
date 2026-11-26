@@ -2,8 +2,10 @@
 
 # Bio-STEWARD
 
-**The engineering and integrity layer for agentic computational biology.** Your agents move fast; your science stays
-checkable.
+**Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and Development:** the engineering and
+integrity layer for agentic computational biology. Your agents move fast; your science stays checkable.
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24548977.svg)](https://doi.org/10.5281/zenodo.24548977)
 
 `steward` is a small command-line tool with portable Agent Skills, a GitHub Action, pre-commit hooks and a Claude Code
 plugin. It keeps a deterministic record of what was planned, run, frozen, found and claimed, and refuses the

@@ -3,4 +3,4 @@
 Deterministic checks wherever possible; agentic reasoning wherever necessary; human judgment wherever required.
 """
 
-__version__ = "0.20.5"
+__version__ = "0.20.6"

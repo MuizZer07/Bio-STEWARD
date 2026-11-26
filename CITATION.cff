@@ -1,11 +1,26 @@
 cff-version: 1.2.0
 message: "If you use Bio-STEWARD in your work, please cite the software as below."
-title: "Bio-STEWARD: research-engineering checks and Agent Skills for computational biology"
+title: "Bio-STEWARD: Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and Development"
+abstract: "The engineering and integrity layer for agentic computational biology: deterministic checks for studies, data, benchmarks, papers and agent work, signed approvals and research records, with portable Agent Skills for Claude Code, Codex and Gemini."
 type: software
-version: 0.20.5
-date-released: 2026-11-25
+version: 0.20.6
+date-released: 2026-11-26
+doi: 10.5281/zenodo.24548977
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.24548977
+    description: "The concept DOI: every version of Bio-STEWARD"
 license: MIT
 repository-code: "https://github.com/MuizZer07/Bio-STEWARD"
+keywords:
+  - computational biology
+  - bioinformatics
+  - reproducibility
+  - research integrity
+  - provenance
+  - benchmarking
+  - AI agents
+  - Agent Skills
 authors:
   - family-names: Khan
     given-names: Muiz

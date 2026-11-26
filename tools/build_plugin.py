@@ -22,9 +22,10 @@ def manifest() -> str:
 
     return json.dumps({
         "name": "bio-steward",
-        "description": "Deterministic guardrails for agent-driven research in computational biology: run and read "
-                       "steward checks, plan benchmarks, keep paper numbers true to their results, freeze, seal and "
-                       "approve, release, and audit progress. The steward command must be installed.",
+        "description": "Bio-STEWARD (Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and "
+                       "Development): the engineering and integrity layer for agentic computational biology. Run and "
+                       "read steward checks, plan benchmarks, keep paper numbers true to their results, freeze, seal "
+                       "and approve, release, and audit progress. The steward command must be installed.",
         "version": __version__.split(".dev")[0],
         "license": "MIT",
         "keywords": ["computational-biology", "reproducibility", "benchmarking", "research-integrity", "agents"],

@@ -24,7 +24,9 @@ bibliography: paper.bib
 
 Researchers in computational biology increasingly write their analysis code with AI coding agents. Agents work fast,
 but they also change benchmark splits, retune thresholds after seeing results, copy numbers into a manuscript by hand,
-and touch held-out data, often without leaving a trace a reviewer can check. Bio-STEWARD is a command-line toolkit and
+and touch held-out data, often without leaving a trace a reviewer can check. Bio-STEWARD (Scientific Toolkit for
+Engineering, Workflow Assurance, Reproducibility, and Development; archived at Zenodo,
+doi:10.5281/zenodo.24548977) is a command-line toolkit and
 a set of agent skills that keeps a deterministic record of what a project decided, ran, froze and claimed, and refuses
 what a human did not approve. It evaluates declared rules over the repository's files and reports one of five statuses
 for each, with gates that decide when a project is ready for a commit, a confirmatory run, a submission or a release.
