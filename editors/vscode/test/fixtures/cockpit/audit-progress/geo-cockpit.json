@@ -1,0 +1,117 @@
+{
+  "pending": {
+    "exchange_open": [
+      "PEER-REQ-001"
+    ],
+    "milestones": [
+      {
+        "days_left": -9767.0,
+        "id": "kickoff",
+        "state": "met"
+      },
+      {
+        "days_left": -9675.0,
+        "id": "abstract",
+        "state": "due (record its outcome)"
+      },
+      {
+        "days_left": -9461.0,
+        "id": "preprint",
+        "state": "late"
+      },
+      {
+        "days_left": 26484.0,
+        "id": "review",
+        "state": "on track"
+      },
+      {
+        "days_left": 26698.5,
+        "id": "release",
+        "state": "ready"
+      }
+    ],
+    "own_open": [
+      "GEO-Q-001"
+    ],
+    "signatures_waiting": [
+      "spend (d3e83e998137)"
+    ],
+    "sprints": [
+      {
+        "open": [
+          "T1",
+          "T2",
+          "T3",
+          "T4",
+          "T5"
+        ],
+        "sprint": "fixture-sprint"
+      }
+    ]
+  },
+  "reach": {
+    "installed_here_as_a_package": true,
+    "missing": [
+      "a GitHub Action",
+      "a citation file",
+      "a code of conduct",
+      "a licence",
+      "a quick start",
+      "a security policy",
+      "a user guide",
+      "contribution guidelines",
+      "pre-commit hooks",
+      "worked examples"
+    ],
+    "note": "PyPI, Zenodo and a public repository are D3 decisions (DESIGN_BRIEF_public_release §5 – §6)",
+    "present": [
+      "a README"
+    ]
+  },
+  "schema": "steward.progress_audit/0.1",
+  "usage": {
+    "consumers": {
+      "GONE": {
+        "by_kind": {},
+        "by_version": {},
+        "filed": 0,
+        "median_days_to_ship": null,
+        "notices": {},
+        "open": []
+      },
+      "PEER": {
+        "by_kind": {
+          "request": 1
+        },
+        "by_version": {
+          "?": 1
+        },
+        "checkout": {
+          "areas_configured": [
+            "data",
+            "paper",
+            "policy",
+            "research",
+            "studies"
+          ],
+          "not_received": [],
+          "notices": {},
+          "status": "read from its checkout on this machine (its own claims, not verified here)"
+        },
+        "filed": 1,
+        "median_days_to_ship": null,
+        "notices": {},
+        "open": [
+          "PEER-REQ-001"
+        ]
+      }
+    }
+  },
+  "where": {
+    "branch": "master",
+    "known_issues": [],
+    "latest_tag": null,
+    "project_version": null,
+    "toolkit_version": "0.20.6"
+  }
+}

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="400" viewBox="0 0 760 400" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
+<rect width="760" height="400" rx="10" fill="#1f1f1f"/>
+<rect x="0" y="0" width="48" height="350" rx="10" fill="#181818"/>
+<rect x="0" y="16" width="2" height="30" fill="#cccccc"/>
+<g transform="translate(12 19) scale(1)" fill="none" stroke="#cccccc" stroke-width="1.5" stroke-linejoin="round">
+<path d="M12 2.5 4.5 5.5v6c0 4.6 3.1 8.6 7.5 10 4.4-1.4 7.5-5.4 7.5-10v-6L12 2.5Z"/><path d="m8.5 12 2.5 2.5 4.5-5" stroke-linecap="round"/></g>
+<text x="58" y="20" fill="#bbbbbb" font-size="11" font-weight="700">BIO-STEWARD</text>
+<rect x="48" y="30" width="712" height="298" fill="#181818"/>
+<text x="56" y="47" fill="#bbbbbb" font-size="11" font-weight="700">⌄  OVERVIEW</text>
+<text x="748" y="47" fill="#9d9d9d" font-size="12" text-anchor="end">⛁  ↺  ▷</text>
+<text x="71" y="71.5" fill="#9d9d9d" font-weight="700" font-size="12.5">i</text><text x="88" y="71" fill="#cccccc">steward 0.20.6<tspan dx="7" fill="#9d9d9d">limited mode</tspan></text>
+<text x="71" y="93.5" fill="#9d9d9d" font-weight="700" font-size="12.5">▫</text><text x="88" y="93" fill="#cccccc">Report<tspan dx="7" fill="#9d9d9d">fresh · biology-geo · profile exploratory · 2000-01-01T00:00:00Z</tspan></text>
+<text x="56" y="115" fill="#9d9d9d" font-size="12">⌄</text><text x="71" y="115.5" fill="#f48771" font-weight="700" font-size="12.5">✗</text><text x="88" y="115" fill="#cccccc">Gate default<tspan dx="7" fill="#9d9d9d">✗ NOT ELIGIBLE · 2 blocking of 71 required</tspan></text>
+<text x="84" y="137" fill="#cccccc">Reason<tspan dx="7" fill="#9d9d9d">blocking results</tspan></text>
+<text x="84" y="159" fill="#cccccc">Required results<tspan dx="7" fill="#9d9d9d">71 evaluated · 9 PASS · 61 NOT APPLICABLE · of 71 required</tspan></text>
+<text x="70" y="181" fill="#9d9d9d" font-size="12">⌄</text><text x="84" y="181" fill="#cccccc">Blocking (2)</text>
+<text x="99" y="203.5" fill="#f48771" font-weight="700" font-size="12.5">✗</text><text x="116" y="203" fill="#cccccc">R-75 studies.records<tspan dx="7" fill="#9d9d9d">FAIL · development/studies/pd-substantia-nigra.toml</tspan></text>
+<text x="99" y="225.5" fill="#f48771" font-weight="700" font-size="12.5">✗</text><text x="116" y="225" fill="#cccccc">R-83 data.contracts<tspan dx="7" fill="#9d9d9d">FAIL · results/top_genes.tsv</tspan></text>
+<text x="84" y="247" fill="#cccccc">Waived (0)<tspan dx="7" fill="#9d9d9d">none</tspan></text>
+<text x="70" y="269" fill="#cccccc">Counts<tspan dx="7" fill="#9d9d9d">✓ 11 PASS · ✗ 2 FAIL · ◐ 0 INCOMPLETE · ? 0 UNKNOWN · – 70 NOT APPLICABLE</tspan></text>
+<text x="71" y="291.5" fill="#f48771" font-weight="700" font-size="12.5">✗</text><text x="88" y="291" fill="#cccccc">Worst status<tspan dx="7" fill="#9d9d9d">✗ FAIL</tspan></text>
+<text x="56" y="313" fill="#9d9d9d" font-size="12">›</text><text x="71" y="313.5" fill="#9d9d9d" font-weight="700" font-size="12.5">i</text><text x="88" y="313" fill="#cccccc">Coverage<tspan dx="7" fill="#9d9d9d">7 of 38 areas configured · 0 nothing recorded · 0 not evaluated</tspan></text>
+<rect x="0" y="328" width="760" height="22" fill="#181818"/>
+<rect x="56" y="328" width="317" height="22" fill="#c72e0f"/>
+<text x="66" y="343" fill="#ffffff" font-size="12">⛉ default ✗ NOT ELIGIBLE · 2 blocking · fresh</text>
+<text x="16" y="372" font-size="11.5" fill="#8b949e">Drawing of the Overview and the status bar, rendered by the extension's view model from the fixture report of the GEO</text>
+<text x="16" y="388" font-size="11.5" fill="#8b949e">example with a seeded fault (not a screenshot).</text>
+</svg>

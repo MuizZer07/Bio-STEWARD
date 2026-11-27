@@ -1,0 +1,37 @@
+{
+  "pending": {
+    "milestones": [],
+    "signatures_waiting": [],
+    "sprints": []
+  },
+  "reach": {
+    "installed_here_as_a_package": true,
+    "missing": [
+      "a GitHub Action",
+      "a citation file",
+      "a code of conduct",
+      "a licence",
+      "a quick start",
+      "a security policy",
+      "a user guide",
+      "contribution guidelines",
+      "pre-commit hooks",
+      "worked examples"
+    ],
+    "note": "PyPI, Zenodo and a public repository are D3 decisions (DESIGN_BRIEF_public_release §5 – §6)",
+    "present": [
+      "a README"
+    ]
+  },
+  "schema": "steward.progress_audit/0.1",
+  "usage": {
+    "note": "no [exchange]: adoption by other projects is not recorded here"
+  },
+  "where": {
+    "branch": "master",
+    "known_issues": [],
+    "latest_tag": null,
+    "project_version": null,
+    "toolkit_version": "0.20.6"
+  }
+}

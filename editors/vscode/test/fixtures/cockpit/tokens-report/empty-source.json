@@ -1,0 +1,42 @@
+{
+  "currency": null,
+  "issues": [],
+  "sources": {
+    "claude": {
+      "files": [
+        {
+          "issues": [
+            "no supported usage records"
+          ],
+          "path": "claude log 1",
+          "status": "unavailable"
+        }
+      ],
+      "status": "unavailable"
+    },
+    "codex": {
+      "files": [],
+      "status": "unavailable"
+    },
+    "gemini": {
+      "files": [],
+      "status": "unavailable"
+    }
+  },
+  "tasks": [
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "a selected log has missing or unreadable records",
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "all activity",
+      "tokens": null,
+      "tool_outputs": []
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "currency": null,
+  "issues": [],
+  "sources": {
+    "claude": {
+      "files": [],
+      "status": "unavailable"
+    },
+    "codex": {
+      "files": [],
+      "status": "unavailable"
+    },
+    "gemini": {
+      "files": [],
+      "status": "unavailable"
+    }
+  },
+  "tasks": [
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "all activity",
+      "tokens": null,
+      "tool_outputs": []
+    }
+  ]
+}

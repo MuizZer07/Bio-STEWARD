@@ -1,0 +1,3 @@
+GEO  06e95f82fc4a  expired  spend          expires 2000-01-02T00:00:00Z  Spend for the first rerun
+GEO  d3e83e998137  waiting  spend          expires 2099-01-01T00:00:00Z  Spend for the model comparison
+1 waiting; sign them with: steward authorize sign-pending

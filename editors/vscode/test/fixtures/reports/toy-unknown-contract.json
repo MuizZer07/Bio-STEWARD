@@ -1,0 +1,1125 @@
+{
+  "envelope": {
+    "created": "2000-01-01T00:00:00Z",
+    "git": {
+      "dirty": "not checked",
+      "head": "0000000000000000000000000000000000000000"
+    },
+    "platform": {
+      "os": "fixture",
+      "python": "fixture"
+    },
+    "tool": "steward",
+    "tool_version": "0.20.6"
+  },
+  "schema": "steward.report/0.1",
+  "verdict": {
+    "config_profile": "confirmatory",
+    "coverage": {
+      "areas": {
+        "configured": [
+          "config",
+          "contract",
+          "prior-work",
+          "paper",
+          "talk",
+          "evidence",
+          "benchmark",
+          "governance",
+          "files"
+        ],
+        "not_configured": [
+          "privacy",
+          "run",
+          "policy",
+          "spend",
+          "integrity",
+          "release",
+          "storage",
+          "boundary",
+          "tasks",
+          "changelog",
+          "branches",
+          "skills",
+          "repro",
+          "session",
+          "agents",
+          "stages",
+          "frozen",
+          "dependencies",
+          "containers",
+          "docs",
+          "milestones",
+          "sprints",
+          "pins",
+          "studies",
+          "research",
+          "licence",
+          "data",
+          "compare",
+          "models"
+        ],
+        "nothing_recorded": []
+      },
+      "not_evaluated": [],
+      "statement": "Checked against declared rules only. Artifact integrity: checked by R-11, R-27. Computational repeatability: not assessed by `steward check` (use `steward diff run`). Scientific validity, and the correctness or acceptance of a manuscript, are not assessed by this tool."
+    },
+    "gates": [
+      {
+        "blocking": [
+          {
+            "rule": "R-02",
+            "status": "FAIL",
+            "subject": "benchmarks/expr-clf.contract.toml"
+          },
+          {
+            "rule": "R-03",
+            "status": "UNKNOWN",
+            "subject": "benchmarks/expr-clf.contract.toml"
+          },
+          {
+            "rule": "R-04",
+            "status": "INCOMPLETE",
+            "subject": "."
+          },
+          {
+            "rule": "R-41",
+            "status": "FAIL",
+            "subject": "development/prior_work/expr-clf.prior.toml"
+          },
+          {
+            "rule": "R-45",
+            "status": "UNKNOWN",
+            "subject": "benchmarks/expr-clf.contract.toml"
+          }
+        ],
+        "eligible": false,
+        "evaluated": true,
+        "evaluated_count": 69,
+        "name": "default",
+        "not_applicable_count": 43,
+        "pass_count": 21,
+        "reason": "blocking results",
+        "required_count": 71,
+        "waived": []
+      }
+    ],
+    "inputs_digest": "sha256:35c57c212c9f5c476cfc7784c6ce51789a2fb36780a6ee90a422758d7e9fdf96",
+    "project": "toy-expression-benchmark",
+    "repo_id": "78b19ff4-f1a8-4bb0-9d52-ab2fb34311c0",
+    "results": [
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "steward.toml",
+            "sha256": "f8f2cae1ac5d86dd28ac7d0e419d53467ad168a955b3c18b50746b1026bcbb3b"
+          }
+        ],
+        "name": "config.valid",
+        "reason": "config is consistent with steward.toml/0.2",
+        "rule": "R-01",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "steward.toml"
+      },
+      {
+        "details": [
+          {
+            "code": "schema",
+            "field": "leakage.not_a_contract_key",
+            "message": "Input should be 'TBD' or 'unknown'"
+          },
+          {
+            "code": "schema",
+            "field": "leakage.not_a_contract_key.LeakageDecl",
+            "message": "Input should be a valid dictionary or instance of LeakageDecl"
+          }
+        ],
+        "evidence": [
+          {
+            "path": "benchmarks/expr-clf.contract.toml",
+            "sha256": "db7c72ccae6ff2e52b942375f40e56ea4fa5724183afbb976436d93c5255d0fb"
+          }
+        ],
+        "name": "contract.valid",
+        "reason": "contract violates schema steward.contract/0.1",
+        "rule": "R-02",
+        "rule_version": 1,
+        "status": "FAIL",
+        "subject": "benchmarks/expr-clf.contract.toml"
+      },
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "benchmarks/expr-clf.contract.toml",
+            "sha256": "db7c72ccae6ff2e52b942375f40e56ea4fa5724183afbb976436d93c5255d0fb"
+          }
+        ],
+        "name": "contract.consistent",
+        "reason": "not evaluated: contract failed R-02",
+        "rule": "R-03",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "benchmarks/expr-clf.contract.toml"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "contract.required",
+        "reason": "confirmatory profile requires a contract with analysis = \"confirmatory\"",
+        "rule": "R-04",
+        "rule_version": 1,
+        "status": "INCOMPLETE",
+        "subject": "."
+      },
+      {
+        "details": [
+          {
+            "code": "R-05.human_judgment",
+            "field": "judgment.novelty",
+            "note": "human judgment; recorded, not verified; not assessed by this rule"
+          }
+        ],
+        "evidence": [
+          {
+            "path": "development/prior_work/expr-clf.prior.toml",
+            "sha256": "3377884883173b99de701ec37732e41adde0800e2a74952e59bd14fd9e93aa13"
+          }
+        ],
+        "name": "prior_work.valid",
+        "reason": "record is consistent with steward.prior_work/0.1",
+        "rule": "R-05",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "development/prior_work/expr-clf.prior.toml"
+      },
+      {
+        "details": [
+          {
+            "code": "R-06.found",
+            "files": [
+              "development/prior_work/expr-clf.prior.toml"
+            ]
+          }
+        ],
+        "evidence": [],
+        "name": "prior_work.required",
+        "reason": "prior-work record with a closest_method work present",
+        "rule": "R-06",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "privacy.denylist",
+        "reason": "[privacy] and [[terms]] are not configured",
+        "rule": "R-07",
+        "rule_version": 2,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "paper/spec.toml",
+            "sha256": "e148198672bc9af97489c17ee65ed41e42226b84bd5d3c3e03035fad8e0dd619"
+          }
+        ],
+        "name": "paper.spec_valid",
+        "reason": "paper 'main' spec is consistent with its schema",
+        "rule": "R-08",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "paper/spec.toml"
+      },
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "paper/venue.toml",
+            "sha256": "d69d740576eb0447c312d4c98a363f4e1bed81bfbd07c2cced5a57fc5a6e9493"
+          }
+        ],
+        "name": "paper.spec_valid",
+        "reason": "paper 'main' venue profile is consistent with its schema",
+        "rule": "R-08",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "paper/venue.toml"
+      },
+      {
+        "details": [
+          {
+            "code": "R-09.mode",
+            "value": "draft"
+          }
+        ],
+        "evidence": [],
+        "name": "paper.placeholders",
+        "reason": "no placeholder markers (5 file(s), draft mode)",
+        "rule": "R-09",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "paper"
+      },
+      {
+        "details": [
+          {
+            "code": "R-10.unused",
+            "field": "values.n_samples"
+          },
+          {
+            "code": "R-10.unused",
+            "field": "values.n_test_donors"
+          },
+          {
+            "code": "R-10.unused",
+            "field": "values.n_test_samples"
+          },
+          {
+            "code": "R-10.unused",
+            "field": "values.n_train_donors"
+          },
+          {
+            "code": "R-10.unused",
+            "field": "values.n_train_samples"
+          },
+          {
+            "code": "R-10.unused",
+            "field": "values.n_val_donors"
+          },
+          {
+            "code": "R-10.unused",
+            "field": "values.n_val_samples"
+          }
+        ],
+        "evidence": [
+          {
+            "path": "paper/values.toml",
+            "sha256": "0254965925a63ccd90bd8e0c6f6bda7c483605a467d5438bb5b1633454527921"
+          }
+        ],
+        "name": "paper.values",
+        "reason": "12 value(s) match their sources; 5 reference(s) resolve",
+        "rule": "R-10",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "paper/values.toml"
+      },
+      {
+        "details": [
+          {
+            "code": "R-11.fingerprints_compared",
+            "value": 2
+          }
+        ],
+        "evidence": [
+          {
+            "path": "paper/displays.toml",
+            "sha256": "de9f74a4e74c0d30e9dc4c75a1c21ea34d9269ca9fa456d2b625c05b93c7a927"
+          }
+        ],
+        "name": "paper.displays",
+        "reason": "2 display(s) built from declared scripts and inputs, cited and current",
+        "rule": "R-11",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "paper/displays.toml"
+      },
+      {
+        "details": [
+          {
+            "code": "R-12.mode",
+            "value": "draft"
+          }
+        ],
+        "evidence": [
+          {
+            "path": "paper/main.log",
+            "sha256": "5af6e5d05f0153cf08eac08fd186b21a8c0fc20c8f802bb54f05eed439818721"
+          }
+        ],
+        "name": "paper.build",
+        "reason": "build log clean",
+        "rule": "R-12",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "paper/main.log"
+      },
+      {
+        "details": [
+          {
+            "code": "R-13.mode",
+            "value": "draft"
+          },
+          {
+            "code": "R-13.abstract_words",
+            "value": 54
+          }
+        ],
+        "evidence": [
+          {
+            "path": "paper/venue.toml",
+            "sha256": "d69d740576eb0447c312d4c98a363f4e1bed81bfbd07c2cced5a57fc5a6e9493"
+          }
+        ],
+        "name": "paper.venue",
+        "reason": "machine-checkable venue rules are met",
+        "rule": "R-13",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "paper/venue.toml"
+      },
+      {
+        "details": [
+          {
+            "code": "R-14.verification",
+            "message": "verified 0, unverified 2, unavailable 0; online verification is not part of this version"
+          }
+        ],
+        "evidence": [
+          {
+            "path": "paper/refs.bib",
+            "sha256": "7c3af3814a6edcaae4143720d9b9e469549b2216d049a73ce52b540a2ec61415"
+          }
+        ],
+        "name": "paper.citations",
+        "reason": "2 cited key(s) resolve; 2 entr(ies) well-formed (existence not verified)",
+        "rule": "R-14",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "paper"
+      },
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "paper/values.toml",
+            "sha256": "0254965925a63ccd90bd8e0c6f6bda7c483605a467d5438bb5b1633454527921"
+          }
+        ],
+        "name": "paper.consistency",
+        "reason": "2 assertion(s) hold",
+        "rule": "R-15",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "paper/values.toml"
+      },
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "talks/progress-update/talk.toml",
+            "sha256": "8e58b7f578674ddfc111066790049f1faa126e799b9402f8bed4e977705f13c2"
+          }
+        ],
+        "name": "talk.plan_valid",
+        "reason": "talk 'progress-update': plan is consistent with steward.talk/0.1",
+        "rule": "R-21",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "talks/progress-update/talk.toml"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.stage_confirmed",
+        "reason": "talk 'progress-update': stage 'development' confirmed",
+        "rule": "R-22",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "talks/progress-update/talk.toml"
+      },
+      {
+        "details": [
+          {
+            "code": "R-23.ceiling",
+            "value": "preliminary"
+          }
+        ],
+        "evidence": [
+          {
+            "path": "talks/progress-update/talk.toml",
+            "sha256": "8e58b7f578674ddfc111066790049f1faa126e799b9402f8bed4e977705f13c2"
+          }
+        ],
+        "name": "talk.claim_ceiling",
+        "reason": "talk 'progress-update': 1 claim(s) within the development ceiling or supported",
+        "rule": "R-23",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "talks/progress-update/talk.toml"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.values",
+        "reason": "talk 'progress-update': 4 value reference(s) resolve",
+        "rule": "R-24",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "talks/progress-update"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.limitations",
+        "reason": "talk 'progress-update': stage 'development' with no validated claims",
+        "rule": "R-25",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "talks/progress-update/talk.toml"
+      },
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "talks/progress-update/talk.toml",
+            "sha256": "8e58b7f578674ddfc111066790049f1faa126e799b9402f8bed4e977705f13c2"
+          }
+        ],
+        "name": "talk.structure",
+        "reason": "talk 'progress-update': structure matches feedback mode 'targeted'",
+        "rule": "R-26",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "talks/progress-update/talk.toml"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.figures",
+        "reason": "talk 'progress-update': 1 display(s) from declared, current builds",
+        "rule": "R-27",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "talks/progress-update"
+      },
+      {
+        "details": [
+          {
+            "code": "R-28.engine",
+            "value": "beamer"
+          },
+          {
+            "code": "R-28.contrast",
+            "message": "minimum 4.5",
+            "value": 17.4
+          },
+          {
+            "code": "R-28.slides",
+            "message": "maximum 10",
+            "value": 6
+          },
+          {
+            "code": "R-28.not_assessed",
+            "message": "font size and slide bounds: no PDF layout or PPTX shapes available"
+          }
+        ],
+        "evidence": [],
+        "name": "talk.visual",
+        "reason": "talk 'progress-update': slide count and contrast within limits; fonts and bounds not assessed (no PDF layout reader)",
+        "rule": "R-28",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "talks/progress-update"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.language",
+        "reason": "talk 'progress-update': no strong wording found",
+        "rule": "R-29",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "talks/progress-update"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "ledger.integrity",
+        "reason": "no ledger configured",
+        "rule": "R-31",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "run.records",
+        "reason": "[run] is not configured",
+        "rule": "R-32",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "policy.baseline",
+        "reason": "[policy] is not configured",
+        "rule": "R-33",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "spend.ledger",
+        "reason": "[spend] is not configured",
+        "rule": "R-34",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "integrity.frozen",
+        "reason": "[integrity] is not configured",
+        "rule": "R-35",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "integrity.datasets",
+        "reason": "[integrity] is not configured",
+        "rule": "R-36",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "integrity.sealed_use",
+        "reason": "[integrity] is not configured",
+        "rule": "R-37",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "integrity.decisions",
+        "reason": "[integrity] is not configured",
+        "rule": "R-38",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "integrity.contract_frozen",
+        "reason": "[integrity] is not configured",
+        "rule": "R-39",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "evidence.claims",
+        "reason": "[evidence] is not configured",
+        "rule": "R-40",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [
+          {
+            "code": "R-41.unknown_contract",
+            "message": "contract:expr-clf",
+            "value": "D1"
+          }
+        ],
+        "evidence": [],
+        "name": "prior_work.links",
+        "reason": "claimed differences cite unknown contracts",
+        "rule": "R-41",
+        "rule_version": 1,
+        "status": "FAIL",
+        "subject": "development/prior_work/expr-clf.prior.toml"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "release.integrity",
+        "reason": "[release] is not configured",
+        "rule": "R-42",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [
+          {
+            "code": "R-43.recommended",
+            "message": "before any public release, an independent red-team review recorded in development/assessment/findings.toml (red-team-review skill); set [release] review_required = true to enforce it"
+          }
+        ],
+        "evidence": [],
+        "name": "release.review",
+        "reason": "[release] is not configured",
+        "rule": "R-43",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "release.fingerprint",
+        "reason": "no runtime fingerprint configured ([release] fingerprint)",
+        "rule": "R-44",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "benchmarks/expr-clf.contract.toml",
+            "sha256": "db7c72ccae6ff2e52b942375f40e56ea4fa5724183afbb976436d93c5255d0fb"
+          }
+        ],
+        "name": "benchmark.splits",
+        "reason": "not evaluated: contract failed R-02",
+        "rule": "R-45",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "benchmarks/expr-clf.contract.toml"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.results",
+        "reason": "no contract declares [results]",
+        "rule": "R-47",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.comparison",
+        "reason": "no contract declares [comparison] output",
+        "rule": "R-48",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "storage.artifacts",
+        "reason": "[storage] is not configured",
+        "rule": "R-50",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "steward.toml",
+            "sha256": "f8f2cae1ac5d86dd28ac7d0e419d53467ad168a955b3c18b50746b1026bcbb3b"
+          }
+        ],
+        "name": "governance.constitution",
+        "reason": "constitution version 2 declared and installed",
+        "rule": "R-51",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "steward.toml"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "repro.current",
+        "reason": "[repro] is not configured",
+        "rule": "R-52",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "exchange.items",
+        "reason": "[exchange] is not configured",
+        "rule": "R-53",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "exchange.inbox",
+        "reason": "[exchange] is not configured",
+        "rule": "R-54",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "session.handoff",
+        "reason": "[session] is not configured",
+        "rule": "R-55",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "boundary.imports",
+        "reason": "[boundary] is not configured",
+        "rule": "R-56",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "tasks.board",
+        "reason": "[tasks] is not configured",
+        "rule": "R-57",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "changelog.unreleased",
+        "reason": "[changelog] is not configured",
+        "rule": "R-58",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "branches.model",
+        "reason": "[branches] is not configured",
+        "rule": "R-59",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "skills.copies",
+        "reason": "[skills] is not configured",
+        "rule": "R-60",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "files.conflict_markers",
+        "reason": "no merge-conflict markers in 33 text file(s)",
+        "rule": "R-61",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "agents.ledger",
+        "reason": "[agents] is not configured",
+        "rule": "R-62",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "frozen.sets",
+        "reason": "no [[frozen]] sets declared",
+        "rule": "R-63",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "containers.context",
+        "reason": "no [containers] contexts declared",
+        "rule": "R-64",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "containers.compose",
+        "reason": "no [containers] compose files or shipped paths declared",
+        "rule": "R-65",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "dependencies.parity",
+        "reason": "[dependencies] is not configured",
+        "rule": "R-66",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.power",
+        "reason": "no contract declares minimum_units",
+        "rule": "R-67",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "stages.records",
+        "reason": "no [[stages]] declared",
+        "rule": "R-68",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "docs.current",
+        "reason": "[docs] is not configured",
+        "rule": "R-69",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "milestones.valid",
+        "reason": "no milestones file",
+        "rule": "R-70",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "development/milestones.toml"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "sprint.valid",
+        "reason": "no sprints",
+        "rule": "R-71",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "development/sprints"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "sprint.closed",
+        "reason": "no ended sprint",
+        "rule": "R-72",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "development/sprints"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "pins.records",
+        "reason": "no [[pin]] declared",
+        "rule": "R-73",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "pins.retirement",
+        "reason": "no [[pin]] declared",
+        "rule": "R-74",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "studies.records",
+        "reason": "[studies] is not configured",
+        "rule": "R-75",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "research.records",
+        "reason": "[research] is not configured",
+        "rule": "R-76",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.citations_verified",
+        "reason": "no paper declares a citations record",
+        "rule": "R-77",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.llm_eval",
+        "reason": "no benchmark contract declares [llm_eval]",
+        "rule": "R-78",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "licence.declared",
+        "reason": "[licence] is not configured",
+        "rule": "R-79",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "licence.dependencies",
+        "reason": "[licence] is not configured",
+        "rule": "R-80",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "licence.code",
+        "reason": "[licence] is not configured",
+        "rule": "R-81",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "licence.provenance",
+        "reason": "[licence] is not configured",
+        "rule": "R-82",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "data.contracts",
+        "reason": "no data contracts declared",
+        "rule": "R-83",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "compare.shadow",
+        "reason": "no shadow stages declared",
+        "rule": "R-84",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.data_availability",
+        "reason": "[studies] is not configured",
+        "rule": "R-85",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "model.records",
+        "reason": "no model records configured",
+        "rule": "R-86",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "release.stranger_test",
+        "reason": "[stranger_test] is not configured",
+        "rule": "R-87",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
+      }
+    ],
+    "summary": {
+      "counts": {
+        "FAIL": 2,
+        "INCOMPLETE": 1,
+        "NOT_APPLICABLE": 53,
+        "PASS": 22,
+        "UNKNOWN": 2
+      },
+      "worst": "FAIL"
+    }
+  }
+}

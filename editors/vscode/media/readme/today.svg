@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="348" viewBox="0 0 760 348" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
+<rect width="760" height="348" rx="10" fill="#1f1f1f"/>
+<rect x="0" y="0" width="760" height="298" rx="10" fill="#181818"/>
+<text x="8" y="17" fill="#bbbbbb" font-size="11" font-weight="700">⌄  TODAY</text>
+<text x="748" y="17" fill="#9d9d9d" font-size="12" text-anchor="end">⌖  ⎘  ↺  ?</text>
+<text x="23" y="41.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="41" fill="#cccccc">Reduced form<tspan dx="7" fill="#9d9d9d">from CLI 0.20.6 outputs</tspan></text>
+<text x="23" y="63.5" fill="#9d9d9d" font-weight="700" font-size="12.5">↺</text><text x="40" y="63" fill="#cccccc">Resume<tspan dx="7" fill="#9d9d9d">development/HANDOFF.md · the session handoff</tspan></text>
+<text x="23" y="85.5" fill="#9d9d9d" font-weight="700" font-size="12.5">◷</text><text x="40" y="85" fill="#cccccc">Next milestone<tspan dx="7" fill="#9d9d9d">abstract · 9675.0 days ago · DUE (RECORD ITS OUTCOME) · steward timeline</tspan></text>
+<text x="8" y="107" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="107.5" fill="#cca700" font-weight="700" font-size="12.5">✎</text><text x="40" y="107" fill="#cccccc">Signatures waiting (1)<tspan dx="7" fill="#9d9d9d">steward audit progress</tspan></text>
+<text x="36" y="129" fill="#cccccc">spend (d3e83e998137)</text>
+<text x="8" y="151" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="151.5" fill="#9d9d9d" font-weight="700" font-size="12.5">✉</text><text x="40" y="151" fill="#cccccc">Exchange items open here (1)<tspan dx="7" fill="#9d9d9d">steward audit progress</tspan></text>
+<text x="36" y="173" fill="#cccccc">PEER-REQ-001</text>
+<text x="8" y="195" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="195.5" fill="#9d9d9d" font-weight="700" font-size="12.5">❝</text><text x="40" y="195" fill="#cccccc">This project's own requests still open (1)<tspan dx="7" fill="#9d9d9d">steward audit progress</tspan></text>
+<text x="36" y="217" fill="#cccccc">GEO-Q-001</text>
+<text x="8" y="239" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="239.5" fill="#9d9d9d" font-weight="700" font-size="12.5">↗</text><text x="40" y="239" fill="#cccccc">Sprints with open tasks (1)<tspan dx="7" fill="#9d9d9d">steward audit progress</tspan></text>
+<text x="36" y="261" fill="#cccccc">fixture-sprint<tspan dx="7" fill="#9d9d9d">T1, T2, T3, T4, T5</tspan></text>
+<text x="8" y="283" fill="#9d9d9d" font-size="12">›</text><text x="23" y="283.5" fill="#9d9d9d" font-weight="700" font-size="12.5">◆</text><text x="40" y="283" fill="#cccccc">Milestones (5)<tspan dx="7" fill="#9d9d9d">steward audit progress</tspan></text>
+<text x="16" y="320" font-size="11.5" fill="#8b949e">Drawing of the Today panel (reduced form), rendered by its view model from the fixture outputs of steward audit</text>
+<text x="16" y="336" font-size="11.5" fill="#8b949e">progress, steward timeline and a session handoff (not a screenshot). Each row names the CLI output it comes from.</text>
+</svg>

@@ -219,6 +219,12 @@ def ssh_keygen() -> str:
     return str(Path(found).resolve())
 
 
+def signing_config() -> tuple[str, ...]:
+    """`git -c` options that pin the signing program for `git tag -s` (STW-057): SSH signatures only, made by the
+    same pinned ssh-keygen that verifies them, and no repository-chosen command to pick the key."""
+    return ("-c", "gpg.format=ssh", "-c", f"gpg.ssh.program={ssh_keygen()}", "-c", "gpg.ssh.defaultKeyCommand=")
+
+
 def object_hash(root: Path, ref: str) -> str:
     if ref.startswith("sha256:") and re.match(r"^sha256:[0-9a-f]{64}$", ref):
         return ref
@@ -343,7 +349,12 @@ def sign(root: Path, nonce: str, data: bytes | None = None) -> str:
         f.write(data)
         tmp = f.name
     try:
-        out = _git(root, "tag", "-s", tag, "-F", tmp, user_config=True)
+        # STW-057: the signing program is pinned like the verifier (red-team C1). A repository's own .git/config is
+        # writable by an agent; without these, `gpg.ssh.program` (or `gpg.format` with `gpg.program`) there would choose
+        # the program that runs as the human and holds their key agent, and `gpg.ssh.defaultKeyCommand` a command run
+        # to pick the key. The key itself may still come from any config: a signature by the wrong key is refused when
+        # it is verified against the allowed signers.
+        out = _git(root, *signing_config(), "tag", "-s", tag, "-F", tmp, user_config=True)
     finally:
         os.unlink(tmp)
     if out.returncode != 0:

@@ -280,6 +280,24 @@ def test_C1_repository_configured_signature_program_cannot_fake_verification(cli
     assert code == 1 and "signature" in err
 
 
+def test_STW057_repository_configured_signing_program_never_runs(cli, repo):
+    """STW-057: a writable .git/config must not choose the program that signs (it would run as the human, with their
+    key agent). The repository names a fake signer and a key command; signing still uses the pinned ssh-keygen, the
+    fakes never run, and the authorization verifies."""
+    marker = repo.parent / "fake-signer-ran"
+    fake = repo.parent / "fake-signer"
+    fake.write_text(f'#!/bin/sh\ntouch "{marker}"\nexit 1\n')
+    fake.chmod(0o755)
+    sh(repo, "git", "config", "gpg.ssh.program", str(fake))
+    sh(repo, "git", "config", "gpg.program", str(fake))
+    sh(repo, "git", "config", "gpg.ssh.defaultKeyCommand", str(fake))
+    sh(repo, "git", "config", "gpg.format", "openpgp")
+    tag = approve(cli, repo)
+    assert not marker.exists()
+    code, _, err = cli("authorize", "verify", tag)
+    assert code == 0, err
+
+
 # ---------------------------------------------------------------- red-team A3: trust root
 def _agent_branch(repo):
     agent_pub = keygen(repo.parent / "agent")

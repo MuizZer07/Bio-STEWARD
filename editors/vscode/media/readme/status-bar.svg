@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="336" viewBox="0 0 800 336" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
+<rect width="800" height="336" rx="10" fill="#1f1f1f"/>
+<text x="16" y="29" fill="#cccccc" font-size="12.5">Right after a full run, every required result passed</text>
+<rect x="440" y="14" width="344" height="22" rx="3" fill="#181818" stroke="#2b2b2b"/>
+<rect x="440" y="14" width="344" height="22" fill="none"/>
+<text x="450" y="29" fill="#ffffff" font-size="12">⛉ default ✓ ELIGIBLE · fresh</text>
+<text x="16" y="63" fill="#cccccc" font-size="12.5">A required result failed: the count of blocking results</text>
+<rect x="440" y="48" width="344" height="22" rx="3" fill="#181818" stroke="#2b2b2b"/>
+<rect x="440" y="48" width="344" height="22" fill="#c72e0f"/>
+<text x="450" y="63" fill="#ffffff" font-size="12">⛉ default ✗ NOT ELIGIBLE · 2 blocking · fresh</text>
+<text x="16" y="97" fill="#cccccc" font-size="12.5">A project file changed since the run (no check is run)</text>
+<rect x="440" y="82" width="344" height="22" rx="3" fill="#181818" stroke="#2b2b2b"/>
+<rect x="440" y="82" width="344" height="22" fill="#c72e0f"/>
+<text x="450" y="97" fill="#ffffff" font-size="12">⛉ default ✗ NOT ELIGIBLE · 2 blocking · stale</text>
+<text x="16" y="131" fill="#cccccc" font-size="12.5">A newer scoped run (check --rule R-83): verdict kept, stale</text>
+<rect x="440" y="116" width="344" height="22" rx="3" fill="#181818" stroke="#2b2b2b"/>
+<rect x="440" y="116" width="344" height="22" fill="#c72e0f"/>
+<text x="450" y="131" fill="#ffffff" font-size="12">⛉ default ✗ NOT ELIGIBLE · 2 blocking · stale</text>
+<text x="16" y="165" fill="#cccccc" font-size="12.5">A report found on disk at start-up</text>
+<rect x="440" y="150" width="344" height="22" rx="3" fill="#181818" stroke="#2b2b2b"/>
+<rect x="440" y="150" width="344" height="22" fill="#c72e0f"/>
+<text x="450" y="165" fill="#ffffff" font-size="12">⛉ default ✗ NOT ELIGIBLE · 2 blocking · unknown</text>
+<text x="16" y="199" fill="#cccccc" font-size="12.5">No report yet</text>
+<rect x="440" y="184" width="344" height="22" rx="3" fill="#181818" stroke="#2b2b2b"/>
+<rect x="440" y="184" width="344" height="22" fill="none"/>
+<text x="450" y="199" fill="#ffffff" font-size="12">⛉ default ? · no report</text>
+<text x="16" y="233" fill="#cccccc" font-size="12.5">No steward program found</text>
+<rect x="440" y="218" width="344" height="22" rx="3" fill="#181818" stroke="#2b2b2b"/>
+<rect x="440" y="218" width="344" height="22" fill="none"/>
+<text x="450" y="233" fill="#ffffff" font-size="12">⛉ Bio-STEWARD: CLI not found</text>
+<text x="16" y="267" fill="#cccccc" font-size="12.5">An untrusted workspace: nothing runs</text>
+<rect x="440" y="252" width="344" height="22" rx="3" fill="#181818" stroke="#2b2b2b"/>
+<rect x="440" y="252" width="344" height="22" fill="none"/>
+<text x="450" y="267" fill="#ffffff" font-size="12">⛉ Bio-STEWARD: Restricted Mode</text>
+<text x="16" y="308" font-size="11.5" fill="#8b949e">The status bar for the gate set in bioSteward.gate, as the extension's view model renders it for each state (drawn, not a</text>
+<text x="16" y="324" font-size="11.5" fill="#8b949e">screenshot).</text>
+</svg>

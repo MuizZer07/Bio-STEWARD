@@ -1,0 +1,150 @@
+{
+  "envelope": {
+    "created": "2000-01-01T00:00:00Z",
+    "git": {
+      "dirty": "not checked",
+      "head": "0000000000000000000000000000000000000000"
+    },
+    "platform": {
+      "os": "fixture",
+      "python": "fixture"
+    },
+    "tool": "steward",
+    "tool_version": "0.20.6"
+  },
+  "schema": "steward.report/0.1",
+  "verdict": {
+    "config_profile": "exploratory",
+    "coverage": {
+      "areas": {
+        "configured": [
+          "config",
+          "paper",
+          "governance",
+          "files",
+          "data"
+        ],
+        "not_configured": [
+          "contract",
+          "prior-work",
+          "privacy",
+          "talk",
+          "run",
+          "policy",
+          "spend",
+          "integrity",
+          "evidence",
+          "release",
+          "benchmark",
+          "storage",
+          "boundary",
+          "tasks",
+          "changelog",
+          "branches",
+          "skills",
+          "repro",
+          "session",
+          "agents",
+          "stages",
+          "frozen",
+          "dependencies",
+          "containers",
+          "docs",
+          "milestones",
+          "sprints",
+          "pins",
+          "studies",
+          "research",
+          "licence",
+          "compare",
+          "models"
+        ],
+        "nothing_recorded": []
+      },
+      "not_evaluated": [],
+      "statement": "Checked against declared rules only. Artifact integrity: not assessed by this check. Computational repeatability: not assessed by `steward check` (use `steward diff run`). Scientific validity, and the correctness or acceptance of a manuscript, are not assessed by this tool."
+    },
+    "gates": [
+      {
+        "blocking": [],
+        "eligible": false,
+        "evaluated": false,
+        "evaluated_count": 2,
+        "name": "default",
+        "not_applicable_count": 0,
+        "pass_count": 2,
+        "reason": "partial_check",
+        "required_count": 71,
+        "waived": []
+      }
+    ],
+    "inputs_digest": "sha256:1ef479d867a36818f90faccd2063a9ddd0a37c7c6cf3494fcd1770c45b492a66",
+    "project": "biology-geo",
+    "repo_id": "00000000-0000-4000-8000-000000000000",
+    "results": [
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "steward.toml",
+            "sha256": "f96a1bceb8c7f1285488b19102678fb451d1417a1c9f4dabcf287b2bffc4cce7"
+          }
+        ],
+        "name": "config.valid",
+        "reason": "config is consistent with steward.toml/0.2",
+        "rule": "R-01",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "steward.toml"
+      },
+      {
+        "details": [],
+        "evidence": [
+          {
+            "path": "results/de.tsv",
+            "sha256": "d889fb59aa5436c604cde636e43f80821de0c61de70c76aa457e9a10ef87428a"
+          }
+        ],
+        "name": "data.contracts",
+        "reason": "table meets the declared contract",
+        "rule": "R-83",
+        "rule_version": 1,
+        "status": "PASS",
+        "subject": "results/de.tsv"
+      },
+      {
+        "details": [
+          {
+            "code": "R-83.excel_date",
+            "column": 2,
+            "message": "'7-Sep' looks like a spreadsheet date: check the original gene symbol",
+            "path": "results/top_genes.tsv",
+            "row": 2
+          }
+        ],
+        "evidence": [
+          {
+            "path": "results/top_genes.tsv",
+            "sha256": "4d8580943aaec3ea4e442257c19c183f3a78d5d71a948db84205c2ad05228046"
+          }
+        ],
+        "name": "data.contracts",
+        "reason": "table contract findings need attention",
+        "rule": "R-83",
+        "rule_version": 1,
+        "status": "FAIL",
+        "subject": "results/top_genes.tsv"
+      }
+    ],
+    "summary": {
+      "counts": {
+        "FAIL": 1,
+        "INCOMPLETE": 0,
+        "NOT_APPLICABLE": 0,
+        "PASS": 2,
+        "UNKNOWN": 0
+      },
+      "worst": "FAIL"
+    }
+  }
+}

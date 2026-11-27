@@ -1,0 +1,445 @@
+{
+  "$defs": {
+    "Areas": {
+      "additionalProperties": false,
+      "properties": {
+        "configured": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Configured",
+          "type": "array"
+        },
+        "not_configured": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Not Configured",
+          "type": "array"
+        },
+        "nothing_recorded": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Nothing Recorded",
+          "type": "array"
+        }
+      },
+      "title": "Areas",
+      "type": "object"
+    },
+    "Counts": {
+      "additionalProperties": false,
+      "properties": {
+        "FAIL": {
+          "title": "Fail",
+          "type": "integer"
+        },
+        "INCOMPLETE": {
+          "title": "Incomplete",
+          "type": "integer"
+        },
+        "NOT_APPLICABLE": {
+          "title": "Not Applicable",
+          "type": "integer"
+        },
+        "PASS": {
+          "title": "Pass",
+          "type": "integer"
+        },
+        "UNKNOWN": {
+          "title": "Unknown",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "PASS",
+        "FAIL",
+        "INCOMPLETE",
+        "UNKNOWN",
+        "NOT_APPLICABLE"
+      ],
+      "title": "Counts",
+      "type": "object"
+    },
+    "Coverage": {
+      "additionalProperties": false,
+      "properties": {
+        "areas": {
+          "$ref": "#/$defs/Areas",
+          "default": {
+            "configured": [],
+            "not_configured": [],
+            "nothing_recorded": []
+          }
+        },
+        "not_evaluated": {
+          "items": {
+            "$ref": "#/$defs/NotEvaluated"
+          },
+          "title": "Not Evaluated",
+          "type": "array"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "not_evaluated",
+        "statement"
+      ],
+      "title": "Coverage",
+      "type": "object"
+    },
+    "Envelope": {
+      "additionalProperties": false,
+      "properties": {
+        "created": {
+          "title": "Created",
+          "type": "string"
+        },
+        "git": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "const": "unknown",
+              "type": "string"
+            }
+          ],
+          "title": "Git"
+        },
+        "platform": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Platform",
+          "type": "object"
+        },
+        "tool": {
+          "title": "Tool",
+          "type": "string"
+        },
+        "tool_version": {
+          "title": "Tool Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool",
+        "tool_version",
+        "created",
+        "platform",
+        "git"
+      ],
+      "title": "Envelope",
+      "type": "object"
+    },
+    "EvidenceItem": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "title": "EvidenceItem",
+      "type": "object"
+    },
+    "Gate": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking": {
+          "items": {
+            "$ref": "#/$defs/GateRef"
+          },
+          "title": "Blocking",
+          "type": "array"
+        },
+        "eligible": {
+          "title": "Eligible",
+          "type": "boolean"
+        },
+        "evaluated": {
+          "title": "Evaluated",
+          "type": "boolean"
+        },
+        "evaluated_count": {
+          "title": "Evaluated Count",
+          "type": "integer"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "not_applicable_count": {
+          "default": 0,
+          "title": "Not Applicable Count",
+          "type": "integer"
+        },
+        "pass_count": {
+          "default": 0,
+          "title": "Pass Count",
+          "type": "integer"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "required_count": {
+          "title": "Required Count",
+          "type": "integer"
+        },
+        "waived": {
+          "items": {
+            "$ref": "#/$defs/GateRef"
+          },
+          "title": "Waived",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "evaluated",
+        "eligible",
+        "reason",
+        "required_count",
+        "evaluated_count",
+        "blocking",
+        "waived"
+      ],
+      "title": "Gate",
+      "type": "object"
+    },
+    "GateRef": {
+      "additionalProperties": false,
+      "properties": {
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "INCOMPLETE",
+            "UNKNOWN",
+            "NOT_APPLICABLE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule",
+        "subject",
+        "status"
+      ],
+      "title": "GateRef",
+      "type": "object"
+    },
+    "NotEvaluated": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "reason"
+      ],
+      "title": "NotEvaluated",
+      "type": "object"
+    },
+    "ResultItem": {
+      "additionalProperties": false,
+      "properties": {
+        "details": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Details",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceItem"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "rule": {
+          "pattern": "^R-\\d{2}$",
+          "title": "Rule",
+          "type": "string"
+        },
+        "rule_version": {
+          "title": "Rule Version",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "INCOMPLETE",
+            "UNKNOWN",
+            "NOT_APPLICABLE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule",
+        "name",
+        "rule_version",
+        "subject",
+        "status",
+        "reason",
+        "details",
+        "evidence"
+      ],
+      "title": "ResultItem",
+      "type": "object"
+    },
+    "Summary": {
+      "additionalProperties": false,
+      "properties": {
+        "counts": {
+          "$ref": "#/$defs/Counts"
+        },
+        "worst": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "INCOMPLETE",
+            "UNKNOWN",
+            "NOT_APPLICABLE"
+          ],
+          "title": "Worst",
+          "type": "string"
+        }
+      },
+      "required": [
+        "counts",
+        "worst"
+      ],
+      "title": "Summary",
+      "type": "object"
+    },
+    "Verdict": {
+      "additionalProperties": false,
+      "properties": {
+        "config_profile": {
+          "title": "Config Profile",
+          "type": "string"
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        },
+        "gates": {
+          "items": {
+            "$ref": "#/$defs/Gate"
+          },
+          "title": "Gates",
+          "type": "array"
+        },
+        "inputs_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Inputs Digest",
+          "type": "string"
+        },
+        "project": {
+          "title": "Project",
+          "type": "string"
+        },
+        "repo_id": {
+          "title": "Repo Id",
+          "type": "string"
+        },
+        "results": {
+          "items": {
+            "$ref": "#/$defs/ResultItem"
+          },
+          "title": "Results",
+          "type": "array"
+        },
+        "summary": {
+          "$ref": "#/$defs/Summary"
+        }
+      },
+      "required": [
+        "repo_id",
+        "project",
+        "config_profile",
+        "inputs_digest",
+        "results",
+        "summary",
+        "gates",
+        "coverage"
+      ],
+      "title": "Verdict",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "envelope": {
+      "$ref": "#/$defs/Envelope"
+    },
+    "schema": {
+      "const": "steward.report/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "verdict": {
+      "$ref": "#/$defs/Verdict"
+    }
+  },
+  "required": [
+    "schema",
+    "envelope",
+    "verdict"
+  ],
+  "title": "Report",
+  "type": "object"
+}

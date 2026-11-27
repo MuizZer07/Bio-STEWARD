@@ -24,3 +24,11 @@ build/
 !examples/**/*.log
 !tests/fixtures/
 !tests/fixtures/**
+
+# VS Code extension (editors/vscode/): dependencies, build output, test host, the pinned CLI, packages
+editors/vscode/node_modules/
+editors/vscode/dist/
+editors/vscode/out/
+editors/vscode/.vscode-test/
+editors/vscode/.cli/
+editors/vscode/*.vsix

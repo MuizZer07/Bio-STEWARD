@@ -1,0 +1,1323 @@
+{
+  "envelope": {
+    "created": "2000-01-01T00:00:00Z",
+    "git": {
+      "dirty": "not checked",
+      "head": "0000000000000000000000000000000000000000"
+    },
+    "platform": {
+      "os": "fixture",
+      "python": "fixture"
+    },
+    "tool": "steward",
+    "tool_version": "0.20.6"
+  },
+  "schema": "steward.report/0.1",
+  "verdict": {
+    "config_profile": "unknown",
+    "coverage": {
+      "areas": {
+        "configured": [],
+        "not_configured": [
+          "agents",
+          "benchmark",
+          "boundary",
+          "branches",
+          "changelog",
+          "compare",
+          "config",
+          "containers",
+          "contract",
+          "data",
+          "dependencies",
+          "docs",
+          "evidence",
+          "files",
+          "frozen",
+          "governance",
+          "integrity",
+          "licence",
+          "milestones",
+          "models",
+          "paper",
+          "pins",
+          "policy",
+          "prior-work",
+          "privacy",
+          "release",
+          "repro",
+          "research",
+          "run",
+          "session",
+          "skills",
+          "spend",
+          "sprints",
+          "stages",
+          "storage",
+          "studies",
+          "talk",
+          "tasks"
+        ],
+        "nothing_recorded": []
+      },
+      "not_evaluated": [],
+      "statement": "Checked against declared rules only. Artifact integrity: not assessed by this check. Computational repeatability: not assessed by `steward check` (use `steward diff run`). Scientific validity, and the correctness or acceptance of a manuscript, are not assessed by this tool."
+    },
+    "gates": [
+      {
+        "blocking": [
+          {
+            "rule": "R-01",
+            "status": "FAIL",
+            "subject": "steward.toml"
+          },
+          {
+            "rule": "R-02",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-03",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-04",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-05",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-06",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-07",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-08",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-09",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-10",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-11",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-12",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-13",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-14",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-15",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-21",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-22",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-23",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-24",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-25",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-26",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-27",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-28",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-29",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-31",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-32",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-33",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-34",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-35",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-36",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-37",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-38",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-39",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-40",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-41",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-42",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-43",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-44",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-45",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-46",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-47",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-48",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-49",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-50",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-51",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-52",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-53",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-54",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-55",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-56",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-57",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-58",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-59",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-60",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-61",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-62",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-63",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-64",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-65",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-66",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-67",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-68",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-69",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-70",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-71",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-72",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-73",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-74",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-75",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-76",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-77",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-78",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-79",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-80",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-81",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-82",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-83",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-84",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-85",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-86",
+            "status": "UNKNOWN",
+            "subject": "."
+          },
+          {
+            "rule": "R-87",
+            "status": "UNKNOWN",
+            "subject": "."
+          }
+        ],
+        "eligible": false,
+        "evaluated": true,
+        "evaluated_count": 81,
+        "name": "default",
+        "not_applicable_count": 0,
+        "pass_count": 0,
+        "reason": "blocking results",
+        "required_count": 81,
+        "waived": []
+      }
+    ],
+    "inputs_digest": "sha256:f7cec5438cb24d48c0dda5f02e62d0c3ac13ac59c58bae6bce005e6ed369f1be",
+    "project": "unknown",
+    "repo_id": "unknown",
+    "results": [
+      {
+        "details": [
+          {
+            "code": "schema",
+            "field": "steward.not_a_key",
+            "message": "Extra inputs are not permitted"
+          }
+        ],
+        "evidence": [
+          {
+            "path": "steward.toml",
+            "sha256": "f2108623d5771a64943ff1fa42851ed4a589bd455ae2dfc7f59acc3ae9c041fa"
+          }
+        ],
+        "name": "config.valid",
+        "reason": "config violates schema steward.toml/0.1",
+        "rule": "R-01",
+        "rule_version": 1,
+        "status": "FAIL",
+        "subject": "steward.toml"
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "contract.valid",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-02",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "contract.consistent",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-03",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "contract.required",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-04",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "prior_work.valid",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-05",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "prior_work.required",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-06",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "privacy.denylist",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-07",
+        "rule_version": 2,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.spec_valid",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-08",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.placeholders",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-09",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.values",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-10",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.displays",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-11",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.build",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-12",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.venue",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-13",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.citations",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-14",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.consistency",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-15",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.plan_valid",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-21",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.stage_confirmed",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-22",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.claim_ceiling",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-23",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.values",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-24",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.limitations",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-25",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.structure",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-26",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.figures",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-27",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.visual",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-28",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "talk.language",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-29",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "ledger.integrity",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-31",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "run.records",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-32",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "policy.baseline",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-33",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "spend.ledger",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-34",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "integrity.frozen",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-35",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "integrity.datasets",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-36",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "integrity.sealed_use",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-37",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "integrity.decisions",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-38",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "integrity.contract_frozen",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-39",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "evidence.claims",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-40",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "prior_work.links",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-41",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "release.integrity",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-42",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "release.review",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-43",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "release.fingerprint",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-44",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.splits",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-45",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.datasets",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-46",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.results",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-47",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.comparison",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-48",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.leakage",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-49",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "storage.artifacts",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-50",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "governance.constitution",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-51",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "repro.current",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-52",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "exchange.items",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-53",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "exchange.inbox",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-54",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "session.handoff",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-55",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "boundary.imports",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-56",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "tasks.board",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-57",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "changelog.unreleased",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-58",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "branches.model",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-59",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "skills.copies",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-60",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "files.conflict_markers",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-61",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "agents.ledger",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-62",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "frozen.sets",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-63",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "containers.context",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-64",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "containers.compose",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-65",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "dependencies.parity",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-66",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.power",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-67",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "stages.records",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-68",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "docs.current",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-69",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "milestones.valid",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-70",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "sprint.valid",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-71",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "sprint.closed",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-72",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "pins.records",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-73",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "pins.retirement",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-74",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "studies.records",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-75",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "research.records",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-76",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.citations_verified",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-77",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "benchmark.llm_eval",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-78",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "licence.declared",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-79",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "licence.dependencies",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-80",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "licence.code",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-81",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "licence.provenance",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-82",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "data.contracts",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-83",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "compare.shadow",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-84",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "paper.data_availability",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-85",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "model.records",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-86",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      },
+      {
+        "details": [],
+        "evidence": [],
+        "name": "release.stranger_test",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-87",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
+      }
+    ],
+    "summary": {
+      "counts": {
+        "FAIL": 1,
+        "INCOMPLETE": 0,
+        "NOT_APPLICABLE": 0,
+        "PASS": 0,
+        "UNKNOWN": 80
+      },
+      "worst": "FAIL"
+    }
+  }
+}

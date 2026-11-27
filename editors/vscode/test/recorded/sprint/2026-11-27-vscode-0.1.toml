@@ -1,0 +1,188 @@
+schema = "steward.sprint/0.1"
+
+# Extension 0.1.0 on CLI 0.20.6 (RELEASE_vscode_0.1.0_SPEC). dispatch = "order": a task starts only on
+# `steward sprint go 2026-11-27-vscode-0.1 Txx`. One agent at a time, so run slots stay free for CLI work (G7).
+# T01 - T05 are the bare minimum. The reviewer (T11) builds nothing.
+# 2026-11-26: started at Muiz's word ("go on, start the sprint"); the window opens now. Every task uses the shell
+# adapter to start its agent with an explicit permission allowlist, because the built-in claude-code and codex
+# adapters start them without any (headless agents then cannot edit or run npm): CLI defect STW-051. The agent's
+# instructions are in prompts/<id>/<task>.md. Codex's sandbox cannot write .git, so a Codex task's command commits
+# what Codex wrote after it exits (2026-11-26).
+
+[sprint]
+id = "2026-11-27-vscode-0.1"
+window = { start = 2026-11-26T15:15:00-05:00, end = 2026-12-11T18:00:00-05:00 }
+max_parallel = 1
+dispatch = "order"
+milestone = "vscode-0.1.0-alpha"
+
+[[task]]
+id = "T01"
+title = "Scaffold the extension (layout, manifest, toolchain, CLI install script)"
+# agent: claude-code
+agent = "shell"
+after = []
+limits = { wall_minutes = 120, idle_minutes = 30 }
+command = '''claude -p "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T01.md)" --permission-mode acceptEdits --allowedTools Read Edit Write Glob Grep 'Bash(npm *)' 'Bash(npx *)' 'Bash(node *)' 'Bash(git add *)' 'Bash(git commit *)' 'Bash(git status*)' 'Bash(git diff *)' 'Bash(git log *)' 'Bash(git show *)' 'Bash(git archive *)' 'Bash(ls *)' 'Bash(mkdir *)' 'Bash(cat *)' 'Bash(test *)' 'Bash(uv venv *)' 'Bash(uv pip *)' 'Bash(steward --version)' 'Bash(steward check *)' 'Bash(steward explain *)' 'Bash(steward example *)' 'Bash(steward report *)' 'Bash(steward timeline *)' 'Bash(steward init *)' 'WebFetch(domain:code.visualstudio.com)' 'WebFetch(domain:github.com)' 'WebFetch(domain:www.npmjs.com)' --disallowedTools 'Bash(git push *)' 'Bash(git merge *)' 'Bash(git rebase *)' 'Bash(git reset *)' 'Bash(git tag *)' 'Bash(steward authorize *)' 'Bash(steward release *)' 'Bash(steward sprint *)' 'Bash(steward unseal *)' 'Bash(steward spend *)' 'Bash(vsce publish *)' 'Bash(npx vsce publish *)' 'Bash(npx ovsx *)' 'Bash(ovsx *)''''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+]
+
+[[task]]
+id = "T02"
+title = "CLI layer: locator, allow-list, runner, feature detection"
+# agent: codex
+agent = "shell"
+after = ["T01"]
+limits = { wall_minutes = 150, idle_minutes = 30 }
+command = '''codex exec -s workspace-write -c sandbox_workspace_write.network_access=true "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T02.md)" < /dev/null && git add -A && { git diff --cached --quiet || git commit -q -m "CLI layer: locator, allow-list, runner, feature detection (sprint 2026-11-27-vscode-0.1, T02; written by Codex, committed by the sprint task)"; }'''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+]
+
+[[task]]
+id = "T03"
+title = "Fixtures generated from the pinned CLI"
+# agent: claude-code
+agent = "shell"
+after = ["T02"]
+limits = { wall_minutes = 120, idle_minutes = 30 }
+command = '''claude -p "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T03.md)" --permission-mode acceptEdits --allowedTools Read Edit Write Glob Grep 'Bash(npm *)' 'Bash(npx *)' 'Bash(node *)' 'Bash(git add *)' 'Bash(git commit *)' 'Bash(git status*)' 'Bash(git diff *)' 'Bash(git log *)' 'Bash(git show *)' 'Bash(git archive *)' 'Bash(ls *)' 'Bash(mkdir *)' 'Bash(cat *)' 'Bash(test *)' 'Bash(uv venv *)' 'Bash(uv pip *)' 'Bash(steward --version)' 'Bash(steward check *)' 'Bash(steward explain *)' 'Bash(steward example *)' 'Bash(steward report *)' 'Bash(steward timeline *)' 'Bash(steward init *)' 'WebFetch(domain:code.visualstudio.com)' 'WebFetch(domain:github.com)' 'WebFetch(domain:www.npmjs.com)' --disallowedTools 'Bash(git push *)' 'Bash(git merge *)' 'Bash(git rebase *)' 'Bash(git reset *)' 'Bash(git tag *)' 'Bash(steward authorize *)' 'Bash(steward release *)' 'Bash(steward sprint *)' 'Bash(steward unseal *)' 'Bash(steward spend *)' 'Bash(vsce publish *)' 'Bash(npx vsce publish *)' 'Bash(npx ovsx *)' 'Bash(ovsx *)''''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+  "cd editors/vscode && npm run cli:install && npm run fixtures -- --verify",
+]
+
+[[task]]
+id = "T04"
+title = "Verdict views: Overview, Results, status bar"
+# agent: claude-code
+agent = "shell"
+after = ["T03"]
+limits = { wall_minutes = 180, idle_minutes = 30 }
+command = '''claude -p "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T04.md)" --permission-mode acceptEdits --allowedTools Read Edit Write Glob Grep 'Bash(npm *)' 'Bash(npx *)' 'Bash(node *)' 'Bash(git add *)' 'Bash(git commit *)' 'Bash(git status*)' 'Bash(git diff *)' 'Bash(git log *)' 'Bash(git show *)' 'Bash(git archive *)' 'Bash(ls *)' 'Bash(mkdir *)' 'Bash(cat *)' 'Bash(test *)' 'Bash(uv venv *)' 'Bash(uv pip *)' 'Bash(steward --version)' 'Bash(steward check *)' 'Bash(steward explain *)' 'Bash(steward example *)' 'Bash(steward report *)' 'Bash(steward timeline *)' 'Bash(steward init *)' 'WebFetch(domain:code.visualstudio.com)' 'WebFetch(domain:github.com)' 'WebFetch(domain:www.npmjs.com)' --disallowedTools 'Bash(git push *)' 'Bash(git merge *)' 'Bash(git rebase *)' 'Bash(git reset *)' 'Bash(git tag *)' 'Bash(steward authorize *)' 'Bash(steward release *)' 'Bash(steward sprint *)' 'Bash(steward unseal *)' 'Bash(steward spend *)' 'Bash(vsce publish *)' 'Bash(npx vsce publish *)' 'Bash(npx ovsx *)' 'Bash(ovsx *)''''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+  "cd editors/vscode && npm run cli:install && npm run fixtures -- --verify",
+  "cd editors/vscode && npm run test:host",
+]
+
+[[task]]
+id = "T05"
+title = "Problems panel and explain; build alpha.1"
+# agent: codex
+agent = "shell"
+after = ["T04"]
+limits = { wall_minutes = 150, idle_minutes = 30 }
+command = '''codex exec -s workspace-write -c sandbox_workspace_write.network_access=true "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T05.md)" < /dev/null && git add -A && { git diff --cached --quiet || git commit -q -m "Problems panel and explain; build alpha.1 (sprint 2026-11-27-vscode-0.1, T05; written by Codex, committed by the sprint task)"; }'''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+  "cd editors/vscode && npm run test:host",
+  "cd editors/vscode && npm run package",
+]
+
+[[task]]
+id = "T06"
+title = "Freshness, several projects, countdown, resume"
+# agent: claude-code
+agent = "shell"
+after = ["T05"]
+limits = { wall_minutes = 150, idle_minutes = 30 }
+command = '''claude -p "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T06.md)" --permission-mode acceptEdits --allowedTools Read Edit Write Glob Grep 'Bash(npm *)' 'Bash(npx *)' 'Bash(node *)' 'Bash(git add *)' 'Bash(git commit *)' 'Bash(git status*)' 'Bash(git diff *)' 'Bash(git log *)' 'Bash(git show *)' 'Bash(git archive *)' 'Bash(ls *)' 'Bash(mkdir *)' 'Bash(cat *)' 'Bash(test *)' 'Bash(uv venv *)' 'Bash(uv pip *)' 'Bash(steward --version)' 'Bash(steward check *)' 'Bash(steward explain *)' 'Bash(steward example *)' 'Bash(steward report *)' 'Bash(steward timeline *)' 'Bash(steward init *)' 'WebFetch(domain:code.visualstudio.com)' 'WebFetch(domain:github.com)' 'WebFetch(domain:www.npmjs.com)' --disallowedTools 'Bash(git push *)' 'Bash(git merge *)' 'Bash(git rebase *)' 'Bash(git reset *)' 'Bash(git tag *)' 'Bash(steward authorize *)' 'Bash(steward release *)' 'Bash(steward sprint *)' 'Bash(steward unseal *)' 'Bash(steward spend *)' 'Bash(vsce publish *)' 'Bash(npx vsce publish *)' 'Bash(npx ovsx *)' 'Bash(ovsx *)''''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+  "cd editors/vscode && npm run test:host",
+]
+
+[[task]]
+id = "T07"
+title = "Guided init with preview"
+# agent: codex
+agent = "shell"
+after = ["T05"]
+limits = { wall_minutes = 150, idle_minutes = 30 }
+command = '''codex exec -s workspace-write -c sandbox_workspace_write.network_access=true "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T07.md)" < /dev/null && git add -A && { git diff --cached --quiet || git commit -q -m "Guided init with preview (sprint 2026-11-27-vscode-0.1, T07; written by Codex, committed by the sprint task)"; }'''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+  "cd editors/vscode && npm run test:host",
+]
+
+[[task]]
+id = "T08"
+title = "Agent Skills, copy for agent, scoped check"
+# agent: claude-code
+agent = "shell"
+after = ["T05"]
+limits = { wall_minutes = 150, idle_minutes = 30 }
+command = '''claude -p "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T08.md)" --permission-mode acceptEdits --allowedTools Read Edit Write Glob Grep 'Bash(npm *)' 'Bash(npx *)' 'Bash(node *)' 'Bash(git add *)' 'Bash(git commit *)' 'Bash(git status*)' 'Bash(git diff *)' 'Bash(git log *)' 'Bash(git show *)' 'Bash(git archive *)' 'Bash(ls *)' 'Bash(mkdir *)' 'Bash(cat *)' 'Bash(test *)' 'Bash(uv venv *)' 'Bash(uv pip *)' 'Bash(steward --version)' 'Bash(steward check *)' 'Bash(steward explain *)' 'Bash(steward example *)' 'Bash(steward report *)' 'Bash(steward timeline *)' 'Bash(steward init *)' 'WebFetch(domain:code.visualstudio.com)' 'WebFetch(domain:github.com)' 'WebFetch(domain:www.npmjs.com)' --disallowedTools 'Bash(git push *)' 'Bash(git merge *)' 'Bash(git rebase *)' 'Bash(git reset *)' 'Bash(git tag *)' 'Bash(steward authorize *)' 'Bash(steward release *)' 'Bash(steward sprint *)' 'Bash(steward unseal *)' 'Bash(steward spend *)' 'Bash(vsce publish *)' 'Bash(npx vsce publish *)' 'Bash(npx ovsx *)' 'Bash(ovsx *)''''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+  "cd editors/vscode && npm run test:host",
+]
+
+[[task]]
+id = "T09"
+title = "Hardening: trust, security, no network, accessibility"
+# agent: codex
+agent = "shell"
+after = ["T06", "T07", "T08"]
+limits = { wall_minutes = 180, idle_minutes = 30 }
+command = '''codex exec -s workspace-write -c sandbox_workspace_write.network_access=true "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T09.md)" < /dev/null && git add -A && { git diff --cached --quiet || git commit -q -m "Hardening: trust, security, no network, accessibility (sprint 2026-11-27-vscode-0.1, T09; written by Codex, committed by the sprint task)"; }'''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+  "cd editors/vscode && npm run cli:install && npm run fixtures -- --verify",
+  "cd editors/vscode && npm run test:host",
+]
+
+[[task]]
+id = "T10"
+title = "Docs, README with figures, changelog, package, export dry run"
+# agent: claude-code
+agent = "shell"
+after = ["T09"]
+limits = { wall_minutes = 120, idle_minutes = 30 }
+command = '''claude -p "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T10.md)" --permission-mode acceptEdits --allowedTools Read Edit Write Glob Grep 'Bash(npm *)' 'Bash(npx *)' 'Bash(node *)' 'Bash(git add *)' 'Bash(git commit *)' 'Bash(git status*)' 'Bash(git diff *)' 'Bash(git log *)' 'Bash(git show *)' 'Bash(git archive *)' 'Bash(ls *)' 'Bash(mkdir *)' 'Bash(cat *)' 'Bash(test *)' 'Bash(uv venv *)' 'Bash(uv pip *)' 'Bash(steward --version)' 'Bash(steward check *)' 'Bash(steward explain *)' 'Bash(steward example *)' 'Bash(steward report *)' 'Bash(steward timeline *)' 'Bash(steward init *)' 'WebFetch(domain:code.visualstudio.com)' 'WebFetch(domain:github.com)' 'WebFetch(domain:www.npmjs.com)' --disallowedTools 'Bash(git push *)' 'Bash(git merge *)' 'Bash(git rebase *)' 'Bash(git reset *)' 'Bash(git tag *)' 'Bash(steward authorize *)' 'Bash(steward release *)' 'Bash(steward sprint *)' 'Bash(steward unseal *)' 'Bash(steward spend *)' 'Bash(vsce publish *)' 'Bash(npx vsce publish *)' 'Bash(npx ovsx *)' 'Bash(ovsx *)''''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+  "cd editors/vscode && npm run test:host",
+  "cd editors/vscode && npm run package",
+]
+
+[[task]]
+id = "T11"
+title = "Independent review of the extension"
+# agent: codex
+agent = "shell"
+after = ["T10"]
+limits = { wall_minutes = 120, idle_minutes = 30 }
+command = '''codex exec -s workspace-write -c sandbox_workspace_write.network_access=true "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T11.md)" < /dev/null && git add -A && { git diff --cached --quiet || git commit -q -m "Independent review of the extension (sprint 2026-11-27-vscode-0.1, T11; written by Codex, committed by the sprint task)"; }'''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "ls development/tasks | grep -qi 'vscode.*review'",
+]
+
+[[task]]
+id = "T12"
+title = "Fix pass and re-verification"
+# agent: claude-code
+agent = "shell"
+after = ["T11"]
+limits = { wall_minutes = 180, idle_minutes = 30 }
+command = '''claude -p "$(cat development/sprints/prompts/2026-11-27-vscode-0.1/T12.md)" --permission-mode acceptEdits --allowedTools Read Edit Write Glob Grep 'Bash(npm *)' 'Bash(npx *)' 'Bash(node *)' 'Bash(git add *)' 'Bash(git commit *)' 'Bash(git status*)' 'Bash(git diff *)' 'Bash(git log *)' 'Bash(git show *)' 'Bash(git archive *)' 'Bash(ls *)' 'Bash(mkdir *)' 'Bash(cat *)' 'Bash(test *)' 'Bash(uv venv *)' 'Bash(uv pip *)' 'Bash(steward --version)' 'Bash(steward check *)' 'Bash(steward explain *)' 'Bash(steward example *)' 'Bash(steward report *)' 'Bash(steward timeline *)' 'Bash(steward init *)' 'WebFetch(domain:code.visualstudio.com)' 'WebFetch(domain:github.com)' 'WebFetch(domain:www.npmjs.com)' --disallowedTools 'Bash(git push *)' 'Bash(git merge *)' 'Bash(git rebase *)' 'Bash(git reset *)' 'Bash(git tag *)' 'Bash(steward authorize *)' 'Bash(steward release *)' 'Bash(steward sprint *)' 'Bash(steward unseal *)' 'Bash(steward spend *)' 'Bash(vsce publish *)' 'Bash(npx vsce publish *)' 'Bash(npx ovsx *)' 'Bash(ovsx *)''''
+done = [
+  "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+  "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+  "cd editors/vscode && npm run cli:install && npm run fixtures -- --verify",
+  "cd editors/vscode && npm run test:host",
+  "cd editors/vscode && npm run package",
+]

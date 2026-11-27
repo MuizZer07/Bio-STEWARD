@@ -1,0 +1,107 @@
+{
+  "milestones": [
+    {
+      "days_left": -9767.0,
+      "due": "2000-03-01T00:00:00+00:00",
+      "id": "kickoff",
+      "internal": "2000-03-01T00:00:00+00:00",
+      "kind": "other",
+      "open_work": 0,
+      "outcome": {
+        "decision": "development/DECISIONS.md, 2000-03-01",
+        "on": "2000-03-01",
+        "state": "met"
+      },
+      "progress": {},
+      "state": "met",
+      "title": "Kick-off"
+    },
+    {
+      "days_left": -9675.0,
+      "due": "2000-06-01T00:00:00+00:00",
+      "id": "abstract",
+      "internal": "2000-06-01T00:00:00+00:00",
+      "kind": "submission",
+      "open_work": 0,
+      "progress": {
+        "tasks": {
+          "done": 1,
+          "open": [],
+          "total": 1,
+          "unknown": []
+        }
+      },
+      "state": "due (record its outcome)",
+      "title": "Conference abstract"
+    },
+    {
+      "days_left": -9461.0,
+      "due": "2001-01-01T00:00:00+00:00",
+      "id": "preprint",
+      "internal": "2001-01-01T00:00:00+00:00",
+      "kind": "preprint",
+      "open_work": 2,
+      "progress": {
+        "tasks": {
+          "done": 0,
+          "open": [
+            "GEO-001",
+            "GEO-003"
+          ],
+          "total": 2,
+          "unknown": []
+        }
+      },
+      "state": "late",
+      "title": "Preprint"
+    },
+    {
+      "days_left": 26484.0,
+      "due": "2099-06-01T00:00:00+00:00",
+      "id": "review",
+      "internal": "2099-05-18T00:00:00+00:00",
+      "kind": "review",
+      "open_work": 4,
+      "progress": {
+        "signatures": {
+          "needed": [
+            "spend"
+          ],
+          "waiting": [
+            "spend"
+          ]
+        },
+        "tasks": {
+          "done": 0,
+          "open": [
+            "GEO-001",
+            "GEO-004",
+            "GEO-005"
+          ],
+          "total": 3,
+          "unknown": []
+        }
+      },
+      "state": "on track",
+      "title": "Internal review"
+    },
+    {
+      "days_left": 26698.5,
+      "due": "2099-12-31T23:59:00-12:00",
+      "id": "release",
+      "internal": "2099-12-31T23:59:00-12:00",
+      "kind": "release",
+      "open_work": 0,
+      "progress": {
+        "tasks": {
+          "done": 1,
+          "open": [],
+          "total": 1,
+          "unknown": []
+        }
+      },
+      "state": "ready",
+      "title": "Data release"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+# Only dist/, the icons, the manifest, README, CHANGELOG, LICENSE and THIRD_PARTY_NOTICES go into the .vsix.
+# The README's figures (media/readme/) are not packaged: vsce points their links at the public repository.
+**
+!dist/extension.js
+!dist/extension.js.LEGAL.txt
+!media/shield.svg
+!media/help/panels.md
+!icon.png
+!package.json
+!README.md
+!CHANGELOG.md
+!LICENSE
+!THIRD_PARTY_NOTICES.md

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="672" viewBox="0 0 760 672" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
+<rect width="760" height="672" rx="10" fill="#1f1f1f"/>
+<rect width="760" height="622" rx="10" fill="#181818"/>
+<rect x="0" y="0" width="760" height="188" fill="#181818"/>
+<text x="8" y="17" fill="#bbbbbb" font-size="11" font-weight="700">⌄  TASKS</text>
+<text x="748" y="17" fill="#9d9d9d" font-size="12" text-anchor="end">↺  ?</text>
+<text x="23" y="41.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="41" fill="#cccccc">Reduced form<tspan dx="7" fill="#9d9d9d">Status lines read from the file</tspan></text>
+<text x="23" y="63.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="63" fill="#cccccc">GEO-001-load-series.md<tspan dx="7" fill="#9d9d9d">in progress · read from the file</tspan></text>
+<text x="23" y="85.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="85" fill="#cccccc">GEO-002-normalise.md<tspan dx="7" fill="#9d9d9d">done · read from the file</tspan></text>
+<text x="23" y="107.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="107" fill="#cccccc">GEO-003-annotate.md<tspan dx="7" fill="#9d9d9d">blocked — waiting on the annotation release · read from the file</tspan></text>
+<text x="23" y="129.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="129" fill="#cccccc">GEO-004-figures.md<tspan dx="7" fill="#9d9d9d">in review (left: CI) · read from the file</tspan></text>
+<text x="23" y="151.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="151" fill="#cccccc">GEO-005-methods.md<tspan dx="7" fill="#9d9d9d">GO recorded · read from the file</tspan></text>
+<text x="23" y="173.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="173" fill="#cccccc">GEO-006-notes.md</text>
+<rect x="0" y="194" width="760" height="166" fill="#181818"/>
+<text x="8" y="211" fill="#bbbbbb" font-size="11" font-weight="700">⌄  TOKENS</text>
+<text x="748" y="211" fill="#9d9d9d" font-size="12" text-anchor="end">▷  ■  ↺  ?</text>
+<text x="23" y="235.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="235" fill="#cccccc">Per task window<tspan dx="7" fill="#9d9d9d">steward tokens report</tspan></text>
+<text x="8" y="257" fill="#9d9d9d" font-size="12">›</text><text x="23" y="257.5" fill="#9d9d9d" font-weight="700" font-size="12.5">Σ</text><text x="40" y="257" fill="#cccccc">Total<tspan dx="7" fill="#9d9d9d">1,170 tokens · 1 task window</tspan></text>
+<text x="8" y="279" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="279.5" fill="#9d9d9d" font-weight="700" font-size="12.5">∿</text><text x="40" y="279" fill="#cccccc">all activity<tspan dx="7" fill="#9d9d9d">1,170 tokens · available · shared, not this project's alone</tspan></text>
+<text x="37" y="301.5" fill="#9d9d9d" font-weight="700" font-size="12.5">#</text><text x="54" y="301" fill="#cccccc">claude / claude-fixture<tspan dx="7" fill="#9d9d9d">1,170 tokens</tspan></text>
+<text x="22" y="323" fill="#9d9d9d" font-size="12">›</text><text x="36" y="323" fill="#cccccc">Most-read files (1)</text>
+<text x="8" y="345" fill="#9d9d9d" font-size="12">›</text><text x="23" y="345.5" fill="#9d9d9d" font-weight="700" font-size="12.5">▫</text><text x="40" y="345" fill="#cccccc">Sources<tspan dx="7" fill="#9d9d9d">claude available · codex unavailable · gemini unavailable</tspan></text>
+<rect x="0" y="366" width="760" height="78" fill="#181818"/>
+<text x="8" y="383" fill="#bbbbbb" font-size="11" font-weight="700">⌄  DECISIONS</text>
+<text x="748" y="383" fill="#9d9d9d" font-size="12" text-anchor="end">▤  ↺  ?</text>
+<text x="23" y="407.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="407" fill="#cccccc">Reduced form<tspan dx="7" fill="#9d9d9d">Open DECISIONS.md only</tspan></text>
+<text x="23" y="429.5" fill="#9d9d9d" font-weight="700" font-size="12.5">▤</text><text x="40" y="429" fill="#cccccc">development/DECISIONS.md<tspan dx="7" fill="#9d9d9d">the CLI's default development/DECISIONS.md</tspan></text>
+<rect x="0" y="450" width="760" height="166" fill="#181818"/>
+<text x="8" y="467" fill="#bbbbbb" font-size="11" font-weight="700">⌄  DRIFT</text>
+<text x="748" y="467" fill="#9d9d9d" font-size="12" text-anchor="end">↺  ?</text>
+<text x="23" y="491.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="491" fill="#cccccc">Reduced form<tspan dx="7" fill="#9d9d9d">timeline states only</tspan></text>
+<text x="23" y="513.5" fill="#89d185" font-weight="700" font-size="12.5">✓</text><text x="40" y="513" fill="#cccccc">kickoff: Kick-off<tspan dx="7" fill="#9d9d9d">met · 9767.0 days ago</tspan></text>
+<text x="23" y="535.5" fill="#cca700" font-weight="700" font-size="12.5">!</text><text x="40" y="535" fill="#cccccc">abstract: Conference abstract<tspan dx="7" fill="#9d9d9d">due (record its outcome) · 9675.0 days ago</tspan></text>
+<text x="23" y="557.5" fill="#f48771" font-weight="700" font-size="12.5">✗</text><text x="40" y="557" fill="#cccccc">preprint: Preprint<tspan dx="7" fill="#9d9d9d">late · 9461.0 days ago</tspan></text>
+<text x="23" y="579.5" fill="#75beff" font-weight="700" font-size="12.5">→</text><text x="40" y="579" fill="#cccccc">review: Internal review<tspan dx="7" fill="#9d9d9d">on track · 26484.0 days left</tspan></text>
+<text x="23" y="601.5" fill="#89d185" font-weight="700" font-size="12.5">✓</text><text x="40" y="601" fill="#cccccc">release: Data release<tspan dx="7" fill="#9d9d9d">ready · 26698.5 days left</tspan></text>
+<text x="16" y="644" font-size="11.5" fill="#8b949e">Drawing of the Tasks, Tokens, Decisions and Drift panels (reduced forms), rendered by their view models from the</text>
+<text x="16" y="660" font-size="11.5" fill="#8b949e">fixture task files and the fixture outputs of steward tokens report and steward timeline (not a screenshot).</text>
+</svg>

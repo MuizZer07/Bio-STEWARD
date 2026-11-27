@@ -1,0 +1,69 @@
+{
+  "currency": null,
+  "issues": [],
+  "sources": {
+    "claude": {
+      "files": [
+        {
+          "issues": [],
+          "path": "claude log 1",
+          "status": "available"
+        }
+      ],
+      "status": "available"
+    },
+    "codex": {
+      "files": [],
+      "status": "unavailable"
+    },
+    "gemini": {
+      "files": [],
+      "status": "unavailable"
+    }
+  },
+  "tasks": [
+    {
+      "agents": [
+        {
+          "agent": "claude",
+          "tokens": 1170
+        }
+      ],
+      "cost": null,
+      "files_read": [
+        {
+          "path": "README.md",
+          "reads": 1
+        }
+      ],
+      "issues": [],
+      "models": [
+        {
+          "agent": "claude",
+          "cache_read": 1000,
+          "cache_write": 50,
+          "cost": null,
+          "input": 1150,
+          "model": "claude-fixture",
+          "output": 20,
+          "tokens": 1170
+        }
+      ],
+      "status": "available",
+      "task": "all activity",
+      "tokens": 1170,
+      "tool_outputs": [
+        {
+          "agent": "claude",
+          "bytes": 300,
+          "log_path": "claude log 1",
+          "paths": [
+            "README.md"
+          ],
+          "session": "session-d6440983",
+          "time_ms": 946720801000
+        }
+      ]
+    }
+  ]
+}

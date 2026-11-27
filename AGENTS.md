@@ -39,6 +39,15 @@ applications of it; where they differ, the constitution wins.
   - v0.10.0 and later releases on the roadmap (hardening, then community capabilities that have a demand signal),
     each starting with its release specification (Muiz, 2026-11-23: "start working on the rest of the tasks guided
     in further releases as well e.g. 0.10.0 and so on").
+  - the official VS Code extension (`editors/vscode/`) and the core additions it needs, per
+    [DESIGN_vscode_extension](development/design/DESIGN_vscode_extension.md) and its
+    deltas [v0.2](development/design/DESIGN_vscode_extension_v0.2.md) and
+    [v0.3](development/design/DESIGN_vscode_extension_v0.3.md). The timeline is locked
+    (`development/milestones.toml`). Unfrozen on 2026-11-26: extension 0.1.0 is built on CLI 0.20.6 per
+    [RELEASE_vscode_0.1.0_SPEC](development/design/RELEASE_vscode_0.1.0_SPEC.md); **an extension task changes nothing
+    outside `editors/vscode/`** (its rules G1 – G7), and each task starts on Muiz's `steward sprint go`. Later slices
+    start with their release specifications. Marketplace accounts, tokens and publishing are Muiz's alone (Muiz,
+    2026-11-26: "i like the initial timeline.. lets jump on it"; "we can start right now").
 
   Granted by Muiz, 2026-11-23 (v0.6.3 and v0.7: "You go ahead with next release with the fixes and our roadmap";
   v0.8: "yes, go ahead with v0.8 after the release"; 0.9.0: "Can we go for 0.9.0 with the deferred ones althogethar

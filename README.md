@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-0.20.6%20beta-4c4fd9">
+  <img alt="version" src="https://img.shields.io/badge/version-0.20.7%20beta-4c4fd9">
   <img alt="python" src="https://img.shields.io/badge/python-3.11%2B-127a8a">
   <a href="https://doi.org/10.5281/zenodo.24548977"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.24548977.svg"></a>
   <img alt="licence" src="https://img.shields.io/badge/licence-MIT-2f9e66">
@@ -60,14 +60,14 @@ wherever required.
 
 ## 🚀 Quick start
 ```bash
-uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.6"     # or: pipx install "git+…@v0.20.6"
+uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.7"     # or: pipx install "git+…@v0.20.7"
 cd your-research-repo
 steward init --skills .agents/skills         # scaffold; never overwrites. Claude Code: --skills .claude/skills
 steward check --summary
 ```
 Then just ask your coding agent: **"Run the using-steward skill."** It runs the checks, reads the result and tells you
 what is ready. It is a development tool, never a runtime dependency. Pinning in a requirements file:
-`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.6` (not in package metadata: PyPI refuses
+`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.7` (not in package metadata: PyPI refuses
 direct references there).
 
 **Try it on real data** (0.20.0): a public GEO series, GSE7621 (Parkinson's disease substantia nigra, 25 samples),
@@ -290,7 +290,7 @@ python tools/measure_footprint.py --check
 tools/ci_local.sh                        # the same checks in Linux containers, on a clean export of HEAD
 ```
 
-> **Status: beta, latest release `v0.20.6`.** Usable and tested (1700+ tests on macOS; Linux in Docker), installed from
+> **Status: beta, latest release `v0.20.7`.** Usable and tested (1700+ tests on macOS; Linux in Docker), installed from
 > GitHub, not yet on PyPI. Configuration and report formats may still change before 1.0. See the
 > [changelog](CHANGELOG.md).
 

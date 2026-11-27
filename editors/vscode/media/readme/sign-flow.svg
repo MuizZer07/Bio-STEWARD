@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="561" viewBox="0 0 960 561" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
+<rect width="960" height="561" rx="10" fill="#1f1f1f"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#75beff"/></marker></defs>
+<rect x="20" y="20" width="146" height="96" rx="8" fill="#252526" stroke="#0078d4" stroke-width="1.5"/>
+<text x="30" y="42" fill="#ffffff" font-weight="700" font-size="12.5">1  ✍ Sign</text>
+<text x="30" y="62" fill="#9d9d9d" font-size="11">on a waiting card; its</text>
+<text x="30" y="78" fill="#9d9d9d" font-size="11">link names the nonce,</text>
+<text x="30" y="94" fill="#9d9d9d" font-size="11">project and page</text>
+<line x1="168" y1="68" x2="172.8" y2="68" stroke="#75beff" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="174.8" y="20" width="146" height="96" rx="8" fill="#252526" stroke="#3c3c3c" stroke-width="1.5"/>
+<text x="184.8" y="42" fill="#ffffff" font-weight="700" font-size="12.5">2  Read again</text>
+<text x="184.8" y="62" fill="#9d9d9d" font-size="11">the queue and the file:</text>
+<text x="184.8" y="78" fill="#9d9d9d" font-size="11">only if the line binds</text>
+<text x="184.8" y="94" fill="#9d9d9d" font-size="11">to the bytes shown</text>
+<line x1="322.8" y1="68" x2="327.6" y2="68" stroke="#75beff" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="329.6" y="20" width="146" height="96" rx="8" fill="#252526" stroke="#cca700" stroke-width="1.5"/>
+<text x="339.6" y="42" fill="#ffffff" font-weight="700" font-size="12.5">3  You confirm</text>
+<text x="339.6" y="62" fill="#9d9d9d" font-size="11">a modal dialog (below);</text>
+<text x="339.6" y="78" fill="#9d9d9d" font-size="11">for 6 high-stakes</text>
+<text x="339.6" y="94" fill="#9d9d9d" font-size="11">actions, type the name</text>
+<line x1="477.6" y1="68" x2="482.40000000000003" y2="68" stroke="#75beff" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="484.40000000000003" y="20" width="146" height="96" rx="8" fill="#252526" stroke="#3c3c3c" stroke-width="1.5"/>
+<text x="494.40000000000003" y="42" fill="#ffffff" font-weight="700" font-size="12.5">4  A terminal</text>
+<text x="494.40000000000003" y="62" fill="#9d9d9d" font-size="11">runs the CLI's own</text>
+<text x="494.40000000000003" y="78" fill="#9d9d9d" font-size="11">authorize sign-pending</text>
+<text x="494.40000000000003" y="94" fill="#9d9d9d" font-size="11">--repo ROOT, no shell</text>
+<line x1="632.4000000000001" y1="68" x2="637.2" y2="68" stroke="#75beff" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="639.2" y="20" width="146" height="96" rx="8" fill="#252526" stroke="#89d185" stroke-width="1.5"/>
+<text x="649.2" y="42" fill="#ffffff" font-weight="700" font-size="12.5">5  The CLI asks</text>
+<text x="649.2" y="62" fill="#9d9d9d" font-size="11">prints the exact bytes,</text>
+<text x="649.2" y="78" fill="#9d9d9d" font-size="11">then Sign …? [y/N]</text>
+<text x="649.2" y="94" fill="#9d9d9d" font-size="11">before each signature</text>
+<line x1="787.2" y1="68" x2="792" y2="68" stroke="#75beff" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="794" y="20" width="146" height="96" rx="8" fill="#252526" stroke="#89d185" stroke-width="1.5"/>
+<text x="804" y="42" fill="#ffffff" font-weight="700" font-size="12.5">6  Your key</text>
+<text x="804" y="62" fill="#9d9d9d" font-size="11">its own prompt: a</text>
+<text x="804" y="78" fill="#9d9d9d" font-size="11">passphrase, an agent</text>
+<text x="804" y="94" fill="#9d9d9d" font-size="11">or a hardware touch</text>
+<line x1="402.6" y1="116" x2="402.6" y2="140" stroke="#f48771" stroke-width="1.6"/>
+<text x="410.6" y="136" fill="#f48771" font-size="11.5">Cancel, or a different name: nothing runs and no terminal opens</text>
+<text x="940" y="160" fill="#9d9d9d" font-size="11.5" text-anchor="end">When the terminal closes, the queue is read again and the card turns ✓ Signed if the CLI says so.</text>
+<rect x="20" y="180" width="580" height="325" rx="10" fill="#252526" stroke="#3c3c3c" stroke-width="1.5"/>
+<text x="40" y="210" fill="#cca700" font-size="16">⚠</text>
+<text x="64" y="210" fill="#ffffff" font-weight="700" font-size="14">Sign spend in geo-cockpit?</text>
+<text x="64" y="236" fill="#cccccc" font-size="12">Action: spend</text>
+<text x="64" y="253" fill="#cccccc" font-size="12">Summary: Spend for the model comparison</text>
+<text x="64" y="270" fill="#cccccc" font-size="12">Expires: 2099-01-01T00:00:00Z</text>
+<text x="64" y="287" fill="#cccccc" font-size="12">Payload SHA-256 (read from the file): ‹the SHA-256 of the payload file›</text>
+<text x="64" y="304" fill="#cccccc" font-size="12"></text>
+<text x="64" y="321" fill="#cccccc" font-size="12">Bio-STEWARD then runs this command in a new terminal:</text>
+<text x="64" y="338" fill="#75beff" font-size="10.5" font-family="'SF Mono', Menlo, Consolas, monospace">/home/you/.local/bin/steward authorize sign-pending --repo /home/you/geo-cockpit</text>
+<text x="64" y="355" fill="#cccccc" font-size="12"></text>
+<text x="64" y="372" fill="#cccccc" font-size="12">This dialog and the preview show what Bio-STEWARD read just now. The review of</text>
+<text x="64" y="389" fill="#cccccc" font-size="12">record is the CLI's own prompt in the terminal: it prints the bytes it will sign and</text>
+<text x="64" y="406" fill="#cccccc" font-size="12">asks before each signature, for each waiting payload of this project in turn, not</text>
+<text x="64" y="423" fill="#cccccc" font-size="12">only this card. Read them there, and answer y only for what you mean to approve.</text>
+<text x="64" y="440" fill="#cccccc" font-size="12">Your key's own prompt completes each signature.</text>
+<rect x="350" y="465" width="150" height="26" rx="4" fill="#0078d4"/>
+<text x="425" y="483" fill="#ffffff" font-size="12.5" text-anchor="middle">Sign in a Terminal</text>
+<rect x="510" y="465" width="70" height="26" rx="4" fill="none" stroke="#3c3c3c"/>
+<text x="545" y="483" fill="#cccccc" font-size="12.5" text-anchor="middle">Cancel</text>
+<rect x="630" y="180" width="310" height="172" rx="10" fill="#252526" stroke="#3c3c3c" stroke-width="1.5"/>
+<text x="646" y="206" fill="#ffffff" font-weight="700" font-size="13">Bio-STEWARD: confirm unseal</text>
+<rect x="646" y="220" width="278" height="26" rx="3" fill="#1f1f1f" stroke="#0078d4"/>
+<text x="654" y="238" fill="#8b8b8b" font-size="12">unseal</text>
+<text x="646" y="266" fill="#9d9d9d" font-size="11.5">unseal is a high-stakes action. Type its</text>
+<text x="646" y="282" fill="#9d9d9d" font-size="11.5">name to continue.</text>
+<text x="646" y="320" fill="#9d9d9d" font-size="11">only for: unseal, freeze.confirmatory, policy.change,</text>
+<text x="646" y="336" fill="#9d9d9d" font-size="11">waive, pin.retire, amend</text>
+<text x="16" y="533" font-size="11.5" fill="#8b949e">How ✍ Sign works: the steps, the modal dialog as the view model words it for the fixture's waiting payload (d3e83e998137), and the box a high-stakes</text>
+<text x="16" y="549" font-size="11.5" fill="#8b949e">action adds (drawn, not a screenshot). The extension never signs and never reads a key.</text>
+</svg>

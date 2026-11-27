@@ -43,6 +43,7 @@ nav:
       - Check table data contracts: guides/data-contracts.md
       - Compare two pipeline runs: guides/pipeline-comparisons.md
       - Govern licences from the first commit: guides/licence.md
+      - See the verdict in VS Code: guides/vscode.md
       - Publish stable releases, keep development private: guides/publish.md
       - Run a stranger test before a release: guides/stranger-test.md
       - Plan to a deadline: guides/timeline.md

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
+<rect width="960" height="420" rx="10" fill="#1f1f1f"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#75beff"/></marker></defs>
+<rect x="20" y="20" width="250" height="128" rx="8" fill="#252526" stroke="#0078d4" stroke-width="1.5"/>
+<text x="34" y="44" fill="#ffffff" font-weight="700" font-size="14">VS Code: Bio-STEWARD</text>
+<text x="34" y="66" fill="#9d9d9d" font-size="12.5">Today · Approvals · Tasks · Tokens</text>
+<text x="34" y="84" fill="#9d9d9d" font-size="12.5">Overview · Results · Problems · Sprint</text>
+<text x="34" y="102" fill="#9d9d9d" font-size="12.5">Decisions · Drift · Agent Skills</text>
+<text x="34" y="120" fill="#9d9d9d" font-size="12.5">status bar: gate, freshness, countdown</text>
+<rect x="370" y="20" width="220" height="128" rx="8" fill="#252526" stroke="#3c3c3c" stroke-width="1.5"/>
+<text x="384" y="44" fill="#ffffff" font-weight="700" font-size="14">Allow-listed runner</text>
+<text x="384" y="66" fill="#9d9d9d" font-size="12.5">one typed builder per command;</text>
+<text x="384" y="84" fill="#9d9d9d" font-size="12.5">no shell; --repo; timeout;</text>
+<text x="384" y="102" fill="#9d9d9d" font-size="12.5">cancel kills the process tree</text>
+<rect x="690" y="20" width="250" height="128" rx="8" fill="#252526" stroke="#89d185" stroke-width="1.5"/>
+<text x="704" y="44" fill="#ffffff" font-weight="700" font-size="14">Your steward CLI</text>
+<text x="704" y="66" fill="#9d9d9d" font-size="12.5">bio-steward 0.20.6 or newer,</text>
+<text x="704" y="84" fill="#9d9d9d" font-size="12.5">installed by you (pipx, uv, pip);</text>
+<text x="704" y="102" fill="#9d9d9d" font-size="12.5">it decides every status and gate</text>
+<rect x="20" y="216" width="250" height="128" rx="8" fill="#252526" stroke="#3c3c3c" stroke-width="1.5"/>
+<text x="34" y="240" fill="#ffffff" font-weight="700" font-size="14">Validation</text>
+<text x="34" y="262" fill="#9d9d9d" font-size="12.5">JSON checked against the bundled</text>
+<text x="34" y="280" fill="#9d9d9d" font-size="12.5">steward.report/0.1 schema, with</text>
+<text x="34" y="298" fill="#9d9d9d" font-size="12.5">size and path limits; otherwise</text>
+<text x="34" y="316" fill="#9d9d9d" font-size="12.5">&quot;unreadable&quot;, never a partial view</text>
+<rect x="690" y="216" width="250" height="128" rx="8" fill="#252526" stroke="#3c3c3c" stroke-width="1.5"/>
+<text x="704" y="240" fill="#ffffff" font-weight="700" font-size="14">Report file</text>
+<text x="704" y="262" fill="#9d9d9d" font-size="12.5">.steward/report.json when git</text>
+<text x="704" y="280" fill="#9d9d9d" font-size="12.5">ignores it (you and your agents</text>
+<text x="704" y="298" fill="#9d9d9d" font-size="12.5">read one report); otherwise the</text>
+<text x="704" y="316" fill="#9d9d9d" font-size="12.5">extension's own storage</text>
+<rect x="370" y="216" width="220" height="128" rx="8" fill="#252526" stroke="#f48771" stroke-width="1.5"/>
+<text x="384" y="240" fill="#ffffff" font-weight="700" font-size="14">Never</text>
+<text x="384" y="262" fill="#9d9d9d" font-size="12.5">no network requests, no AI,</text>
+<text x="384" y="280" fill="#9d9d9d" font-size="12.5">no telemetry; it never signs:</text>
+<text x="384" y="298" fill="#9d9d9d" font-size="12.5">your key does, in a terminal;</text>
+<text x="384" y="316" fill="#9d9d9d" font-size="12.5">Restricted Mode runs nothing</text>
+<line x1="270" y1="84" x2="368" y2="84" stroke="#75beff" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="319" y="76" fill="#75beff" font-size="11.5" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace">Run Check</text>
+<line x1="590" y1="84" x2="688" y2="84" stroke="#75beff" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="639" y="76" fill="#75beff" font-size="11.5" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace">steward check</text>
+<line x1="815" y1="148" x2="815" y2="214" stroke="#75beff" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="823" y="185" fill="#75beff" font-size="11.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace">writes</text>
+<polyline points="815,344 815,372 145,372 145,346" fill="none" stroke="#75beff" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="480" y="366" fill="#75beff" font-size="11.5" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace">read</text>
+<line x1="145" y1="216" x2="145" y2="150" stroke="#75beff" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="153" y="187" fill="#75beff" font-size="11.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace">shown</text>
+<text x="16" y="408" font-size="11.5" fill="#8b949e">How the extension works: it shows what the steward CLI you installed reports; it computes no verdict of its own.</text>
+</svg>

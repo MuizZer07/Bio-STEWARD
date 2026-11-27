@@ -28,6 +28,7 @@ flowchart TB
 | **LaTeX, Quarto, Pandoc** | papers and talks | PaperKit and PresentationKit check numbers, figures, venue rules and citations |
 | **GitHub Actions, pre-commit** | CI | the [GitHub Action and hooks](guides/integrations.md) run the same gate |
 | **MCP clients** | agents reading project state | `steward mcp` serves the read-only checks |
+| **VS Code** (and editors that install from Open VSX) | where you and your agent work | the [Bio-STEWARD extension](guides/vscode.md) shows the gate, Problems and rule explanations from the installed CLI; no AI, no network |
 
 What Bio-STEWARD does not do: run analyses, fetch biomedical data, track experiments, orchestrate workflows or write
 papers.

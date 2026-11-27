@@ -4,6 +4,33 @@ Pre-release. Not published on PyPI. Versions follow semantic versioning once rel
 
 ## Unreleased
 
+## 0.20.7 (2026-11-26): Bio-STEWARD for VS Code
+Per Muiz, 2026-11-26: "go with the next release from main". This release carries the official VS Code extension in
+`editors/vscode/`, versioned separately (pilot build 0.0.4; 0.1.0 is its first public release). The extension
+shows what the `steward` CLI found: the gate and its results, the Problems panel, rule explanations, freshness, the
+next milestone, the last handoff, Agent Skills and a running sprint. It calls no AI model, uses no network and runs
+nothing in an untrusted workspace. One security fix to signing (below); no change to the CLI's checks or formats.
+
+### Added
+- `editors/vscode/`: the extension's source, tests, figures and README. Publisher `MuizZer07`, extension ID
+ `muizzer07.bio-steward`. It is tested with this CLI and needs 0.20.6 or newer.
+- `docs/guides/vscode.md`: the guide (in the documentation site's navigation), and a VS Code row in "Works with".
+
+### Security
+- **The program that signs authorizations is pinned.** `steward authorize sign` and `sign-pending` now run `git tag -s`
+ with `gpg.format=ssh`, `gpg.ssh.program` set to the same pinned `ssh-keygen` that verifies, and no
+ `gpg.ssh.defaultKeyCommand`. Before, a repository's own `.git/config` could name the signing program, which would
+ run as the human with their key agent. Found by the independent review of the VS Code extension's approval
+ cards. The key may still come from any git configuration: a signature by a key that is not an allowed signer is
+ refused when verified, as before.
+
+### Changed
+- `[publish] binary` names the extension's figures and its compressed test fixture, so the public export accepts
+ them.
+
+### Upgrade notes (from 0.20.6)
+- None. The extension is optional; install it from the VS Code Marketplace once it is published, or from its `.vsix`.
+
 ## 0.20.6 (2026-11-26): the full name, and the DOI
 Per Muiz, 2026-11-26: "you didnt mention what STEWARD stand for in any of the places.. this is important … add doi to
 the public repo and everywhere"; "in the readme add if someone uses this toolkit, they should cite it". Metadata and
