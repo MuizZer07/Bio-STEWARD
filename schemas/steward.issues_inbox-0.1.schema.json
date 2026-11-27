@@ -1,0 +1,70 @@
+{
+  "$defs": {
+    "IssueGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        },
+        "fingerprint": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Fingerprint",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "projects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Projects",
+          "type": "array"
+        },
+        "versions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Versions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "fingerprint",
+        "count",
+        "versions",
+        "projects",
+        "items"
+      ],
+      "title": "IssueGroup",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "groups": {
+      "items": {
+        "$ref": "#/$defs/IssueGroup"
+      },
+      "title": "Groups",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.issues_inbox/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "groups"
+  ],
+  "title": "IssuesInbox",
+  "type": "object"
+}

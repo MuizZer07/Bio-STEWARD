@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "Study": {
+      "additionalProperties": false,
+      "properties": {
+        "check": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Check"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "inputs": {
+          "title": "Inputs",
+          "type": "integer"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "papers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Papers",
+          "type": "array"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "kind",
+        "status",
+        "check",
+        "inputs",
+        "papers"
+      ],
+      "title": "Study",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "invalid": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Invalid",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.study_list/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "studies": {
+      "items": {
+        "$ref": "#/$defs/Study"
+      },
+      "title": "Studies",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "studies",
+    "invalid"
+  ],
+  "title": "StudyList",
+  "type": "object"
+}

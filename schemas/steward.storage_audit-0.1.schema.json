@@ -1,0 +1,90 @@
+{
+  "$defs": {
+    "DirectoryUsage": {
+      "additionalProperties": false,
+      "properties": {
+        "cap_mb": {
+          "title": "Cap Mb",
+          "type": "number"
+        },
+        "over": {
+          "title": "Over",
+          "type": "boolean"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "size_mb": {
+          "title": "Size Mb",
+          "type": "number"
+        },
+        "state": {
+          "enum": [
+            "outside",
+            "absent",
+            "present"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "state",
+        "cap_mb"
+      ],
+      "title": "DirectoryUsage",
+      "type": "object"
+    },
+    "FileSize": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "size_mb": {
+          "title": "Size Mb",
+          "type": "number"
+        }
+      },
+      "required": [
+        "path",
+        "size_mb"
+      ],
+      "title": "FileSize",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "directories": {
+      "items": {
+        "$ref": "#/$defs/DirectoryUsage"
+      },
+      "title": "Directories",
+      "type": "array"
+    },
+    "largest_untracked": {
+      "items": {
+        "$ref": "#/$defs/FileSize"
+      },
+      "title": "Largest Untracked",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.storage_audit/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "directories",
+    "largest_untracked"
+  ],
+  "title": "StorageAudit",
+  "type": "object"
+}

@@ -1918,6 +1918,19 @@
       "title": "ReleaseSection",
       "type": "object"
     },
+    "ReportSection": {
+      "additionalProperties": false,
+      "properties": {
+        "to": {
+          "default": "STW",
+          "pattern": "^[A-Z]{2,6}$",
+          "title": "To",
+          "type": "string"
+        }
+      },
+      "title": "ReportSection",
+      "type": "object"
+    },
     "ReproSection": {
       "additionalProperties": false,
       "description": "Reproduction gate (0.9.0 B2, REQ-008; R-52).",
@@ -2643,6 +2656,87 @@
       ],
       "title": "TermList",
       "type": "object"
+    },
+    "TidySection": {
+      "additionalProperties": false,
+      "description": "Tidying (0.21.0, STW-048 C12; R-88 advisory): the thresholds `steward tidy` and `steward next` use, and the\nmemory folders a harness keeps for this project. The toolkit lists what looks stale; it deletes nothing.",
+      "properties": {
+        "archive": {
+          "default": "development/archive",
+          "title": "Archive",
+          "type": "string"
+        },
+        "handoff_days": {
+          "default": 7,
+          "maximum": 3650,
+          "minimum": 1,
+          "title": "Handoff Days",
+          "type": "integer"
+        },
+        "index": {
+          "default": "development/INDEX.md",
+          "title": "Index",
+          "type": "string"
+        },
+        "memory": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Memory",
+          "type": "array"
+        },
+        "memory_days": {
+          "default": 30,
+          "maximum": 3650,
+          "minimum": 1,
+          "title": "Memory Days",
+          "type": "integer"
+        },
+        "stale_days": {
+          "default": 14,
+          "maximum": 3650,
+          "minimum": 1,
+          "title": "Stale Days",
+          "type": "integer"
+        }
+      },
+      "title": "TidySection",
+      "type": "object"
+    },
+    "TokensSection": {
+      "additionalProperties": false,
+      "description": "Local session log files selected for per-project token reporting.",
+      "properties": {
+        "claude": {
+          "items": {
+            "minLength": 1,
+            "pattern": "^[^\\x00\\r\\n]+$",
+            "type": "string"
+          },
+          "title": "Claude",
+          "type": "array"
+        },
+        "codex": {
+          "items": {
+            "minLength": 1,
+            "pattern": "^[^\\x00\\r\\n]+$",
+            "type": "string"
+          },
+          "title": "Codex",
+          "type": "array"
+        },
+        "gemini": {
+          "items": {
+            "minLength": 1,
+            "pattern": "^[^\\x00\\r\\n]+$",
+            "type": "string"
+          },
+          "title": "Gemini",
+          "type": "array"
+        }
+      },
+      "title": "TokensSection",
+      "type": "object"
     }
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -2913,6 +3007,17 @@
       ],
       "default": null
     },
+    "report": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReportSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "repro": {
       "anyOf": [
         {
@@ -3051,6 +3156,28 @@
       },
       "title": "Terms",
       "type": "array"
+    },
+    "tidy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TidySection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "tokens": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TokensSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "required": [

@@ -1,4 +1,4 @@
-"""Locate bundled skills and templates: inside an installed wheel, or in the source tree for editable installs."""
+"""Locate bundled skills, templates and schemas: inside an installed wheel, or in the source tree for editable installs."""
 
 from __future__ import annotations
 
@@ -19,6 +19,10 @@ def _base(kind: str) -> Path:
 
 def template(name: str) -> str:
     return (_base("templates") / name).read_text(encoding="utf-8")
+
+
+def schemas_dir() -> Path:
+    return _base("schemas")
 
 
 def skills_dir() -> Path:

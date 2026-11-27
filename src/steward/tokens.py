@@ -13,7 +13,8 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from . import charts, spend, token_logs
-from .fsutil import LinkRefused, canonical_json, escapes_root, matching_files
+from .fsutil import LinkRefused, escapes_root, matching_files
+from .interface import wants_json, write_json
 from .ledger import Ledger, LedgerError, verify_bytes
 from .models import AgentsSection, StewardConfig, TaskTokenBudget
 from .process import ID_LINE
@@ -422,6 +423,14 @@ def _token_command(root: Path, cfg: StewardConfig, args) -> int:
             print("{}" if hook else "Token usage unavailable")
             return EXIT_OK
         paths = {"claude": [Path(path)], "codex": [], "gemini": []}
+    elif cfg.tokens is not None and not any(paths.values()):
+        try:
+            paths = {
+                agent: [root / Path(value).expanduser() for value in getattr(cfg.tokens, agent)]
+                for agent in AGENTS
+            }
+        except RuntimeError:
+            raise TokenError("a [tokens] log path names an unavailable home directory") from None
     since = None
     if not checking and args.since is not None:
         try:
@@ -461,9 +470,8 @@ def _token_command(root: Path, cfg: StewardConfig, args) -> int:
                                      "tokens", "Observed tokens by task", "tokens"))
     else:
         currency = cfg.spend.currency if cfg.spend else None
-        if args.json:
-            sys.stdout.write(canonical_json({"tasks": rows, "sources": sources, "issues": sorted(issues),
-                                            "currency": currency}))
+        if wants_json(args):
+            write_json(args, {"tasks": rows, "sources": sources, "issues": sorted(issues), "currency": currency})
         else:
             _plain_report(rows, sources, issues, currency)
     return EXIT_OK

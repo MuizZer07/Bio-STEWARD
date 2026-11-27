@@ -58,3 +58,9 @@ a break, status marks the delivery as unchecked.
 
 R-53 reports an advisory when an outbox item is older than `delivery_days` and has no matching receipt. The
 default is 14 days. Check the receiver's ref and ask the receiver to pull and commit its receipt.
+
+## Report a toolkit defect
+
+`steward issue "…"` or `steward issue --from-last-error` files a screened defect item in `exchange/outbox/`,
+addressed to `STW` (or `[report] to`); the toolkit side groups what it receives with `steward issues inbox`. Filing
+needs no network. See [Report a toolkit defect](report-a-defect.md).

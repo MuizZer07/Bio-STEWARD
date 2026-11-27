@@ -33,6 +33,10 @@ apart.
 - Work delegated to another agent comes back as a patch: apply, run and review it before it counts. The procedure is
   in [delegation.md](delegation.md).
 
+## Toolkit issues
+
+At your discretion, use `steward issue` to file a toolkit defect with generic wording. Keep project problems in the project's own records. After a fault hint, `steward issue --from-last-error` files the local toolkit diagnostic.
+
 ## 4. Independent review
 - The reviewer is not the implementer: another agent session, another model, or a human.
 - The reviewer checks each acceptance criterion against evidence, not against the implementer's summary, and
@@ -46,6 +50,12 @@ apart.
 - **When the session ends,** record the decisions first, then `steward session close --decisions-logged --next …`
   writes the bounded `HANDOFF.md`; commit it. Decisions go to DECISIONS.md, never into the handoff.
 - **No agent approves its own work**, and no agent approves a gate, a merge, a spend or a GO.
+
+## Stale tasks and memory: name them and ask
+At session start run `steward next --brief` (or `steward tidy`). If it lists stale tasks or memory, say so **for each
+project** and ask before acting: "N tasks have not moved in D days: archive, delete or keep?" and "M memory notes look
+out of date: clean them up?". Act only on the answer: the human runs `steward tidy --archive ID…`, or tells you which
+memory entries to edit or remove. Never archive, delete or rewrite a task or a memory entry because it looks stale.
 
 ## Approvals that unlock something (signed authorizations)
 Some operations need a **verified** human approval, not a quote: spending past a budget, amending a frozen protocol,

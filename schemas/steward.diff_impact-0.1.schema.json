@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "ImpactDisplay": {
+      "additionalProperties": false,
+      "properties": {
+        "display": {
+          "title": "Display",
+          "type": "string"
+        },
+        "inputs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "paper": {
+          "title": "Paper",
+          "type": "string"
+        }
+      },
+      "required": [
+        "paper",
+        "display",
+        "inputs"
+      ],
+      "title": "ImpactDisplay",
+      "type": "object"
+    },
+    "ImpactOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "code_changed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Code Changed",
+          "type": "array"
+        },
+        "inputs_changed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Inputs Changed",
+          "type": "array"
+        },
+        "output": {
+          "title": "Output",
+          "type": "string"
+        },
+        "run": {
+          "title": "Run",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "current",
+            "stale",
+            "changed since run"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "output",
+        "run",
+        "state",
+        "inputs_changed",
+        "code_changed"
+      ],
+      "title": "ImpactOutput",
+      "type": "object"
+    },
+    "ImpactValue": {
+      "additionalProperties": false,
+      "properties": {
+        "paper": {
+          "title": "Paper",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "paper",
+        "value",
+        "source"
+      ],
+      "title": "ImpactValue",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "coverage": {
+      "title": "Coverage",
+      "type": "string"
+    },
+    "downstream": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ImpactValue"
+          },
+          {
+            "$ref": "#/$defs/ImpactDisplay"
+          }
+        ]
+      },
+      "title": "Downstream",
+      "type": "array"
+    },
+    "outputs": {
+      "items": {
+        "$ref": "#/$defs/ImpactOutput"
+      },
+      "title": "Outputs",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.diff_impact/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "outputs",
+    "downstream",
+    "coverage"
+  ],
+  "title": "DiffImpact",
+  "type": "object"
+}

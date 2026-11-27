@@ -1,0 +1,3949 @@
+{
+  "rules": [
+    {
+      "area": "config",
+      "areas": [
+        "config"
+      ],
+      "checks": "steward.toml (and any overlay) parses, matches the schema, keeps paths inside the repository, and has its required process records.",
+      "codes": [
+        {
+          "code": "R-01.overlay",
+          "fix": null
+        },
+        {
+          "code": "R-01.overlay_refused",
+          "fix": null
+        },
+        {
+          "code": "R-01.overlay_unreadable",
+          "fix": null
+        },
+        {
+          "code": "R-01.records_missing",
+          "fix": null
+        }
+      ],
+      "fix": "fix steward.toml (see the detail lines); `steward check config`",
+      "governance": "project",
+      "name": "config.valid",
+      "pass_does_not_mean": "The configured rules are the right ones for the project.",
+      "rule": "R-01",
+      "run": "steward check config --summary",
+      "version": 1,
+      "why": "Every other rule reads the configuration; a broken one must stop the gate, not pass quietly."
+    },
+    {
+      "area": "contract",
+      "areas": [
+        "contract",
+        "benchmark"
+      ],
+      "checks": "Each benchmark contract is a valid steward.contract/0.1 file.",
+      "codes": [],
+      "fix": "fill the contract's TBD fields with real values, or fix the schema errors",
+      "governance": "project",
+      "name": "contract.valid",
+      "pass_does_not_mean": "The design is good, only that it is well formed.",
+      "rule": "R-02",
+      "run": "steward check contract --summary",
+      "version": 1,
+      "why": "A contract an agent cannot parse cannot hold it to a design."
+    },
+    {
+      "area": "contract",
+      "areas": [
+        "contract",
+        "benchmark"
+      ],
+      "checks": "A contract's parts agree: datasets, splits, baselines, metrics, thresholds and outputs refer to each other consistently.",
+      "codes": [
+        {
+          "code": "R-03.confirmatory_unspecified",
+          "fix": null
+        },
+        {
+          "code": "R-03.confirmatory_without_comparison",
+          "fix": null
+        },
+        {
+          "code": "R-03.confirmatory_without_thresholds",
+          "fix": null
+        },
+        {
+          "code": "R-03.duplicate_id",
+          "fix": null
+        },
+        {
+          "code": "R-03.duplicate_split",
+          "fix": null
+        },
+        {
+          "code": "R-03.missing_file",
+          "fix": null
+        },
+        {
+          "code": "R-03.no_test_role",
+          "fix": null
+        },
+        {
+          "code": "R-03.path_outside",
+          "fix": null
+        },
+        {
+          "code": "R-03.primary_undefined",
+          "fix": null
+        },
+        {
+          "code": "R-03.threshold_baseline_undefined",
+          "fix": null
+        },
+        {
+          "code": "R-03.threshold_metric_undefined",
+          "fix": null
+        }
+      ],
+      "fix": "make the contract's cross-references consistent; create the referenced files",
+      "governance": "project",
+      "name": "contract.consistent",
+      "pass_does_not_mean": "The comparison is balanced, or the metrics suit the question.",
+      "rule": "R-03",
+      "run": "steward check contract --summary",
+      "version": 1,
+      "why": "Inconsistent contracts let a comparison drift without anyone deciding it."
+    },
+    {
+      "area": "contract",
+      "areas": [
+        "contract"
+      ],
+      "checks": "A confirmatory profile has a benchmark contract.",
+      "codes": [
+        {
+          "code": "R-04.found",
+          "fix": null
+        }
+      ],
+      "fix": "add a confirmatory benchmark contract (development/templates/benchmark.contract.toml)",
+      "governance": "project",
+      "name": "contract.required",
+      "pass_does_not_mean": "The contract was written before the results.",
+      "rule": "R-04",
+      "run": "steward check contract --summary",
+      "version": 1,
+      "why": "Confirmatory claims need a design fixed before results exist."
+    },
+    {
+      "area": "prior-work",
+      "areas": [
+        "prior-work"
+      ],
+      "checks": "Each prior-work record passes its schema.",
+      "codes": [
+        {
+          "code": "R-05.duplicate_work_id",
+          "fix": null
+        },
+        {
+          "code": "R-05.human_judgment",
+          "fix": null
+        },
+        {
+          "code": "R-05.unknown_work",
+          "fix": null
+        }
+      ],
+      "fix": "fix the prior-work record; use 'unknown' for identifiers you cannot find",
+      "governance": "project",
+      "name": "prior_work.valid",
+      "pass_does_not_mean": "The search for prior work was complete.",
+      "rule": "R-05",
+      "run": "steward check prior-work --summary",
+      "version": 1,
+      "why": "Novelty claims rest on recorded prior work."
+    },
+    {
+      "area": "prior-work",
+      "areas": [
+        "prior-work"
+      ],
+      "checks": "A confirmatory profile has a prior-work record.",
+      "codes": [
+        {
+          "code": "R-06.found",
+          "fix": null
+        }
+      ],
+      "fix": "add a prior-work record with a closest_method work",
+      "governance": "project",
+      "name": "prior_work.required",
+      "pass_does_not_mean": "The work is new.",
+      "rule": "R-06",
+      "run": "steward check prior-work --summary",
+      "version": 1,
+      "why": "A claim of novelty needs its comparison."
+    },
+    {
+      "area": "privacy",
+      "areas": [
+        "privacy"
+      ],
+      "checks": "Committed files hold no term from the private or public term lists and no home path with a user name.",
+      "codes": [
+        {
+          "code": "R-07.allowed_lines",
+          "fix": null
+        },
+        {
+          "code": "R-07.bad_pattern",
+          "fix": null
+        },
+        {
+          "code": "R-07.hit",
+          "fix": null
+        },
+        {
+          "code": "R-07.list_empty",
+          "fix": null
+        },
+        {
+          "code": "R-07.list_missing",
+          "fix": null
+        },
+        {
+          "code": "R-07.list_unreadable",
+          "fix": null
+        },
+        {
+          "code": "R-07.local_path",
+          "fix": "an absolute home path with a user name"
+        },
+        {
+          "code": "R-07.pdf_unreadable",
+          "fix": null
+        },
+        {
+          "code": "R-07.policy_hit",
+          "fix": null
+        }
+      ],
+      "fix": "remove the private terms at the listed file:line (or install poppler for PDFs)",
+      "governance": "project",
+      "name": "privacy.denylist",
+      "pass_does_not_mean": "No private information exists in other forms (images, binaries, paraphrases).",
+      "rule": "R-07",
+      "run": "steward check privacy --summary",
+      "version": 2,
+      "why": "Agents copy names, paths and notes into code and documents; this keeps them out."
+    },
+    {
+      "area": "paper",
+      "areas": [
+        "paper"
+      ],
+      "checks": "The paper's spec file passes its schema.",
+      "codes": [],
+      "fix": "fill the paper spec and venue profile (source_url and retrieved date)",
+      "governance": "project",
+      "name": "paper.spec_valid",
+      "pass_does_not_mean": "The paper's argument holds.",
+      "rule": "R-08",
+      "run": "steward check paper --summary",
+      "version": 1,
+      "why": "PaperKit's other checks read it."
+    },
+    {
+      "area": "paper",
+      "areas": [
+        "paper"
+      ],
+      "checks": "No placeholder (TODO, TBD, [RESULT …]) is left in the manuscript.",
+      "codes": [
+        {
+          "code": "R-09.docx_unreadable",
+          "fix": "pandoc not available"
+        },
+        {
+          "code": "R-09.marker",
+          "fix": null
+        },
+        {
+          "code": "R-09.mode",
+          "fix": null
+        }
+      ],
+      "fix": "resolve the TODO/TBD markers listed",
+      "governance": "project",
+      "name": "paper.placeholders",
+      "pass_does_not_mean": "The text says the right thing.",
+      "rule": "R-09",
+      "run": "steward check paper --summary",
+      "version": 1,
+      "why": "An agent's draft can keep placeholders that look finished."
+    },
+    {
+      "area": "paper",
+      "areas": [
+        "paper"
+      ],
+      "checks": "Every number in the manuscript comes from the values registry, which comes from result files.",
+      "codes": [
+        {
+          "code": "R-10.generated_missing",
+          "fix": null
+        },
+        {
+          "code": "R-10.generated_stale",
+          "fix": null
+        },
+        {
+          "code": "R-10.literal",
+          "fix": null
+        },
+        {
+          "code": "R-10.no_registry",
+          "fix": null
+        },
+        {
+          "code": "R-10.source_error",
+          "fix": null
+        },
+        {
+          "code": "R-10.source_missing",
+          "fix": null
+        },
+        {
+          "code": "R-10.source_unknown",
+          "fix": null
+        },
+        {
+          "code": "R-10.unknown_key",
+          "fix": null
+        },
+        {
+          "code": "R-10.unused",
+          "fix": null
+        }
+      ],
+      "fix": "register numbers in paper/values.toml; `steward paper values --write`",
+      "governance": "project",
+      "name": "paper.values",
+      "pass_does_not_mean": "The result files are themselves right.",
+      "rule": "R-10",
+      "run": "steward check paper --summary",
+      "version": 1,
+      "why": "A number typed by hand, or by an agent, drifts from the results it claims to report."
+    },
+    {
+      "area": "paper",
+      "areas": [
+        "paper"
+      ],
+      "checks": "Figures and tables match the display lock (their sources and hashes).",
+      "codes": [
+        {
+          "code": "R-11.fingerprints_compared",
+          "fix": null
+        },
+        {
+          "code": "R-11.lock_entry_invalid",
+          "fix": null
+        },
+        {
+          "code": "R-11.lock_invalid",
+          "fix": null
+        },
+        {
+          "code": "R-11.missing_file",
+          "fix": null
+        },
+        {
+          "code": "R-11.missing_script",
+          "fix": null
+        },
+        {
+          "code": "R-11.no_lock",
+          "fix": null
+        },
+        {
+          "code": "R-11.not_cited",
+          "fix": null
+        },
+        {
+          "code": "R-11.not_included",
+          "fix": null
+        },
+        {
+          "code": "R-11.not_recorded",
+          "fix": null
+        },
+        {
+          "code": "R-11.nothing_to_check",
+          "fix": "the display manifest declares no displays"
+        },
+        {
+          "code": "R-11.path_outside",
+          "fix": null
+        },
+        {
+          "code": "R-11.stale",
+          "fix": null
+        },
+        {
+          "code": "R-11.unregistered",
+          "fix": null
+        }
+      ],
+      "fix": "rebuild the displays, then `steward paper displays --record`",
+      "governance": "project",
+      "name": "paper.displays",
+      "pass_does_not_mean": "The figure shows what it should.",
+      "rule": "R-11",
+      "run": "steward check paper --summary",
+      "version": 1,
+      "why": "A regenerated figure must not silently replace the one the text describes."
+    },
+    {
+      "area": "paper",
+      "areas": [
+        "paper"
+      ],
+      "checks": "The paper builds from source with its declared engine.",
+      "codes": [
+        {
+          "code": "R-12.latex_error",
+          "fix": null
+        },
+        {
+          "code": "R-12.mode",
+          "fix": null
+        },
+        {
+          "code": "R-12.multiply_defined",
+          "fix": null
+        },
+        {
+          "code": "R-12.overfull",
+          "fix": null
+        },
+        {
+          "code": "R-12.rerun",
+          "fix": null
+        },
+        {
+          "code": "R-12.undefined_citation",
+          "fix": null
+        },
+        {
+          "code": "R-12.undefined_reference",
+          "fix": null
+        },
+        {
+          "code": "R-12.undefined_summary",
+          "fix": null
+        }
+      ],
+      "fix": "rebuild the paper (latexmk) and fix undefined references or citations",
+      "governance": "project",
+      "name": "paper.build",
+      "pass_does_not_mean": "The PDF reads well.",
+      "rule": "R-12",
+      "run": "steward check paper --summary",
+      "version": 1,
+      "why": "A paper that only builds on one machine is not a submission."
+    },
+    {
+      "area": "paper",
+      "areas": [
+        "paper"
+      ],
+      "checks": "The venue's limits and requirements (length, anonymity, required sections).",
+      "codes": [
+        {
+          "code": "R-13.abstract_words",
+          "fix": null
+        },
+        {
+          "code": "R-13.abstract_words_over",
+          "fix": null
+        },
+        {
+          "code": "R-13.anonymity",
+          "fix": null
+        },
+        {
+          "code": "R-13.anonymity_no_list",
+          "fix": null
+        },
+        {
+          "code": "R-13.anonymity_unreadable",
+          "fix": null
+        },
+        {
+          "code": "R-13.anonymity_unspecified",
+          "fix": null
+        },
+        {
+          "code": "R-13.dpi_unavailable",
+          "fix": null
+        },
+        {
+          "code": "R-13.dpi_unknown",
+          "fix": null
+        },
+        {
+          "code": "R-13.figure_dpi",
+          "fix": null
+        },
+        {
+          "code": "R-13.figure_format",
+          "fix": null
+        },
+        {
+          "code": "R-13.limit_unspecified",
+          "fix": null
+        },
+        {
+          "code": "R-13.main_end_not_found",
+          "fix": null
+        },
+        {
+          "code": "R-13.missing_declaration",
+          "fix": null
+        },
+        {
+          "code": "R-13.missing_section",
+          "fix": null
+        },
+        {
+          "code": "R-13.mode",
+          "fix": null
+        },
+        {
+          "code": "R-13.no_pdf",
+          "fix": null
+        },
+        {
+          "code": "R-13.no_source",
+          "fix": null
+        },
+        {
+          "code": "R-13.not_found",
+          "fix": null
+        },
+        {
+          "code": "R-13.pages",
+          "fix": null
+        },
+        {
+          "code": "R-13.pages_main",
+          "fix": null
+        },
+        {
+          "code": "R-13.pages_total",
+          "fix": null
+        },
+        {
+          "code": "R-13.pages_unsupported",
+          "fix": null
+        },
+        {
+          "code": "R-13.pdf_author_metadata",
+          "fix": null
+        },
+        {
+          "code": "R-13.pdf_unreadable",
+          "fix": null
+        },
+        {
+          "code": "R-13.required_unspecified",
+          "fix": null
+        },
+        {
+          "code": "R-13.title_words",
+          "fix": null
+        },
+        {
+          "code": "R-13.title_words_over",
+          "fix": null
+        },
+        {
+          "code": "R-13.words_unsupported",
+          "fix": null
+        }
+      ],
+      "fix": "meet the venue rules listed (pages, words, sections, anonymity, figures)",
+      "governance": "project",
+      "name": "paper.venue",
+      "pass_does_not_mean": "The venue will accept the paper.",
+      "rule": "R-13",
+      "run": "steward check paper --summary",
+      "version": 1,
+      "why": "Desk rejections for form are avoidable."
+    },
+    {
+      "area": "paper",
+      "areas": [
+        "paper"
+      ],
+      "checks": "Every citation key resolves to a bibliography entry, and entries carry identifiers.",
+      "codes": [
+        {
+          "code": "R-14.duplicate_doi",
+          "fix": null
+        },
+        {
+          "code": "R-14.duplicate_key",
+          "fix": null
+        },
+        {
+          "code": "R-14.malformed_identifier",
+          "fix": null
+        },
+        {
+          "code": "R-14.missing_entry",
+          "fix": null
+        },
+        {
+          "code": "R-14.no_identifier",
+          "fix": null
+        },
+        {
+          "code": "R-14.parse",
+          "fix": null
+        },
+        {
+          "code": "R-14.unused",
+          "fix": null
+        },
+        {
+          "code": "R-14.verification",
+          "fix": null
+        }
+      ],
+      "fix": "fix the bibliography: missing, duplicate or malformed entries",
+      "governance": "project",
+      "name": "paper.citations",
+      "pass_does_not_mean": "The cited work says what the text claims.",
+      "rule": "R-14",
+      "run": "steward check paper --summary",
+      "version": 1,
+      "why": "Agents invent plausible references; unresolved keys catch some of them."
+    },
+    {
+      "area": "paper",
+      "areas": [
+        "paper"
+      ],
+      "checks": "Numbers repeated across abstract, text, tables and talk agree.",
+      "codes": [
+        {
+          "code": "R-15.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-15.unavailable",
+          "fix": null
+        },
+        {
+          "code": "R-15.violated",
+          "fix": null
+        }
+      ],
+      "fix": "check the values in the failed assertion",
+      "governance": "project",
+      "name": "paper.consistency",
+      "pass_does_not_mean": "The numbers are right.",
+      "rule": "R-15",
+      "run": "steward check paper --summary",
+      "version": 1,
+      "why": "Edits update one place and not the others."
+    },
+    {
+      "area": "talk",
+      "areas": [
+        "talk"
+      ],
+      "checks": "The talk plan passes its schema.",
+      "codes": [
+        {
+          "code": "R-21.custom_purpose",
+          "fix": null
+        },
+        {
+          "code": "R-21.no_decisions",
+          "fix": "feedback = targeted needs unresolved_decisions"
+        },
+        {
+          "code": "R-21.no_outline",
+          "fix": null
+        },
+        {
+          "code": "R-21.overrides",
+          "fix": null
+        },
+        {
+          "code": "R-21.unknown_stage",
+          "fix": null
+        }
+      ],
+      "fix": "complete talks/<name>/talk.toml; `steward talk plan <name>`",
+      "governance": "project",
+      "name": "talk.plan_valid",
+      "pass_does_not_mean": "The talk is good.",
+      "rule": "R-21",
+      "run": "steward check talk --summary",
+      "version": 1,
+      "why": "The talk checks read it."
+    },
+    {
+      "area": "talk",
+      "areas": [
+        "talk"
+      ],
+      "checks": "The talk's stage (internal, conference, public) was confirmed by a human.",
+      "codes": [
+        {
+          "code": "R-22.unusual",
+          "fix": null
+        }
+      ],
+      "fix": "ask the presenter to confirm the research stage; set stage_source = \"confirmed\"",
+      "governance": "project",
+      "name": "talk.stage_confirmed",
+      "pass_does_not_mean": "The confirmation was accurate.",
+      "rule": "R-22",
+      "run": "steward check talk --summary",
+      "version": 1,
+      "why": "What may be shown depends on the audience; an agent cannot decide it."
+    },
+    {
+      "area": "talk",
+      "areas": [
+        "talk"
+      ],
+      "checks": "Slides claim no more than the paper or the results support.",
+      "codes": [
+        {
+          "code": "R-23.ceiling",
+          "fix": null
+        },
+        {
+          "code": "R-23.evidence_insufficient",
+          "fix": null
+        },
+        {
+          "code": "R-23.overstatement",
+          "fix": null
+        },
+        {
+          "code": "R-23.unknown_status",
+          "fix": null
+        }
+      ],
+      "fix": "lower the claim's status, or add evidence that supports it",
+      "governance": "project",
+      "name": "talk.claim_ceiling",
+      "pass_does_not_mean": "The claims hold.",
+      "rule": "R-23",
+      "run": "steward check talk --summary",
+      "version": 1,
+      "why": "Talks overstate; the ceiling is the evidence."
+    },
+    {
+      "area": "talk",
+      "areas": [
+        "talk"
+      ],
+      "checks": "Numbers on slides come from the values registry.",
+      "codes": [
+        {
+          "code": "R-24.literal",
+          "fix": null
+        },
+        {
+          "code": "R-24.no_registry",
+          "fix": null
+        },
+        {
+          "code": "R-24.unknown_key",
+          "fix": null
+        },
+        {
+          "code": "R-24.variables_missing",
+          "fix": null
+        },
+        {
+          "code": "R-24.variables_stale",
+          "fix": null
+        }
+      ],
+      "fix": "use \\val{key} / {{< var key >}} for numbers; `steward talk values` for Quarto",
+      "governance": "project",
+      "name": "talk.values",
+      "pass_does_not_mean": "The result files are right.",
+      "rule": "R-24",
+      "run": "steward check talk --summary",
+      "version": 1,
+      "why": "As R-10, for talks."
+    },
+    {
+      "area": "talk",
+      "areas": [
+        "talk"
+      ],
+      "checks": "The talk states its limitations.",
+      "codes": [
+        {
+          "code": "R-25.missing_frame",
+          "fix": null
+        },
+        {
+          "code": "R-25.missing_role",
+          "fix": null
+        }
+      ],
+      "fix": "add a limitations section (outline role and slide)",
+      "governance": "project",
+      "name": "talk.limitations",
+      "pass_does_not_mean": "Every limitation is listed.",
+      "rule": "R-25",
+      "run": "steward check talk --summary",
+      "version": 1,
+      "why": "Limitations disappear first under time pressure."
+    },
+    {
+      "area": "talk",
+      "areas": [
+        "talk"
+      ],
+      "checks": "The talk follows its declared structure.",
+      "codes": [
+        {
+          "code": "R-26.decision_not_shown",
+          "fix": null
+        },
+        {
+          "code": "R-26.feedback_slide_in_informational",
+          "fix": null
+        },
+        {
+          "code": "R-26.no_decisions_section",
+          "fix": null
+        },
+        {
+          "code": "R-26.no_qa_backup",
+          "fix": null
+        },
+        {
+          "code": "R-26.no_text",
+          "fix": null
+        },
+        {
+          "code": "R-26.required_section",
+          "fix": null
+        }
+      ],
+      "fix": "make the structure match the feedback intent (decisions, backup slides)",
+      "governance": "project",
+      "name": "talk.structure",
+      "pass_does_not_mean": "The structure is effective.",
+      "rule": "R-26",
+      "run": "steward check talk --summary",
+      "version": 1,
+      "why": "A planned structure survives editing."
+    },
+    {
+      "area": "talk",
+      "areas": [
+        "talk"
+      ],
+      "checks": "Talk figures match their sources.",
+      "codes": [
+        {
+          "code": "R-27.missing_file",
+          "fix": null
+        },
+        {
+          "code": "R-27.not_recorded",
+          "fix": null
+        },
+        {
+          "code": "R-27.not_traceable",
+          "fix": null
+        },
+        {
+          "code": "R-27.nothing_to_trace",
+          "fix": null
+        },
+        {
+          "code": "R-27.stale",
+          "fix": null
+        },
+        {
+          "code": "R-27.unregistered",
+          "fix": null
+        }
+      ],
+      "fix": "use registered, current displays on slides",
+      "governance": "project",
+      "name": "talk.figures",
+      "pass_does_not_mean": "The figures are readable.",
+      "rule": "R-27",
+      "run": "steward check talk --summary",
+      "version": 1,
+      "why": "As R-11, for talks."
+    },
+    {
+      "area": "talk",
+      "areas": [
+        "talk"
+      ],
+      "checks": "Measurable visual properties of the slides (bounds, sizes, contrast, resolution).",
+      "codes": [
+        {
+          "code": "R-28.build_error",
+          "fix": null
+        },
+        {
+          "code": "R-28.contrast",
+          "fix": null
+        },
+        {
+          "code": "R-28.engine",
+          "fix": null
+        },
+        {
+          "code": "R-28.font_too_small",
+          "fix": null
+        },
+        {
+          "code": "R-28.frame_overflow",
+          "fix": null
+        },
+        {
+          "code": "R-28.min_font",
+          "fix": null
+        },
+        {
+          "code": "R-28.no_log",
+          "fix": null
+        },
+        {
+          "code": "R-28.no_pdf",
+          "fix": null
+        },
+        {
+          "code": "R-28.not_assessed",
+          "fix": "font size and slide bounds: no PDF layout or PPTX shapes available"
+        },
+        {
+          "code": "R-28.note",
+          "fix": null
+        },
+        {
+          "code": "R-28.outside_slide",
+          "fix": null
+        },
+        {
+          "code": "R-28.pdf_reader_missing",
+          "fix": null
+        },
+        {
+          "code": "R-28.pdf_unreadable",
+          "fix": null
+        },
+        {
+          "code": "R-28.prefs",
+          "fix": null
+        },
+        {
+          "code": "R-28.slides",
+          "fix": null
+        },
+        {
+          "code": "R-28.too_many_slides",
+          "fix": null
+        }
+      ],
+      "fix": "fewer slides, larger fonts, no overflow; build or export the PDF, or install a PDF reader (poppler or the [talk] extra)",
+      "governance": "project",
+      "name": "talk.visual",
+      "pass_does_not_mean": "The slides look good.",
+      "rule": "R-28",
+      "run": "steward check talk --summary",
+      "version": 1,
+      "why": "Some slide problems are measurable."
+    },
+    {
+      "area": "talk",
+      "areas": [
+        "talk"
+      ],
+      "checks": "Strong wording on slides is listed for human review (advisory).",
+      "codes": [
+        {
+          "code": "R-29.strong_wording",
+          "fix": null
+        }
+      ],
+      "fix": "review the strong wording listed (advisory)",
+      "governance": "project",
+      "name": "talk.language",
+      "pass_does_not_mean": "The wording is acceptable.",
+      "rule": "R-29",
+      "run": "steward check talk --summary",
+      "version": 1,
+      "why": "Overclaiming words are easy to miss."
+    },
+    {
+      "area": "run",
+      "areas": [
+        "run"
+      ],
+      "checks": "Every ledger is an intact hash chain (no edit, gap or torn tail).",
+      "codes": [
+        {
+          "code": "R-31.anchor_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-31.anchor_none",
+          "fix": "no signed anchor: tail truncation is undetectable"
+        },
+        {
+          "code": "R-31.anchor_ok",
+          "fix": null
+        },
+        {
+          "code": "R-31.anchor_unavailable",
+          "fix": "signed anchors exist but are not verified through the MCP server"
+        },
+        {
+          "code": "R-31.anchor_unverified",
+          "fix": null
+        },
+        {
+          "code": "R-31.coverage",
+          "fix": null
+        },
+        {
+          "code": "R-31.torn_tail",
+          "fix": null
+        }
+      ],
+      "fix": "restore the ledger from version control, or `steward ledger recover` a torn tail",
+      "governance": "project",
+      "name": "ledger.integrity",
+      "pass_does_not_mean": "A consistent rewrite of the whole ledger is detected without an anchor.",
+      "rule": "R-31",
+      "run": "steward check run --summary",
+      "version": 1,
+      "why": "Ledgers are the record of what ran, was spent and was decided; an agent must not rewrite them."
+    },
+    {
+      "area": "run",
+      "areas": [
+        "run"
+      ],
+      "checks": "Runs are recorded, finished, and their outputs match the records.",
+      "codes": [
+        {
+          "code": "R-32.failed",
+          "fix": null
+        },
+        {
+          "code": "R-32.interrupted",
+          "fix": null
+        },
+        {
+          "code": "R-32.killed",
+          "fix": null
+        },
+        {
+          "code": "R-32.local_slot",
+          "fix": null
+        },
+        {
+          "code": "R-32.output_changed",
+          "fix": null
+        },
+        {
+          "code": "R-32.unfinished",
+          "fix": "running or interrupted; steward run --recover"
+        }
+      ],
+      "fix": "`steward run --recover` for interrupted runs",
+      "governance": "project",
+      "name": "run.records",
+      "pass_does_not_mean": "The run's computation was right.",
+      "rule": "R-32",
+      "run": "steward check run --summary",
+      "version": 1,
+      "why": "A result without a run record cannot be traced to code and inputs."
+    },
+    {
+      "area": "policy",
+      "areas": [
+        "policy"
+      ],
+      "checks": "Policy files match the pinned baseline, and the trust root is pinned outside the repository.",
+      "codes": [
+        {
+          "code": "R-33.awaiting_signature",
+          "fix": null
+        },
+        {
+          "code": "R-33.baseline_moving",
+          "fix": null
+        },
+        {
+          "code": "R-33.changed",
+          "fix": null
+        },
+        {
+          "code": "R-33.fingerprint",
+          "fix": null
+        },
+        {
+          "code": "R-33.object",
+          "fix": null
+        },
+        {
+          "code": "R-33.overlay",
+          "fix": null
+        },
+        {
+          "code": "R-33.pending",
+          "fix": null
+        },
+        {
+          "code": "R-33.pin_unreadable",
+          "fix": null
+        },
+        {
+          "code": "R-33.policy_removed",
+          "fix": null
+        },
+        {
+          "code": "R-33.repo_id_changed",
+          "fix": "restore repo_id, or re-pin yourself (steward authorize pin)"
+        },
+        {
+          "code": "R-33.signer",
+          "fix": null
+        },
+        {
+          "code": "R-33.trust_root",
+          "fix": null
+        },
+        {
+          "code": "R-33.verification_unavailable",
+          "fix": "run `steward check` in a terminal"
+        }
+      ],
+      "fix": "pin the trust root (`steward authorize pin`) or authorize the policy change",
+      "governance": "project",
+      "name": "policy.baseline",
+      "pass_does_not_mean": "Whoever holds the signing key used it carefully.",
+      "rule": "R-33",
+      "run": "steward check policy --summary",
+      "version": 1,
+      "why": "An agent can edit policy in the working tree; the pin makes that visible."
+    },
+    {
+      "area": "spend",
+      "areas": [
+        "spend"
+      ],
+      "checks": "Spend records are within budget, or approved past it.",
+      "codes": [
+        {
+          "code": "R-34.actual_without_estimate",
+          "fix": null
+        },
+        {
+          "code": "R-34.over_cap",
+          "fix": null
+        },
+        {
+          "code": "R-34.totals",
+          "fix": null
+        },
+        {
+          "code": "R-34.trust_unpinned",
+          "fix": null
+        },
+        {
+          "code": "R-34.unauthorized",
+          "fix": null
+        },
+        {
+          "code": "R-34.verification_unavailable",
+          "fix": null
+        }
+      ],
+      "fix": "authorize the spend, or stay within the cap",
+      "governance": "project",
+      "name": "spend.ledger",
+      "pass_does_not_mean": "Calls made outside steward were counted.",
+      "rule": "R-34",
+      "run": "steward check spend --summary",
+      "version": 1,
+      "why": "Paid calls by agents add up."
+    },
+    {
+      "area": "integrity",
+      "areas": [
+        "integrity"
+      ],
+      "checks": "Frozen protocol files, cohorts and parameters have not changed since they were frozen.",
+      "codes": [
+        {
+          "code": "R-35.proposal_pending",
+          "fix": null
+        },
+        {
+          "code": "cohort.changed",
+          "fix": null
+        },
+        {
+          "code": "params.changed",
+          "fix": null
+        },
+        {
+          "code": "protocol.drift",
+          "fix": null
+        }
+      ],
+      "fix": "revert the frozen files, or propose and sign an amendment",
+      "governance": "project",
+      "name": "integrity.frozen",
+      "pass_does_not_mean": "The frozen design was a good one.",
+      "rule": "R-35",
+      "run": "steward check integrity --summary",
+      "version": 1,
+      "why": "Confirmatory work must not change its design after seeing results."
+    },
+    {
+      "area": "integrity",
+      "areas": [
+        "integrity"
+      ],
+      "checks": "Datasets are declared with their roles and hashes.",
+      "codes": [
+        {
+          "code": "R-36.role_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-36.role_unrecorded",
+          "fix": null
+        },
+        {
+          "code": "R-36.sealed_changed",
+          "fix": null
+        }
+      ],
+      "fix": "make datasets.toml roles match `steward integrity status`",
+      "governance": "project",
+      "name": "integrity.datasets",
+      "pass_does_not_mean": "The data is what its label says.",
+      "rule": "R-36",
+      "run": "steward check integrity --summary",
+      "version": 1,
+      "why": "Sealed and spent data must be known."
+    },
+    {
+      "area": "integrity",
+      "areas": [
+        "integrity"
+      ],
+      "checks": "Sealed data was not used without a signed unseal.",
+      "codes": [
+        {
+          "code": "R-37.paper_reports_sealed",
+          "fix": null
+        },
+        {
+          "code": "R-37.run_read_sealed",
+          "fix": null
+        }
+      ],
+      "fix": "investigate the use of sealed data before its unseal",
+      "governance": "project",
+      "name": "integrity.sealed_use",
+      "pass_does_not_mean": "Data copied outside steward was not used.",
+      "rule": "R-37",
+      "run": "steward check integrity --summary",
+      "version": 1,
+      "why": "Held-out data used early is no longer held out."
+    },
+    {
+      "area": "integrity",
+      "areas": [
+        "integrity"
+      ],
+      "checks": "Gated integrity actions carry signed approvals and decisions, and every decisions log is append-only.",
+      "codes": [
+        {
+          "code": "R-38.append_only_history",
+          "fix": null
+        },
+        {
+          "code": "R-38.append_only_new",
+          "fix": "no commit yet: nothing to compare"
+        },
+        {
+          "code": "R-38.append_only_unchecked",
+          "fix": "policy baseline unavailable"
+        },
+        {
+          "code": "R-38.append_only_weak",
+          "fix": null
+        },
+        {
+          "code": "R-38.decisions_base_unknown",
+          "fix": null
+        },
+        {
+          "code": "R-38.decisions_rewritten",
+          "fix": "earlier entries changed; the log is append-only"
+        },
+        {
+          "code": "R-38.entry_malformed",
+          "fix": "the log has text but no `## YYYY-MM-DD: title` entries"
+        },
+        {
+          "code": "R-38.history_partial",
+          "fix": null
+        },
+        {
+          "code": "R-38.history_unavailable",
+          "fix": "git could not list the decisions logs in history"
+        },
+        {
+          "code": "R-38.log_removed",
+          "fix": "the committed log is missing from the working tree"
+        },
+        {
+          "code": "R-38.no_decision",
+          "fix": null
+        },
+        {
+          "code": "R-38.no_policy",
+          "fix": null
+        },
+        {
+          "code": "R-38.trust_unpinned",
+          "fix": null
+        },
+        {
+          "code": "R-38.unauthorized",
+          "fix": null
+        },
+        {
+          "code": "R-38.verification_unavailable",
+          "fix": null
+        }
+      ],
+      "fix": "record the decision in DECISIONS.md and use a verified authorization; never rewrite the log",
+      "governance": "project",
+      "name": "integrity.decisions",
+      "pass_does_not_mean": "The decisions were wise.",
+      "rule": "R-38",
+      "run": "steward check integrity --summary",
+      "version": 1,
+      "why": "Decisions are the owner's; rewriting them rewrites history."
+    },
+    {
+      "area": "integrity",
+      "areas": [
+        "integrity"
+      ],
+      "checks": "A run under a frozen contract used the frozen version.",
+      "codes": [
+        {
+          "code": "R-39.frozen_after_run",
+          "fix": "frozen after outcomes may have been seen"
+        },
+        {
+          "code": "R-39.not_frozen",
+          "fix": "freeze it before the first run"
+        }
+      ],
+      "fix": "freeze the confirmatory contract before its first run",
+      "governance": "project",
+      "name": "integrity.contract_frozen",
+      "pass_does_not_mean": "The run itself was right.",
+      "rule": "R-39",
+      "run": "steward check integrity --summary",
+      "version": 1,
+      "why": "Results must come from the design that was fixed."
+    },
+    {
+      "area": "evidence",
+      "areas": [
+        "evidence"
+      ],
+      "checks": "Each claim in the claim map points at evidence that exists and matches it.",
+      "codes": [
+        {
+          "code": "R-40.contract_not_frozen",
+          "fix": null
+        },
+        {
+          "code": "R-40.derived_binary",
+          "fix": null
+        },
+        {
+          "code": "R-40.invalid_tolerance",
+          "fix": null
+        },
+        {
+          "code": "R-40.no_run",
+          "fix": "claimed without a run record"
+        },
+        {
+          "code": "R-40.not_from_runs",
+          "fix": "no listed run recorded this source with its current hash"
+        },
+        {
+          "code": "R-40.not_numeric",
+          "fix": null
+        },
+        {
+          "code": "R-40.out_of_range",
+          "fix": null
+        },
+        {
+          "code": "R-40.run_failed",
+          "fix": "a listed run failed or was killed"
+        },
+        {
+          "code": "R-40.run_missing",
+          "fix": null
+        },
+        {
+          "code": "R-40.run_unfinished",
+          "fix": null
+        },
+        {
+          "code": "R-40.source_unreadable",
+          "fix": null
+        },
+        {
+          "code": "R-40.unknown_value_key",
+          "fix": null
+        },
+        {
+          "code": "R-40.value_mismatch",
+          "fix": null
+        }
+      ],
+      "fix": "tie the claim to finished runs whose output matches the stated value",
+      "governance": "project",
+      "name": "evidence.claims",
+      "pass_does_not_mean": "The evidence supports the claim.",
+      "rule": "R-40",
+      "run": "steward check evidence --summary",
+      "version": 1,
+      "why": "Claims drift from their evidence as work continues."
+    },
+    {
+      "area": "evidence",
+      "areas": [
+        "evidence"
+      ],
+      "checks": "Prior-work links resolve.",
+      "codes": [
+        {
+          "code": "R-41.no_evidence",
+          "fix": "a difference with no distinguishing experiment is a hypothesis"
+        },
+        {
+          "code": "R-41.unknown_contract",
+          "fix": null
+        }
+      ],
+      "fix": "link each claimed difference to an existing contract",
+      "governance": "project",
+      "name": "prior_work.links",
+      "pass_does_not_mean": "The linked work is relevant.",
+      "rule": "R-41",
+      "run": "steward check evidence --summary",
+      "version": 1,
+      "why": "Dead links make prior work uncheckable."
+    },
+    {
+      "area": "release",
+      "areas": [
+        "release"
+      ],
+      "checks": "A release has its required files, a manifest that matches the distributions and bundles, and an audit with no development files, secrets or private terms.",
+      "codes": [
+        {
+          "code": "R-42.artifact_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-42.audited",
+          "fix": null
+        },
+        {
+          "code": "R-42.bundle_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-42.bundle_record_stale",
+          "fix": null
+        },
+        {
+          "code": "R-42.citation",
+          "fix": null
+        },
+        {
+          "code": "R-42.citation_changed",
+          "fix": null
+        },
+        {
+          "code": "R-42.citation_invalid",
+          "fix": null
+        },
+        {
+          "code": "R-42.citation_not_validated",
+          "fix": "cffconvert not installed; structure checked only"
+        },
+        {
+          "code": "R-42.citation_validated",
+          "fix": "cffconvert --validate passed"
+        },
+        {
+          "code": "R-42.citation_validator_error",
+          "fix": null
+        },
+        {
+          "code": "R-42.claims_changed",
+          "fix": null
+        },
+        {
+          "code": "R-42.claims_not_passing",
+          "fix": null
+        },
+        {
+          "code": "R-42.excluded",
+          "fix": null
+        },
+        {
+          "code": "R-42.forbidden_member",
+          "fix": null
+        },
+        {
+          "code": "R-42.identity_missing",
+          "fix": null
+        },
+        {
+          "code": "R-42.identity_recorded",
+          "fix": "recorded, not verified"
+        },
+        {
+          "code": "R-42.local_path",
+          "fix": null
+        },
+        {
+          "code": "R-42.lock_changed",
+          "fix": null
+        },
+        {
+          "code": "R-42.lock_unavailable",
+          "fix": null
+        },
+        {
+          "code": "R-42.manifest_invalid",
+          "fix": null
+        },
+        {
+          "code": "R-42.manifest_other_dist",
+          "fix": null
+        },
+        {
+          "code": "R-42.members_unscanned",
+          "fix": "large or binary members: names checked, content not scanned"
+        },
+        {
+          "code": "R-42.missing_artifact",
+          "fix": null
+        },
+        {
+          "code": "R-42.missing_member",
+          "fix": null
+        },
+        {
+          "code": "R-42.missing_required",
+          "fix": null
+        },
+        {
+          "code": "R-42.no_claim_map",
+          "fix": null
+        },
+        {
+          "code": "R-42.no_dist",
+          "fix": null
+        },
+        {
+          "code": "R-42.no_manifest",
+          "fix": "run: steward release manifest"
+        },
+        {
+          "code": "R-42.policy_term",
+          "fix": null
+        },
+        {
+          "code": "R-42.policy_term_in_name",
+          "fix": null
+        },
+        {
+          "code": "R-42.private_term",
+          "fix": null
+        },
+        {
+          "code": "R-42.private_term_in_name",
+          "fix": null
+        },
+        {
+          "code": "R-42.shipped_secret",
+          "fix": null
+        },
+        {
+          "code": "R-42.terms_unavailable",
+          "fix": null
+        },
+        {
+          "code": "R-42.version_mismatch",
+          "fix": null
+        }
+      ],
+      "fix": "add the required files, `steward release manifest` after building, remove refused members",
+      "governance": "project",
+      "name": "release.integrity",
+      "pass_does_not_mean": "The software does what it should.",
+      "rule": "R-42",
+      "run": "steward check release --summary",
+      "version": 1,
+      "why": "What ships must be what was declared, and nothing more."
+    },
+    {
+      "area": "release",
+      "areas": [
+        "release"
+      ],
+      "checks": "An independent review is recorded before a release, with its findings closed.",
+      "codes": [
+        {
+          "code": "R-43.accepted_on_tests_unrecorded",
+          "fix": null
+        },
+        {
+          "code": "R-43.independence_unknown",
+          "fix": null
+        },
+        {
+          "code": "R-43.invalid",
+          "fix": "findings register is invalid"
+        },
+        {
+          "code": "R-43.known_issue",
+          "fix": null
+        },
+        {
+          "code": "R-43.no_register",
+          "fix": null
+        },
+        {
+          "code": "R-43.no_regression_test",
+          "fix": null
+        },
+        {
+          "code": "R-43.no_reverifier",
+          "fix": "verified, but no re-verifier is recorded"
+        },
+        {
+          "code": "R-43.no_review",
+          "fix": "no review recorded"
+        },
+        {
+          "code": "R-43.not_independent",
+          "fix": "reviewer and implementer are the same"
+        },
+        {
+          "code": "R-43.not_reverified",
+          "fix": "accepted on tests; a critical or high finding is re-verified or waived"
+        },
+        {
+          "code": "R-43.open",
+          "fix": null
+        },
+        {
+          "code": "R-43.open_minor",
+          "fix": null
+        },
+        {
+          "code": "R-43.recommended",
+          "fix": null
+        },
+        {
+          "code": "R-43.review",
+          "fix": null
+        },
+        {
+          "code": "R-43.stale_review",
+          "fix": "no review covers the commit being released; request a re-review"
+        },
+        {
+          "code": "R-43.unlisted_limitation",
+          "fix": null
+        },
+        {
+          "code": "R-43.unwaived",
+          "fix": "a high or critical finding accepted without a signed waive (scope finding=ID)"
+        },
+        {
+          "code": "R-43.verification_unavailable",
+          "fix": "run `steward check` in a terminal"
+        }
+      ],
+      "fix": "record an independent review of this commit; verify or waive every high/critical finding",
+      "governance": "project",
+      "name": "release.review",
+      "pass_does_not_mean": "The review found everything.",
+      "rule": "R-43",
+      "run": "steward check release --summary",
+      "version": 1,
+      "why": "No agent approves its own work."
+    },
+    {
+      "area": "release",
+      "areas": [
+        "release"
+      ],
+      "checks": "Runtime modules match their recorded fingerprints, or a neutral change is acknowledged.",
+      "codes": [
+        {
+          "code": "R-44.acknowledged",
+          "fix": null
+        },
+        {
+          "code": "R-44.added",
+          "fix": null
+        },
+        {
+          "code": "R-44.changed",
+          "fix": null
+        },
+        {
+          "code": "R-44.removed",
+          "fix": null
+        },
+        {
+          "code": "R-44.unparsable",
+          "fix": null
+        }
+      ],
+      "fix": "review the code change; `steward release ack MODULE --reason ...` if neutral, else re-record after review",
+      "governance": "project",
+      "name": "release.fingerprint",
+      "pass_does_not_mean": "An acknowledged change is neutral.",
+      "rule": "R-44",
+      "run": "steward check release --summary",
+      "version": 1,
+      "why": "Silent changes to shared code change frozen behaviour."
+    },
+    {
+      "area": "benchmark",
+      "areas": [
+        "benchmark"
+      ],
+      "checks": "Splits do not share IDs, groups or time ranges.",
+      "codes": [
+        {
+          "code": "R-45.blank_group",
+          "fix": null
+        },
+        {
+          "code": "R-45.checked",
+          "fix": null
+        },
+        {
+          "code": "R-45.duplicate_id",
+          "fix": null
+        },
+        {
+          "code": "R-45.empty_split",
+          "fix": null
+        },
+        {
+          "code": "R-45.group_overlap",
+          "fix": null
+        },
+        {
+          "code": "R-45.group_unchecked",
+          "fix": null
+        },
+        {
+          "code": "R-45.id_overlap",
+          "fix": null
+        },
+        {
+          "code": "R-45.metadata_invalid",
+          "fix": null
+        },
+        {
+          "code": "R-45.metadata_missing",
+          "fix": null
+        },
+        {
+          "code": "R-45.no_metadata",
+          "fix": null
+        },
+        {
+          "code": "R-45.path_outside",
+          "fix": null
+        },
+        {
+          "code": "R-45.split_missing",
+          "fix": null
+        },
+        {
+          "code": "R-45.split_unreadable",
+          "fix": null
+        },
+        {
+          "code": "R-45.temporal_order",
+          "fix": null
+        },
+        {
+          "code": "R-45.time_unchecked",
+          "fix": null
+        },
+        {
+          "code": "R-45.time_unparsed",
+          "fix": null
+        }
+      ],
+      "fix": "fix the split files or the sample metadata; `steward benchmark splits CONTRACT` lists overlaps",
+      "governance": "project",
+      "name": "benchmark.splits",
+      "pass_does_not_mean": "Undeclared kinds of leakage are absent.",
+      "rule": "R-45",
+      "run": "steward check benchmark --summary",
+      "version": 1,
+      "why": "Leakage between splits inflates results."
+    },
+    {
+      "area": "benchmark",
+      "areas": [
+        "benchmark"
+      ],
+      "checks": "Benchmark datasets match their declared hashes.",
+      "codes": [
+        {
+          "code": "R-46.hash_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-46.no_hash",
+          "fix": null
+        },
+        {
+          "code": "R-46.not_a_repository_file",
+          "fix": "the source is not a file in this repository; its hash is not checked"
+        }
+      ],
+      "fix": "restore the dataset file, or update the contract's sha256 after a reviewed change",
+      "governance": "project",
+      "name": "benchmark.datasets",
+      "pass_does_not_mean": "The dataset is suitable.",
+      "rule": "R-46",
+      "run": "steward check benchmark --summary",
+      "version": 1,
+      "why": "A changed dataset is a different benchmark."
+    },
+    {
+      "area": "benchmark",
+      "areas": [
+        "benchmark"
+      ],
+      "checks": "The results matrix is complete and meets its thresholds.",
+      "codes": [
+        {
+          "code": "R-47.duplicate_method",
+          "fix": null
+        },
+        {
+          "code": "R-47.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-47.missing_result",
+          "fix": null
+        },
+        {
+          "code": "R-47.no_required_splits",
+          "fix": null
+        },
+        {
+          "code": "R-47.no_results",
+          "fix": null
+        },
+        {
+          "code": "R-47.not_numeric",
+          "fix": null
+        },
+        {
+          "code": "R-47.out_of_range",
+          "fix": null
+        },
+        {
+          "code": "R-47.path_outside",
+          "fix": null
+        },
+        {
+          "code": "R-47.reserved_name",
+          "fix": null
+        },
+        {
+          "code": "R-47.threshold_met",
+          "fix": null
+        },
+        {
+          "code": "R-47.threshold_not_evaluable",
+          "fix": null
+        },
+        {
+          "code": "R-47.threshold_not_met",
+          "fix": null
+        },
+        {
+          "code": "R-47.undeclared",
+          "fix": null
+        },
+        {
+          "code": "R-47.unknown_split",
+          "fix": null
+        }
+      ],
+      "fix": "fill the results matrix for every metric, method and required split; `steward benchmark results CONTRACT`",
+      "governance": "project",
+      "name": "benchmark.results",
+      "pass_does_not_mean": "The results generalise.",
+      "rule": "R-47",
+      "run": "steward check benchmark --summary",
+      "version": 1,
+      "why": "Missing cells hide failures."
+    },
+    {
+      "area": "benchmark",
+      "areas": [
+        "benchmark"
+      ],
+      "checks": "The declared comparison was made against the declared baselines.",
+      "codes": [
+        {
+          "code": "R-48.inputs_changed",
+          "fix": null
+        },
+        {
+          "code": "R-48.no_output",
+          "fix": null
+        },
+        {
+          "code": "R-48.not_from_run",
+          "fix": null
+        },
+        {
+          "code": "R-48.path_outside",
+          "fix": null
+        },
+        {
+          "code": "R-48.procedure_unrecorded",
+          "fix": null
+        },
+        {
+          "code": "R-48.run",
+          "fix": null
+        },
+        {
+          "code": "R-48.split_missing",
+          "fix": null
+        }
+      ],
+      "fix": "rerun the comparison with `steward run --input <each split file> --output <comparison.output> --seed ...`",
+      "governance": "project",
+      "name": "benchmark.comparison",
+      "pass_does_not_mean": "The baselines are strong.",
+      "rule": "R-48",
+      "run": "steward check benchmark --summary",
+      "version": 1,
+      "why": "Changing the comparison after the results is cherry-picking."
+    },
+    {
+      "area": "benchmark",
+      "areas": [
+        "benchmark"
+      ],
+      "checks": "Each leakage type is declared as checked, not applicable, or unknown.",
+      "codes": [
+        {
+          "code": "R-49.declared_checked",
+          "fix": null
+        },
+        {
+          "code": "R-49.declared_not_applicable",
+          "fix": null
+        },
+        {
+          "code": "R-49.evidence_missing",
+          "fix": null
+        },
+        {
+          "code": "R-49.reason_missing",
+          "fix": null
+        },
+        {
+          "code": "R-49.undeclared",
+          "fix": null
+        },
+        {
+          "code": "R-49.unknown_type",
+          "fix": null
+        }
+      ],
+      "fix": "declare each leakage type in the contract's [leakage] table: checked (with evidence) or not_applicable (with a reason)",
+      "governance": "project",
+      "name": "benchmark.leakage",
+      "pass_does_not_mean": "There is no leakage.",
+      "rule": "R-49",
+      "run": "steward check benchmark --summary",
+      "version": 1,
+      "why": "Undeclared leakage types stay unknown, never silently clean."
+    },
+    {
+      "area": "storage",
+      "areas": [
+        "storage"
+      ],
+      "checks": "Registered large artifacts are present with their hashes.",
+      "codes": [
+        {
+          "code": "R-50.annex_key_only",
+          "fix": null
+        },
+        {
+          "code": "R-50.annex_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-50.dvc_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-50.git_unavailable",
+          "fix": null
+        },
+        {
+          "code": "R-50.hash_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-50.large_tracked",
+          "fix": null
+        },
+        {
+          "code": "R-50.no_retrieval",
+          "fix": null
+        },
+        {
+          "code": "R-50.not_present",
+          "fix": null
+        },
+        {
+          "code": "R-50.path_outside",
+          "fix": null
+        },
+        {
+          "code": "R-50.registry_outside",
+          "fix": null
+        },
+        {
+          "code": "R-50.unstable",
+          "fix": null
+        }
+      ],
+      "fix": "fetch or restore the artifact (see its retrieval note), or `steward storage record PATH --retrieval ...` after a reviewed change",
+      "governance": "project",
+      "name": "storage.artifacts",
+      "pass_does_not_mean": "The artifacts can still be retrieved.",
+      "rule": "R-50",
+      "run": "steward check storage --summary",
+      "version": 1,
+      "why": "Results depend on artifacts outside git."
+    },
+    {
+      "area": "governance",
+      "areas": [
+        "governance"
+      ],
+      "checks": "The project declares the constitution, the installed version, and its records.",
+      "codes": [
+        {
+          "code": "R-51.no_decisions_log",
+          "fix": "Article IV needs a decisions log"
+        },
+        {
+          "code": "R-51.recommended",
+          "fix": null
+        },
+        {
+          "code": "R-51.version_differs",
+          "fix": null
+        }
+      ],
+      "fix": "declare `constitution` under [steward] (steward constitution), or read --changes and update the version",
+      "governance": "multi-project",
+      "name": "governance.constitution",
+      "pass_does_not_mean": "The rules were followed.",
+      "rule": "R-51",
+      "run": "steward check governance --summary",
+      "version": 1,
+      "why": "Every project governed the same way follows the same rules."
+    },
+    {
+      "area": "repro",
+      "areas": [
+        "repro"
+      ],
+      "checks": "Each reproduction contract has a passing check on the current tree.",
+      "codes": [
+        {
+          "code": "R-52.contract_invalid",
+          "fix": null
+        },
+        {
+          "code": "R-52.failed",
+          "fix": null
+        },
+        {
+          "code": "R-52.ledger",
+          "fix": null
+        },
+        {
+          "code": "R-52.no_files",
+          "fix": null
+        },
+        {
+          "code": "R-52.no_git",
+          "fix": null
+        },
+        {
+          "code": "R-52.no_manifest",
+          "fix": null
+        },
+        {
+          "code": "R-52.not_current",
+          "fix": null
+        },
+        {
+          "code": "R-52.passed",
+          "fix": null
+        },
+        {
+          "code": "R-52.torn_tail",
+          "fix": null
+        }
+      ],
+      "fix": "re-derive the outputs on this commit and run `steward repro check ID --work DIR`",
+      "governance": "project",
+      "name": "repro.current",
+      "pass_does_not_mean": "The reproduction ran on independent hardware.",
+      "rule": "R-52",
+      "run": "steward check repro --summary",
+      "version": 1,
+      "why": "Published outputs must still be re-derived after every change."
+    },
+    {
+      "area": "governance",
+      "areas": [
+        "governance"
+      ],
+      "checks": "Exchange items pass their schema, are uniquely numbered, in their places, with legal state transitions, and what this project sends holds no public term. An outbox item without a receipt after the configured number of days is advisory. Check the peer's ref and ask it to pull and commit the receipt.",
+      "codes": [
+        {
+          "code": "R-53.awaiting_reply",
+          "fix": "one-way: the other project owes no reply"
+        },
+        {
+          "code": "R-53.bad_transition",
+          "fix": null
+        },
+        {
+          "code": "R-53.duplicate_id",
+          "fix": null
+        },
+        {
+          "code": "R-53.invalid",
+          "fix": "cannot be read"
+        },
+        {
+          "code": "R-53.ledger_broken",
+          "fix": null
+        },
+        {
+          "code": "R-53.misplaced",
+          "fix": null
+        },
+        {
+          "code": "R-53.missing_entry",
+          "fix": "run: steward exchange init"
+        },
+        {
+          "code": "R-53.name_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-53.oneway_channel",
+          "fix": "a one-way item names its channel"
+        },
+        {
+          "code": "R-53.orphan_response",
+          "fix": null
+        },
+        {
+          "code": "R-53.public_term",
+          "fix": "reword before it is sent"
+        },
+        {
+          "code": "R-53.removed_after_retirement",
+          "fix": null
+        },
+        {
+          "code": "R-53.response_target_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-53.symlink",
+          "fix": null
+        },
+        {
+          "code": "R-53.tag_missing",
+          "fix": null
+        },
+        {
+          "code": "R-53.tag_not_verified",
+          "fix": null
+        },
+        {
+          "code": "R-53.unacknowledged",
+          "fix": null
+        },
+        {
+          "code": "R-53.undelivered",
+          "fix": null
+        },
+        {
+          "code": "R-53.unknown_entry",
+          "fix": null
+        },
+        {
+          "code": "R-53.unknown_item",
+          "fix": "the ledger names an item with no file"
+        },
+        {
+          "code": "R-53.upgrade_available",
+          "fix": null
+        },
+        {
+          "code": "R-53.wrong_counterparty",
+          "fix": null
+        }
+      ],
+      "fix": "fix the item or ledger entry named. Record states with `steward exchange state ID STATE --note ...`. For a missing receipt, check the peer's ref and ask it to pull and commit its receipt",
+      "governance": "multi-project",
+      "name": "exchange.items",
+      "pass_does_not_mean": "The other project agrees with the recorded state.",
+      "rule": "R-53",
+      "run": "steward check governance --summary",
+      "version": 1,
+      "why": "Requests between projects must not get lost, duplicated or decided twice."
+    },
+    {
+      "area": "governance",
+      "areas": [
+        "governance"
+      ],
+      "checks": "Received items are unchanged since they were received, and get a decision in time.",
+      "codes": [
+        {
+          "code": "R-54.future_date",
+          "fix": null
+        },
+        {
+          "code": "R-54.inbox_edited",
+          "fix": null
+        },
+        {
+          "code": "R-54.ledger",
+          "fix": null
+        },
+        {
+          "code": "R-54.no_date",
+          "fix": "its last state has no readable date"
+        },
+        {
+          "code": "R-54.no_decision",
+          "fix": null
+        },
+        {
+          "code": "R-54.receipt_unverified",
+          "fix": null
+        }
+      ],
+      "fix": "restore an edited inbox item from version control (a correction is a new revision the sender files); decide acknowledged items with `steward exchange respond`",
+      "governance": "multi-project",
+      "name": "exchange.inbox",
+      "pass_does_not_mean": "The decision was the right one.",
+      "rule": "R-54",
+      "run": "steward check governance --summary",
+      "version": 1,
+      "why": "An inbox edited after receipt no longer records what was asked."
+    },
+    {
+      "area": "session",
+      "areas": [
+        "session"
+      ],
+      "checks": "The session handoff is current, within budget, well formed and private-free (advisory).",
+      "codes": [
+        {
+          "code": "R-55.missing",
+          "fix": null
+        },
+        {
+          "code": "R-55.over_budget",
+          "fix": null
+        },
+        {
+          "code": "R-55.private",
+          "fix": null
+        },
+        {
+          "code": "R-55.shape",
+          "fix": null
+        },
+        {
+          "code": "R-55.stale",
+          "fix": null
+        },
+        {
+          "code": "R-55.uncommitted",
+          "fix": "changed since its last commit"
+        },
+        {
+          "code": "R-55.words",
+          "fix": null
+        }
+      ],
+      "fix": "close the session again with `steward session close` and commit the handoff",
+      "governance": "multi-project",
+      "name": "session.handoff",
+      "pass_does_not_mean": "The handoff mentions everything that matters.",
+      "rule": "R-55",
+      "run": "steward check session --summary",
+      "version": 1,
+      "why": "A new agent session should start from one short record, not a transcript."
+    },
+    {
+      "area": "boundary",
+      "areas": [
+        "boundary"
+      ],
+      "checks": "Declared packages import no forbidden module, and pyproject declares no forbidden distribution.",
+      "codes": [
+        {
+          "code": "R-56.computed_import",
+          "fix": null
+        },
+        {
+          "code": "R-56.forbidden_distribution",
+          "fix": null
+        },
+        {
+          "code": "R-56.forbidden_import",
+          "fix": null
+        },
+        {
+          "code": "R-56.no_pyproject",
+          "fix": null
+        },
+        {
+          "code": "R-56.pyproject_invalid",
+          "fix": null
+        },
+        {
+          "code": "R-56.scanned",
+          "fix": null
+        },
+        {
+          "code": "R-56.unparsable",
+          "fix": null
+        }
+      ],
+      "fix": "remove the forbidden import or dependency named, or move it to an allowed group",
+      "governance": "project",
+      "name": "boundary.imports",
+      "pass_does_not_mean": "Computed imports were checked.",
+      "rule": "R-56",
+      "run": "steward check boundary --summary",
+      "version": 1,
+      "why": "Libraries that must stay independent drift as agents add convenient imports."
+    },
+    {
+      "area": "tasks",
+      "areas": [
+        "tasks"
+      ],
+      "checks": "Task IDs are unique, open tasks are on the board, and its next ID is unused.",
+      "codes": [
+        {
+          "code": "R-57.duplicate_id",
+          "fix": null
+        },
+        {
+          "code": "R-57.next_id_invalid",
+          "fix": null
+        },
+        {
+          "code": "R-57.next_id_stale",
+          "fix": null
+        },
+        {
+          "code": "R-57.no_board",
+          "fix": null
+        },
+        {
+          "code": "R-57.no_id",
+          "fix": null
+        },
+        {
+          "code": "R-57.no_next_id",
+          "fix": "add a line: Next unused ID: …"
+        },
+        {
+          "code": "R-57.not_on_board",
+          "fix": null
+        },
+        {
+          "code": "R-57.unknown_status",
+          "fix": null
+        }
+      ],
+      "fix": "give each task spec a unique ID and a known status, list open tasks on the board, and raise its next unused ID",
+      "governance": "project",
+      "name": "tasks.board",
+      "pass_does_not_mean": "The board is up to date in substance.",
+      "rule": "R-57",
+      "run": "steward check tasks --summary",
+      "version": 1,
+      "why": "Several agents filing tasks collide on IDs."
+    },
+    {
+      "area": "changelog",
+      "areas": [
+        "changelog"
+      ],
+      "checks": "Changes since the last release have Unreleased changelog entries with their fields (advisory).",
+      "codes": [
+        {
+          "code": "R-58.entry_malformed",
+          "fix": "entry line does not match entry_pattern"
+        },
+        {
+          "code": "R-58.git_error",
+          "fix": null
+        },
+        {
+          "code": "R-58.no_changelog",
+          "fix": null
+        },
+        {
+          "code": "R-58.no_entry",
+          "fix": null
+        },
+        {
+          "code": "R-58.no_tag",
+          "fix": null
+        },
+        {
+          "code": "R-58.not_ready",
+          "fix": null
+        },
+        {
+          "code": "R-58.not_updated",
+          "fix": null
+        },
+        {
+          "code": "R-58.range",
+          "fix": null
+        },
+        {
+          "code": "R-58.unreadable",
+          "fix": null
+        }
+      ],
+      "fix": "add an entry under Unreleased in the changelog for the changes since the last release tag",
+      "governance": "project",
+      "name": "changelog.unreleased",
+      "pass_does_not_mean": "The entries describe the changes well.",
+      "rule": "R-58",
+      "run": "steward check changelog --summary",
+      "version": 1,
+      "why": "Release notes written at the end miss changes."
+    },
+    {
+      "area": "branches",
+      "areas": [
+        "branches"
+      ],
+      "checks": "History follows the declared branch model: tagged release commits, no-ff merges, branch names.",
+      "codes": [
+        {
+          "code": "R-59.branch_name",
+          "fix": null
+        },
+        {
+          "code": "R-59.history_unavailable",
+          "fix": null
+        },
+        {
+          "code": "R-59.no_git",
+          "fix": null
+        },
+        {
+          "code": "R-59.no_integration_branch",
+          "fix": null
+        },
+        {
+          "code": "R-59.no_release_branch",
+          "fix": null
+        },
+        {
+          "code": "R-59.no_tag",
+          "fix": null
+        },
+        {
+          "code": "R-59.not_no_ff",
+          "fix": null
+        },
+        {
+          "code": "R-59.refs_unavailable",
+          "fix": null
+        },
+        {
+          "code": "R-59.since_unknown",
+          "fix": null
+        },
+        {
+          "code": "R-59.untagged_release_commit",
+          "fix": null
+        }
+      ],
+      "fix": "tag the release commit, merge task branches with --no-ff, or rename the branch to a declared pattern",
+      "governance": "project",
+      "name": "branches.model",
+      "pass_does_not_mean": "The merged work was reviewed.",
+      "rule": "R-59",
+      "run": "steward check branches --summary",
+      "version": 1,
+      "why": "A branch model kept by hand erodes."
+    },
+    {
+      "area": "skills",
+      "areas": [
+        "skills"
+      ],
+      "checks": "Skill copies for several agent harnesses match the one canonical copy.",
+      "codes": [
+        {
+          "code": "R-60.copy",
+          "fix": "an identical copy; a link avoids drift"
+        },
+        {
+          "code": "R-60.dangling",
+          "fix": null
+        },
+        {
+          "code": "R-60.drift",
+          "fix": null
+        },
+        {
+          "code": "R-60.linked",
+          "fix": null
+        },
+        {
+          "code": "R-60.missing",
+          "fix": null
+        },
+        {
+          "code": "R-60.no_canonical",
+          "fix": null
+        },
+        {
+          "code": "R-60.pointer",
+          "fix": null
+        },
+        {
+          "code": "R-60.pointer_wrong",
+          "fix": null
+        },
+        {
+          "code": "R-60.wrong_target",
+          "fix": "links somewhere else"
+        }
+      ],
+      "fix": "edit only the canonical skills directory; replace a drifted copy by a link to it",
+      "governance": "project",
+      "name": "skills.copies",
+      "pass_does_not_mean": "The skills are right.",
+      "rule": "R-60",
+      "run": "steward check skills --summary",
+      "version": 1,
+      "why": "Two drifting copies give two agents different instructions."
+    },
+    {
+      "area": "files",
+      "areas": [
+        "files"
+      ],
+      "checks": "No committed text file holds an unresolved merge-conflict marker.",
+      "codes": [
+        {
+          "code": "R-61.conflict_marker",
+          "fix": null
+        },
+        {
+          "code": "R-61.not_scanned",
+          "fix": null
+        }
+      ],
+      "fix": "resolve the merge conflict in the file named (or mark a file that holds markers on purpose)",
+      "governance": "project",
+      "name": "files.conflict_markers",
+      "pass_does_not_mean": "The merge was resolved correctly.",
+      "rule": "R-61",
+      "run": "steward check files --summary",
+      "version": 1,
+      "why": "Parallel agents and merges leave markers in records."
+    },
+    {
+      "area": "agents",
+      "areas": [
+        "agents"
+      ],
+      "checks": "Agent attempts and scores are recorded append-only, and no attempt is scored by its author.",
+      "codes": [
+        {
+          "code": "R-62.ledger",
+          "fix": null
+        },
+        {
+          "code": "R-62.self_scored",
+          "fix": null
+        },
+        {
+          "code": "R-62.silent_override",
+          "fix": null
+        },
+        {
+          "code": "R-62.torn_tail",
+          "fix": null
+        },
+        {
+          "code": "R-62.unknown_attempt",
+          "fix": null
+        }
+      ],
+      "fix": "record scores with `steward agents score` by an agent other than the author; append an override with a reason",
+      "governance": "multi-project",
+      "name": "agents.ledger",
+      "pass_does_not_mean": "The scores are accurate.",
+      "rule": "R-62",
+      "run": "steward check agents --summary",
+      "version": 1,
+      "why": "Self-scored work is not evaluated work."
+    },
+    {
+      "area": "frozen",
+      "areas": [
+        "frozen"
+      ],
+      "checks": "Frozen file sets (agent prompts, tools, configuration, golden fixtures) are unchanged, or re-recorded with a decision.",
+      "codes": [
+        {
+          "code": "R-63.changed",
+          "fix": null
+        },
+        {
+          "code": "R-63.history_unavailable",
+          "fix": null
+        },
+        {
+          "code": "R-63.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-63.no_decision",
+          "fix": null
+        },
+        {
+          "code": "R-63.no_files",
+          "fix": null
+        },
+        {
+          "code": "R-63.not_recorded",
+          "fix": null
+        }
+      ],
+      "fix": "restore the frozen files, or record the new version with `steward frozen record NAME --decision ...`",
+      "governance": "project",
+      "name": "frozen.sets",
+      "pass_does_not_mean": "The frozen version behaves well.",
+      "rule": "R-63",
+      "run": "steward check frozen --summary",
+      "version": 1,
+      "why": "A frozen agent version must stay frozen."
+    },
+    {
+      "area": "containers",
+      "areas": [
+        "containers"
+      ],
+      "checks": "Container build contexts hold no dev-only paths, secrets, outside links or large unignored folders.",
+      "codes": [
+        {
+          "code": "R-64.dev_only",
+          "fix": "resolves into a dev-only path"
+        },
+        {
+          "code": "R-64.large_folder",
+          "fix": null
+        },
+        {
+          "code": "R-64.link_context",
+          "fix": "the build context is reached through a link"
+        },
+        {
+          "code": "R-64.link_dangling",
+          "fix": null
+        },
+        {
+          "code": "R-64.link_outside",
+          "fix": "leaves the build context"
+        },
+        {
+          "code": "R-64.missing",
+          "fix": null
+        },
+        {
+          "code": "R-64.secret_file",
+          "fix": "not in .dockerignore"
+        }
+      ],
+      "fix": "add the path to the context's .dockerignore, or remove the link or file",
+      "governance": "project",
+      "name": "containers.context",
+      "pass_does_not_mean": "The image is secure.",
+      "rule": "R-64",
+      "run": "steward check containers --summary",
+      "version": 1,
+      "why": "Images copy what the context holds."
+    },
+    {
+      "area": "containers",
+      "areas": [
+        "containers"
+      ],
+      "checks": "Compose services set their declared keys, keep user data on named volumes, and ship what they must.",
+      "codes": [
+        {
+          "code": "R-65.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-65.missing_key",
+          "fix": null
+        },
+        {
+          "code": "R-65.no_yaml",
+          "fix": null
+        },
+        {
+          "code": "R-65.ship_ignored",
+          "fix": null
+        },
+        {
+          "code": "R-65.ship_missing",
+          "fix": null
+        },
+        {
+          "code": "R-65.ship_outside",
+          "fix": "in no declared build context"
+        },
+        {
+          "code": "R-65.unknown_service",
+          "fix": null
+        },
+        {
+          "code": "R-65.unreadable",
+          "fix": null
+        },
+        {
+          "code": "R-65.user_data_not_volume",
+          "fix": null
+        }
+      ],
+      "fix": "set the key in the service's environment or env_file, mount user data on a named volume, or un-ignore the shipped path",
+      "governance": "project",
+      "name": "containers.compose",
+      "pass_does_not_mean": "The services work together.",
+      "rule": "R-65",
+      "run": "steward check containers --summary",
+      "version": 1,
+      "why": "Container-only failures never show in a native run."
+    },
+    {
+      "area": "dependencies",
+      "areas": [
+        "dependencies"
+      ],
+      "checks": "Each pinned dependency changed since the last release has a complete parity record.",
+      "codes": [
+        {
+          "code": "R-66.git_error",
+          "fix": null
+        },
+        {
+          "code": "R-66.incomplete",
+          "fix": null
+        },
+        {
+          "code": "R-66.no_record",
+          "fix": null
+        },
+        {
+          "code": "R-66.no_tag",
+          "fix": null
+        },
+        {
+          "code": "R-66.record",
+          "fix": null
+        }
+      ],
+      "fix": "write the upgrade's parity record (package, old, new, harnesses with verdicts, approval)",
+      "governance": "project",
+      "name": "dependencies.parity",
+      "pass_does_not_mean": "The parity harnesses were sufficient.",
+      "rule": "R-66",
+      "run": "steward check dependencies --summary",
+      "version": 1,
+      "why": "Upgrading a scientific library can change results."
+    },
+    {
+      "area": "benchmark",
+      "areas": [
+        "benchmark"
+      ],
+      "checks": "A contract's minimum number of units reaches its target power in the recorded table.",
+      "codes": [
+        {
+          "code": "R-67.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-67.invalid_row",
+          "fix": null
+        },
+        {
+          "code": "R-67.missing_row",
+          "fix": null
+        },
+        {
+          "code": "R-67.no_power",
+          "fix": null
+        },
+        {
+          "code": "R-67.no_row",
+          "fix": null
+        },
+        {
+          "code": "R-67.stale",
+          "fix": null
+        },
+        {
+          "code": "R-67.underpowered",
+          "fix": null
+        }
+      ],
+      "fix": "run `steward benchmark power` for the contract, or raise minimum_units to reach the target",
+      "governance": "project",
+      "name": "benchmark.power",
+      "pass_does_not_mean": "The development effects predict the confirmatory ones.",
+      "rule": "R-67",
+      "run": "steward check benchmark --summary",
+      "version": 1,
+      "why": "An underpowered confirmatory test wastes the held-out data."
+    },
+    {
+      "area": "stages",
+      "areas": [
+        "stages"
+      ],
+      "checks": "Every staged run was launched with its recorded GO and accrual minimum.",
+      "codes": [
+        {
+          "code": "R-68.below_minimum",
+          "fix": null
+        },
+        {
+          "code": "R-68.ledger",
+          "fix": null
+        },
+        {
+          "code": "R-68.no_go",
+          "fix": null
+        },
+        {
+          "code": "R-68.no_launch",
+          "fix": null
+        },
+        {
+          "code": "R-68.torn_tail",
+          "fix": null
+        },
+        {
+          "code": "R-68.unfinished",
+          "fix": null
+        }
+      ],
+      "fix": "record the GO in the decisions log before an outcome stage runs; accrue to the minimum first",
+      "governance": "project",
+      "name": "stages.records",
+      "pass_does_not_mean": "The GO was well judged.",
+      "rule": "R-68",
+      "run": "steward check stages --summary",
+      "version": 1,
+      "why": "Outcome stages must wait for the owner's GO."
+    },
+    {
+      "area": "docs",
+      "areas": [
+        "docs"
+      ],
+      "checks": "The generated site pages, README block and SVG assets match their current records and hold no private term or local path. The site and README each have their own opt-in.",
+      "codes": [
+        {
+          "code": "R-69.link",
+          "fix": null
+        },
+        {
+          "code": "R-69.missing",
+          "fix": null
+        },
+        {
+          "code": "R-69.private",
+          "fix": null
+        },
+        {
+          "code": "R-69.readme_invalid",
+          "fix": null
+        },
+        {
+          "code": "R-69.retired",
+          "fix": "no longer published: steward docs build removes it"
+        },
+        {
+          "code": "R-69.stale",
+          "fix": "older than its records"
+        }
+      ],
+      "fix": "run `steward docs build` for site pages or `steward docs readme` for the README and its SVG assets",
+      "governance": "project",
+      "name": "docs.current",
+      "pass_does_not_mean": "The site explains the project well.",
+      "rule": "R-69",
+      "run": "steward check docs --summary",
+      "version": 1,
+      "why": "Readers rely on documentation that reflects the project's records."
+    },
+    {
+      "area": "milestones",
+      "areas": [
+        "milestones"
+      ],
+      "checks": "development/milestones.toml matches its schema, names tasks and exchange items that exist, and every milestone past its due time has a recorded outcome (met, moved with a decision, or dropped).",
+      "codes": [
+        {
+          "code": "R-70.duplicate_id",
+          "fix": null
+        },
+        {
+          "code": "R-70.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-70.no_board",
+          "fix": "names tasks, and [tasks] is not configured"
+        },
+        {
+          "code": "R-70.past_due",
+          "fix": null
+        },
+        {
+          "code": "R-70.unknown_item",
+          "fix": null
+        },
+        {
+          "code": "R-70.unknown_task",
+          "fix": null
+        }
+      ],
+      "fix": "fix development/milestones.toml; record each past milestone's outcome (met, moved with a decision, dropped)",
+      "governance": "project",
+      "name": "milestones.valid",
+      "pass_does_not_mean": "The milestone is achievable, or its progress is enough.",
+      "rule": "R-70",
+      "run": "steward check milestones --summary",
+      "version": 1,
+      "why": "A deadline that passes silently is planning nobody can learn from; a milestone naming missing work reports progress it cannot measure."
+    },
+    {
+      "area": "sprints",
+      "areas": [
+        "sprints"
+      ],
+      "checks": "Each sprint file under development/sprints/ matches its schema (no cycles, a done command per task), and its ledger is intact.",
+      "codes": [
+        {
+          "code": "R-71.added_not_by_human",
+          "fix": null
+        },
+        {
+          "code": "R-71.bad_transition",
+          "fix": null
+        },
+        {
+          "code": "R-71.foreign_ledger",
+          "fix": null
+        },
+        {
+          "code": "R-71.id",
+          "fix": null
+        },
+        {
+          "code": "R-71.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-71.ledger",
+          "fix": null
+        },
+        {
+          "code": "R-71.not_opened",
+          "fix": null
+        },
+        {
+          "code": "R-71.plan_changed",
+          "fix": "the plan's tasks differ from those the sprint opened with"
+        },
+        {
+          "code": "R-71.unknown_task",
+          "fix": null
+        }
+      ],
+      "fix": "fix the sprint file named (steward sprint check ID), or recover its ledger",
+      "governance": "project",
+      "name": "sprint.valid",
+      "pass_does_not_mean": "The tasks are the right ones, or their done commands test enough.",
+      "rule": "R-71",
+      "run": "steward check sprints --summary",
+      "version": 1,
+      "why": "A sprint dispatches agents unattended; a malformed plan or an edited ledger misreports what ran."
+    },
+    {
+      "area": "sprints",
+      "areas": [
+        "sprints"
+      ],
+      "checks": "A sprint whose window has ended has its report, and every task it records as done has every done command recorded with exit 0.",
+      "codes": [
+        {
+          "code": "R-72.no_report",
+          "fix": null
+        },
+        {
+          "code": "R-72.stale_report",
+          "fix": null
+        },
+        {
+          "code": "R-72.unchecked_done",
+          "fix": null
+        }
+      ],
+      "fix": "write the report of each sprint whose window has ended: steward sprint report ID",
+      "governance": "project",
+      "name": "sprint.closed",
+      "pass_does_not_mean": "The merged work does what the task asked.",
+      "rule": "R-72",
+      "run": "steward check sprints --summary",
+      "version": 1,
+      "why": "The report lists the branches waiting for the human's merge; without it, finished work is lost track of."
+    },
+    {
+      "area": "pins",
+      "areas": [
+        "pins"
+      ],
+      "checks": "Each declared pin's artifact is present and matches its digest; a retired pin's kept artifact is present and matches what the pins ledger recorded; the records a pin protects exist.",
+      "codes": [
+        {
+          "code": "R-73.artifact_absent",
+          "fix": null
+        },
+        {
+          "code": "R-73.artifact_changed",
+          "fix": null
+        },
+        {
+          "code": "R-73.artifact_missing",
+          "fix": null
+        },
+        {
+          "code": "R-73.identity_changed",
+          "fix": null
+        },
+        {
+          "code": "R-73.ledger",
+          "fix": null
+        },
+        {
+          "code": "R-73.protected_missing",
+          "fix": null
+        },
+        {
+          "code": "R-73.retirement_incomplete",
+          "fix": null
+        }
+      ],
+      "fix": "restore the kept artifact of a retired pin (or the pinned artifact itself); see steward pins status",
+      "governance": "project",
+      "name": "pins.records",
+      "pass_does_not_mean": "The pinned version is free of defects, or the protected records are right.",
+      "rule": "R-73",
+      "run": "steward check pins --summary",
+      "version": 1,
+      "why": "Frozen records depend on the exact version that produced them; losing its artifact makes them unreproducible."
+    },
+    {
+      "area": "pins",
+      "areas": [
+        "pins"
+      ],
+      "checks": "Deprecated pins still used by the project's code (by import or by a declared reference), and pins whose retirement conditions all hold (advisory).",
+      "codes": [
+        {
+          "code": "R-74.callers_unavailable",
+          "fix": null
+        },
+        {
+          "code": "R-74.deprecated_in_use",
+          "fix": null
+        },
+        {
+          "code": "R-74.eligible",
+          "fix": null
+        }
+      ],
+      "fix": "move callers off a deprecated pin; retire an eligible one with a signed approval (steward pins status)",
+      "governance": "project",
+      "name": "pins.retirement",
+      "pass_does_not_mean": "Retiring is safe for code outside the repository.",
+      "rule": "R-74",
+      "run": "steward check pins --summary",
+      "version": 1,
+      "why": "Pins accumulate; deprecation first shows who still depends on one before it goes."
+    },
+    {
+      "area": "studies",
+      "areas": [
+        "studies"
+      ],
+      "checks": "Every study record's inputs, results and plan are present and match their recorded sha256; studies that depend on a changed one, and the papers citing them, are stale; the same input in two studies is listed; declared references (genome, annotation, identifier namespace, databases) agree across studies.",
+      "codes": [
+        {
+          "code": "R-75.chromosome_naming",
+          "fix": null
+        },
+        {
+          "code": "R-75.convention_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-75.duplicate_input",
+          "fix": null
+        },
+        {
+          "code": "R-75.file_changed",
+          "fix": null
+        },
+        {
+          "code": "R-75.file_missing",
+          "fix": null
+        },
+        {
+          "code": "R-75.inconsistent_references",
+          "fix": null
+        },
+        {
+          "code": "R-75.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-75.matrix_missing",
+          "fix": null
+        },
+        {
+          "code": "R-75.matrix_no_header",
+          "fix": "no header line found"
+        },
+        {
+          "code": "R-75.matrix_refused",
+          "fix": null
+        },
+        {
+          "code": "R-75.matrix_unrecorded",
+          "fix": null
+        },
+        {
+          "code": "R-75.no_inputs",
+          "fix": "no inputs recorded"
+        },
+        {
+          "code": "R-75.none",
+          "fix": null
+        },
+        {
+          "code": "R-75.sample_duplicate",
+          "fix": null
+        },
+        {
+          "code": "R-75.sample_field_missing",
+          "fix": null
+        },
+        {
+          "code": "R-75.sample_no_id",
+          "fix": null
+        },
+        {
+          "code": "R-75.sample_not_in_matrix",
+          "fix": null
+        },
+        {
+          "code": "R-75.sample_not_in_metadata",
+          "fix": null
+        },
+        {
+          "code": "R-75.sample_value_missing",
+          "fix": null
+        },
+        {
+          "code": "R-75.sample_value_not_allowed",
+          "fix": null
+        },
+        {
+          "code": "R-75.samples_empty",
+          "fix": "the sample sheet has no header"
+        },
+        {
+          "code": "R-75.samples_no_id",
+          "fix": null
+        },
+        {
+          "code": "R-75.samples_refused",
+          "fix": null
+        },
+        {
+          "code": "R-75.stale_dependency",
+          "fix": null
+        },
+        {
+          "code": "R-75.stale_paper",
+          "fix": null
+        },
+        {
+          "code": "R-75.unfingerprinted",
+          "fix": null
+        },
+        {
+          "code": "R-75.unknown_dependency",
+          "fix": null
+        },
+        {
+          "code": "R-75.unknown_paper",
+          "fix": null
+        }
+      ],
+      "fix": "restore the recorded file, or accept its new bytes on purpose (steward study fingerprint ID --accept PATH); a missing digest: steward study fingerprint ID --write",
+      "governance": "project",
+      "name": "studies.records",
+      "pass_does_not_mean": "That the data or references are the right ones for the question.",
+      "rule": "R-75",
+      "run": "steward check studies --summary",
+      "version": 1,
+      "why": "A reanalysis or a reviewer needs to know exactly which data, references and tools produced a result, and which papers go stale when they change."
+    },
+    {
+      "area": "research",
+      "areas": [
+        "research"
+      ],
+      "checks": "Research-direction records (advisory): literature reviews older than [research] stale_days, reviews without an included source, contributions without their nearest prior work or difference, gaps marked addressed or accepted without a decision, dead-end reviews without a decision.",
+      "codes": [
+        {
+          "code": "R-76.draft",
+          "fix": null
+        },
+        {
+          "code": "R-76.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-76.no_difference",
+          "fix": null
+        },
+        {
+          "code": "R-76.no_nearest",
+          "fix": null
+        },
+        {
+          "code": "R-76.no_sources",
+          "fix": "no included source"
+        },
+        {
+          "code": "R-76.stale_review",
+          "fix": null
+        },
+        {
+          "code": "R-76.undecided_dead_end",
+          "fix": "no decision yet: stop, pivot, reframe or continue"
+        },
+        {
+          "code": "R-76.undecided_gap",
+          "fix": null
+        },
+        {
+          "code": "R-76.unknown_relation",
+          "fix": null
+        }
+      ],
+      "fix": "re-run a stale review; name the nearest prior work; record the decision on a gap or dead end",
+      "governance": "project",
+      "name": "research.records",
+      "pass_does_not_mean": "That the search was complete, or that a contribution is novel.",
+      "rule": "R-76",
+      "run": "steward check research --summary",
+      "version": 1,
+      "why": "What was searched, found and decided while developing a project should outlive the chat it happened in."
+    },
+    {
+      "area": "paper",
+      "areas": [
+        "paper"
+      ],
+      "checks": "For a paper that declares a citations record: every bibliography entry with a DOI or PMID has a record, and the recorded title it resolves to is the cited title.",
+      "codes": [
+        {
+          "code": "R-77.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-77.no_bibliography",
+          "fix": null
+        },
+        {
+          "code": "R-77.no_record",
+          "fix": null
+        },
+        {
+          "code": "R-77.no_title",
+          "fix": null
+        },
+        {
+          "code": "R-77.outside",
+          "fix": null
+        },
+        {
+          "code": "R-77.parse",
+          "fix": null
+        },
+        {
+          "code": "R-77.refused",
+          "fix": null
+        },
+        {
+          "code": "R-77.title_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-77.unverified",
+          "fix": null
+        }
+      ],
+      "fix": "record the citation (steward paper citations NAME --fetch) or correct the cited title or identifier",
+      "governance": "project",
+      "name": "paper.citations_verified",
+      "pass_does_not_mean": "That a citation supports the sentence that cites it.",
+      "rule": "R-77",
+      "run": "steward check paper --summary",
+      "version": 1,
+      "why": "Made-up or mismatched citations are a documented failure of AI-assisted writing."
+    },
+    {
+      "area": "benchmark",
+      "areas": [
+        "benchmark"
+      ],
+      "checks": "For a benchmark contract with [llm_eval]: no group (study, series) in both tuning and test, no model judging its own answers, test cases public before a candidate's training cutoff (reported), and the prompts held in a [[frozen]] set.",
+      "codes": [
+        {
+          "code": "R-78.blank_group",
+          "fix": "cases without a group: leakage between tuning and test cannot be told"
+        },
+        {
+          "code": "R-78.blank_id",
+          "fix": "rows without a case ID"
+        },
+        {
+          "code": "R-78.cases_missing",
+          "fix": null
+        },
+        {
+          "code": "R-78.columns",
+          "fix": null
+        },
+        {
+          "code": "R-78.cutoff_unknown",
+          "fix": "no training_cutoff: exposure cannot be told"
+        },
+        {
+          "code": "R-78.group_leak",
+          "fix": null
+        },
+        {
+          "code": "R-78.no_candidates",
+          "fix": "no model with role = candidate"
+        },
+        {
+          "code": "R-78.no_test_cases",
+          "fix": "no case has split = test"
+        },
+        {
+          "code": "R-78.prompts_not_frozen",
+          "fix": "name the [[frozen]] set that holds the prompts"
+        },
+        {
+          "code": "R-78.prompts_unknown",
+          "fix": "no [[frozen]] set of that name"
+        },
+        {
+          "code": "R-78.self_judging",
+          "fix": "a model judges its own answers"
+        }
+      ],
+      "fix": "move a shared study out of tuning or test; use another judge; freeze the prompts; review cases before a cutoff",
+      "governance": "project",
+      "name": "benchmark.llm_eval",
+      "pass_does_not_mean": "That a model never saw a case: a cutoff is the provider's statement.",
+      "rule": "R-78",
+      "run": "steward check benchmark --summary",
+      "version": 1,
+      "why": "Language-model evaluations on published science leak through training data, shared studies and moving prompts."
+    },
+    {
+      "area": "licence",
+      "areas": [
+        "licence"
+      ],
+      "checks": "The declared SPDX licence is the one LICENSE, pyproject.toml, package.json, DESCRIPTION and CITATION.cff state.",
+      "codes": [
+        {
+          "code": "R-79.declared_invalid",
+          "fix": null
+        },
+        {
+          "code": "R-79.mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-79.no_licence_file",
+          "fix": "no LICENSE file"
+        },
+        {
+          "code": "R-79.unreadable",
+          "fix": "states no licence that can be identified"
+        }
+      ],
+      "fix": "state the same SPDX licence in LICENSE, the package metadata and CITATION.cff",
+      "governance": "project",
+      "name": "licence.declared",
+      "pass_does_not_mean": "That the licence suits the project (not legal advice).",
+      "rule": "R-79",
+      "run": "steward check licence --summary",
+      "version": 1,
+      "why": "A package that states two licences cannot be relied on by anyone."
+    },
+    {
+      "area": "licence",
+      "areas": [
+        "licence"
+      ],
+      "checks": "Every dependency's licence (from its installed metadata: License-Expression, classifiers, the licence field) against the policy for the distribution state: incompatible fails, unknown is UNKNOWN, weak copyleft passes with its obligation where the policy allows; a public project's third-party notices name every dependency.",
+      "codes": [
+        {
+          "code": "R-80.baseline_unavailable",
+          "fix": "the committed lockfile cannot be read"
+        },
+        {
+          "code": "R-80.changed",
+          "fix": null
+        },
+        {
+          "code": "R-80.exception",
+          "fix": null
+        },
+        {
+          "code": "R-80.incompatible",
+          "fix": null
+        },
+        {
+          "code": "R-80.inventory",
+          "fix": null
+        },
+        {
+          "code": "R-80.notices_missing",
+          "fix": null
+        },
+        {
+          "code": "R-80.notices_stale",
+          "fix": null
+        },
+        {
+          "code": "R-80.obligation",
+          "fix": null
+        },
+        {
+          "code": "R-80.scope",
+          "fix": null
+        },
+        {
+          "code": "R-80.unknown",
+          "fix": null
+        }
+      ],
+      "fix": "replace the dependency, record a dated exception with its approver, or update the notices (steward licence notices --write)",
+      "governance": "project",
+      "name": "licence.dependencies",
+      "pass_does_not_mean": "Legal compliance: declared rules and metadata only.",
+      "rule": "R-80",
+      "run": "steward check licence --summary",
+      "version": 1,
+      "why": "A licence conflict found at release blocks a release already tagged; found on the commit that adds it, it costs a package swap."
+    },
+    {
+      "area": "licence",
+      "areas": [
+        "licence"
+      ],
+      "checks": "Copied, ported, translated or vendored code and bundled assets declared in third_party, and files whose SPDX-License-Identifier or Derived-from header names another licence, against the policy.",
+      "codes": [
+        {
+          "code": "R-81.declared",
+          "fix": null
+        },
+        {
+          "code": "R-81.incompatible",
+          "fix": null
+        },
+        {
+          "code": "R-81.obligation",
+          "fix": null
+        },
+        {
+          "code": "R-81.unknown",
+          "fix": null
+        }
+      ],
+      "fix": "declare the source and licence in third_party, rewrite the code independently, or record an exception",
+      "governance": "project",
+      "name": "licence.code",
+      "pass_does_not_mean": "That undeclared copied code is absent (R-82 only hints).",
+      "rule": "R-81",
+      "run": "steward check licence --summary",
+      "version": 1,
+      "why": "A translation of copyleft code is a derivative work; no package manager sees it."
+    },
+    {
+      "area": "licence",
+      "areas": [
+        "licence"
+      ],
+      "checks": "Advisory: code comments such as 'ported from', 'translated from' or 'adapted from' in files with no declaration.",
+      "codes": [
+        {
+          "code": "R-82.hint",
+          "fix": null
+        }
+      ],
+      "fix": "declare the code's source in third_party, or confirm it is original",
+      "governance": "project",
+      "name": "licence.provenance",
+      "pass_does_not_mean": "Anything by itself: a hint is never a pass or a fail.",
+      "rule": "R-82",
+      "run": "steward check licence --summary",
+      "version": 1,
+      "why": "Undeclared ports are found by reading; the hint points the reader."
+    },
+    {
+      "area": "data",
+      "areas": [
+        "data"
+      ],
+      "checks": "Declared data tables for column types, identifier shapes, missing values, counts, p-values, fold changes and sample alignment.",
+      "codes": [
+        {
+          "code": "R-83.adjusted_equals_raw",
+          "fix": null
+        },
+        {
+          "code": "R-83.duplicate_id",
+          "fix": null
+        },
+        {
+          "code": "R-83.encoding",
+          "fix": null
+        },
+        {
+          "code": "R-83.excel_date",
+          "fix": null
+        },
+        {
+          "code": "R-83.format",
+          "fix": null
+        },
+        {
+          "code": "R-83.header",
+          "fix": null
+        },
+        {
+          "code": "R-83.identifier",
+          "fix": null
+        },
+        {
+          "code": "R-83.infinite_lfc",
+          "fix": null
+        },
+        {
+          "code": "R-83.invalid_cell",
+          "fix": null
+        },
+        {
+          "code": "R-83.log_fold_change",
+          "fix": null
+        },
+        {
+          "code": "R-83.missing_column",
+          "fix": null
+        },
+        {
+          "code": "R-83.missing_file",
+          "fix": null
+        },
+        {
+          "code": "R-83.missing_id",
+          "fix": null
+        },
+        {
+          "code": "R-83.mixed_na",
+          "fix": null
+        },
+        {
+          "code": "R-83.no_samples",
+          "fix": null
+        },
+        {
+          "code": "R-83.p_order",
+          "fix": null
+        },
+        {
+          "code": "R-83.p_value",
+          "fix": null
+        },
+        {
+          "code": "R-83.p_zero",
+          "fix": null
+        },
+        {
+          "code": "R-83.raw_count",
+          "fix": null
+        },
+        {
+          "code": "R-83.refused",
+          "fix": null
+        },
+        {
+          "code": "R-83.row_width",
+          "fix": null
+        },
+        {
+          "code": "R-83.sample_not_in_matrix",
+          "fix": null
+        },
+        {
+          "code": "R-83.sample_not_in_sheet",
+          "fix": null
+        },
+        {
+          "code": "R-83.sample_order",
+          "fix": null
+        },
+        {
+          "code": "R-83.type",
+          "fix": null
+        },
+        {
+          "code": "R-83.unreadable",
+          "fix": null
+        }
+      ],
+      "fix": "inspect the reported row and column, then correct the export or the declared table contract",
+      "governance": "project",
+      "name": "data.contracts",
+      "pass_does_not_mean": "That a database lists the identifiers or that any scientific conclusion follows.",
+      "rule": "R-83",
+      "run": "steward check data --summary",
+      "version": 1,
+      "why": "Table exports can silently change identifiers, values or sample labels."
+    },
+    {
+      "area": "compare",
+      "areas": [
+        "compare"
+      ],
+      "checks": "Advisory: each shadow stage has a current comparison tied to two successful recorded runs and their unchanged outputs.",
+      "codes": [
+        {
+          "code": "R-84.invalid",
+          "fix": null
+        },
+        {
+          "code": "R-84.missing",
+          "fix": null
+        },
+        {
+          "code": "R-84.stale",
+          "fix": null
+        }
+      ],
+      "fix": "keep both recorded outputs and run steward compare record with the shadow stage name",
+      "governance": "project",
+      "name": "compare.shadow",
+      "pass_does_not_mean": "That the methods are interchangeable or that the owner approved the switch.",
+      "rule": "R-84",
+      "run": "steward check compare --summary",
+      "version": 1,
+      "why": "Review agreement and every disagreement before using the candidate."
+    },
+    {
+      "area": "paper",
+      "areas": [
+        "paper",
+        "studies"
+      ],
+      "checks": "Every accession recorded by a study that lists the paper appears in the paper's data-availability statement: the file its spec names (data_availability), else the section under a 'Data availability' heading in its sources.",
+      "codes": [
+        {
+          "code": "R-85.accession_missing",
+          "fix": null
+        },
+        {
+          "code": "R-85.no_statement",
+          "fix": null
+        },
+        {
+          "code": "R-85.refused",
+          "fix": null
+        }
+      ],
+      "fix": "name every accession of the cited studies in the paper's data-availability statement",
+      "governance": "project",
+      "name": "paper.data_availability",
+      "pass_does_not_mean": "That the accessions are public, or that the statement is complete beyond the recorded studies.",
+      "rule": "R-85",
+      "run": "steward check paper --summary",
+      "version": 1,
+      "why": "Journals and reviewers check that every dataset used is named; a missing accession is found late, by someone else."
+    },
+    {
+      "area": "models",
+      "areas": [
+        "models"
+      ],
+      "checks": "Model weights and training study fingerprints, the declared weights licence expression, and exact card metrics from a successful run on the recorded weights, contract and current splits.",
+      "codes": [
+        {
+          "code": "R-86.config_refused",
+          "fix": "Keep the model configuration in a regular file"
+        },
+        {
+          "code": "R-86.contract_split",
+          "fix": null
+        },
+        {
+          "code": "R-86.duplicate",
+          "fix": "Keep one record per model name and version"
+        },
+        {
+          "code": "R-86.input_changed",
+          "fix": null
+        },
+        {
+          "code": "R-86.licence",
+          "fix": "Use an SPDX licence expression for the weights"
+        },
+        {
+          "code": "R-86.metric_mismatch",
+          "fix": null
+        },
+        {
+          "code": "R-86.metric_undefined",
+          "fix": null
+        },
+        {
+          "code": "R-86.metrics_unrecorded",
+          "fix": null
+        },
+        {
+          "code": "R-86.run_context",
+          "fix": null
+        },
+        {
+          "code": "R-86.run_ledger",
+          "fix": "Keep an intact run ledger for this project"
+        },
+        {
+          "code": "R-86.run_missing",
+          "fix": "Use a run with one successful outcome"
+        },
+        {
+          "code": "R-86.split_file",
+          "fix": null
+        },
+        {
+          "code": "R-86.training_input",
+          "fix": null
+        },
+        {
+          "code": "R-86.training_study",
+          "fix": null
+        },
+        {
+          "code": "R-86.weights_changed",
+          "fix": null
+        }
+      ],
+      "fix": "check the weights and training studies, then record a current evaluation run and use its metric values",
+      "governance": "project",
+      "name": "model.records",
+      "pass_does_not_mean": "Scientific validity, proof of training, or permission to distribute the weights.",
+      "rule": "R-86",
+      "run": "steward check models --summary",
+      "version": 1,
+      "why": "A model's recorded metrics can become stale when weights or benchmark splits change."
+    },
+    {
+      "area": "release",
+      "areas": [
+        "release"
+      ],
+      "checks": "Advisory: with [stranger_test] declared, a stranger-test record (development/assessment/DATE-stranger-test-TAG-AGENT.md) not older than max_age_days.",
+      "codes": [
+        {
+          "code": "R-87.ignored",
+          "fix": null
+        },
+        {
+          "code": "R-87.none",
+          "fix": null
+        },
+        {
+          "code": "R-87.stale",
+          "fix": null
+        }
+      ],
+      "fix": "run a stranger test on the coming release: steward stranger-test brief --tag TAG --for AGENT",
+      "governance": "project",
+      "name": "release.stranger_test",
+      "pass_does_not_mean": "That the project is useful: the record says what one stranger met.",
+      "rule": "R-87",
+      "run": "steward check release --summary",
+      "version": 1,
+      "why": "Whether a newcomer can get value from a release is found by trying it, from the outside, before the release; the project's own developers cannot see it any more."
+    },
+    {
+      "area": "tidy",
+      "areas": [
+        "tidy"
+      ],
+      "checks": "Advisory: with [tidy] declared, the counts of steward tidy from the repository's records: open board tasks untouched for stale_days, board statuses a sprint ledger contradicts, own exchange items still open after their response, a handoff older than handoff_days or a state page naming no version as recent as the latest tag, received items not acknowledged in time, merged sprint branches and worktrees.",
+      "codes": [
+        {
+          "code": "R-88.contradiction",
+          "fix": null
+        },
+        {
+          "code": "R-88.exchange",
+          "fix": null
+        },
+        {
+          "code": "R-88.leftover",
+          "fix": null
+        },
+        {
+          "code": "R-88.stale_page",
+          "fix": null
+        },
+        {
+          "code": "R-88.stale_task",
+          "fix": null
+        }
+      ],
+      "fix": "run steward tidy, then ask the owner whether to archive, delete or keep each item",
+      "governance": "project",
+      "name": "tidy.stale",
+      "pass_does_not_mean": "That a listed item should go: nothing is archived or deleted unless the owner asks. Memory folders and the peers' checkouts are outside the repository: steward tidy lists them.",
+      "rule": "R-88",
+      "run": "steward check tidy --summary",
+      "version": 1,
+      "why": "Stale tasks and pages cost attention, and for agents tokens, at every session; naming them lets the owner archive, delete or keep each one."
+    }
+  ],
+  "schema": "steward.explain/0.1",
+  "tool_version": "(version)"
+}

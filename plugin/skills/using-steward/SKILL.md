@@ -10,9 +10,9 @@ result. It never judges the science.
 
 ## When to run it
 - At a session start: `steward session start`; read nothing else until the next step needs it.
-- Before you say a task is ready or done.
+- Before reporting a task ready or done.
 - After editing `steward.toml`, a benchmark contract (`*.contract.toml`) or a prior-work record (`*.prior.toml`).
-- When the human asks whether the repository is ready.
+- When asked whether the repository is ready.
 
 Start by saying in one line that you are using this skill and why.
 
@@ -23,10 +23,9 @@ steward check --rule R-03   # one rule, with every detail
 steward check contract prior-work   # only some areas while editing; gates are NOT evaluated
 steward report .steward/report.json --format md   # a full report for a human
 ```
-- `--summary` lists every non-PASS result (never truncated), the counts and the gate: same rules, statuses and exit
-  code as a full check.
-- **Fetch the details** (`--rule`) for every FAIL before changing anything it names; never guess a fix from the reason.
-- If the command is not found, tell the human; never emulate the checks.
+- `--summary` lists all non-PASS results, counts and gates. It preserves full-check statuses and exit codes.
+- **Read each FAIL with `--rule` before making changes.** Avoid guessing fixes.
+- Never emulate checks. Tell the human when steward is missing.
 
 ## Read the whole result
 Every report ends with a summary line and a gate line, for example:
@@ -55,6 +54,8 @@ evaluate); 64 usage error; 65 invalid report file; 70 internal error.
 - Never edit `steward.toml` to make a rule pass without telling the human what you changed and why.
 - Never mark a rule not applicable yourself; only the config does that.
 - Report the summary, gate and coverage lines exactly as printed.
+
+- You may use `steward issue` for toolkit defects. Keep project issues in the project's records.
 
 ## Adopting, cleaning up, signing while away
 [adopting.md](adopting.md) (parity first, then removal); [away-and-cleanup.md](away-and-cleanup.md).
@@ -101,6 +102,7 @@ The configuration schema is `steward.toml/0.2`. This catalogue is generated.
 - **data:** R-83 `data.contracts`
 - **compare:** R-84 `compare.shadow`
 - **models:** R-86 `model.records`
+- **tidy:** R-88 `tidy.stale`
 <!-- rules:end -->
 
 A PASS means the declared inputs are consistent with these rules, not that a result holds, a method is new or a

@@ -167,7 +167,7 @@ def _accepted(line: str, m: re.Match[str], rules: list[Any], used: dict[int, int
 
 def scan_text(text: str, terms: list[Term], local_paths: bool, honour_marker: bool = True, rel: str | None = None,
               sha: str | None = None) -> tuple[list[dict[str, Any]], int]:
-    """(hits, allowed line count). A hit is {line, kind: term|local_path, term?}. Publication scans pass
+    """(hits, allowed line count). A hit is {line, column, kind: term|local_path, term?}. Publication scans pass
     `honour_marker=False`: a repository's waiver for committed text never waives what is published (T3). With `rel`
     (and the file's `sha`), a list's accepted occurrences apply: an occurrence is accepted only where a rule's path,
     term, context, count and hash all hold; any other occurrence in the same file is a hit (REQ-009)."""
@@ -178,17 +178,22 @@ def scan_text(text: str, terms: list[Term], local_paths: bool, honour_marker: bo
         if honour_marker and MARKER in line:
             allowed += 1
             continue
-        for t in terms:
+        for t in terms:  # C4 (0.21.0): each hit carries the 1-based column of its first match
             if not rules[id(t)]:
-                if t.regex.search(line):
-                    hits.append({"line": lineno, "kind": "term", "term": t})
+                first = t.regex.search(line)
+                if first:
+                    hits.append({"line": lineno, "column": first.start() + 1, "kind": "term", "term": t})
                 continue
             u = used.setdefault(id(t), {})
-            verdicts = [_accepted(line, m, rules[id(t)], u) for m in t.regex.finditer(line)]  # U14: every match counted
+            found = list(t.regex.finditer(line))
+            verdicts = [_accepted(line, m, rules[id(t)], u) for m in found]  # U14: every match counted
             if not all(verdicts):
-                hits.append({"line": lineno, "kind": "term", "term": t})
-        if local_paths and any(local_user(m) for m in LOCAL_PATH.finditer(line) if _path_start(line, m)):
-            hits.append({"line": lineno, "kind": "local_path"})
+                first = next(m for m, ok in zip(found, verdicts) if not ok)
+                hits.append({"line": lineno, "column": first.start() + 1, "kind": "term", "term": t})
+        if local_paths:
+            first = next((m for m in LOCAL_PATH.finditer(line) if _path_start(line, m) and local_user(m)), None)
+            if first is not None:
+                hits.append({"line": lineno, "column": first.start() + 1, "kind": "local_path"})
     return hits, allowed
 
 

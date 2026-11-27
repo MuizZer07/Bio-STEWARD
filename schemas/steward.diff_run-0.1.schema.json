@@ -1,0 +1,150 @@
+{
+  "$defs": {
+    "Comparison": {
+      "additionalProperties": false,
+      "properties": {
+        "a": {
+          "$ref": "#/$defs/JsonValue"
+        },
+        "b": {
+          "$ref": "#/$defs/JsonValue"
+        },
+        "leaf": {
+          "title": "Leaf",
+          "type": "boolean"
+        },
+        "output": {
+          "title": "Output",
+          "type": "string"
+        },
+        "pointer": {
+          "title": "Pointer",
+          "type": "string"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        },
+        "tolerance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Tolerance"
+        },
+        "within": {
+          "title": "Within",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "a",
+        "b",
+        "state",
+        "within"
+      ],
+      "title": "Comparison",
+      "type": "object"
+    },
+    "Difference": {
+      "additionalProperties": false,
+      "properties": {
+        "a": {
+          "$ref": "#/$defs/JsonValue"
+        },
+        "b": {
+          "$ref": "#/$defs/JsonValue"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "a",
+        "b",
+        "field"
+      ],
+      "title": "Difference",
+      "type": "object"
+    },
+    "JsonValue": {}
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "compared": {
+      "title": "Compared",
+      "type": "integer"
+    },
+    "environment_differences": {
+      "items": {
+        "$ref": "#/$defs/Difference"
+      },
+      "title": "Environment Differences",
+      "type": "array"
+    },
+    "evidence": {
+      "title": "Evidence",
+      "type": "integer"
+    },
+    "finished": {
+      "title": "Finished",
+      "type": "boolean"
+    },
+    "metrics_precision": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Metrics Precision",
+      "type": "object"
+    },
+    "not_comparable": {
+      "title": "Not Comparable",
+      "type": "integer"
+    },
+    "repeatable": {
+      "title": "Repeatable",
+      "type": "boolean"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/$defs/Comparison"
+      },
+      "title": "Results",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.diff_run/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "verdict": {
+      "enum": [
+        "repeatable",
+        "not repeatable",
+        "incomplete"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "verdict",
+    "repeatable",
+    "compared",
+    "evidence",
+    "metrics_precision",
+    "not_comparable",
+    "finished",
+    "results",
+    "environment_differences"
+  ],
+  "title": "DiffRun",
+  "type": "object"
+}

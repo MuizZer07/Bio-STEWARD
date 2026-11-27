@@ -1,0 +1,86 @@
+{
+  "$defs": {
+    "ReportDigests": {
+      "additionalProperties": false,
+      "properties": {
+        "inputs_digest": {
+          "title": "Inputs Digest",
+          "type": "string"
+        },
+        "tool_version": {
+          "title": "Tool Version",
+          "type": "string"
+        },
+        "tree_digest": {
+          "title": "Tree Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "inputs_digest",
+        "tree_digest",
+        "tool_version"
+      ],
+      "title": "ReportDigests",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "changed": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Changed",
+      "type": "array"
+    },
+    "current": {
+      "title": "Current",
+      "type": "boolean"
+    },
+    "inputs_digest": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Inputs Digest"
+    },
+    "reason": {
+      "title": "Reason",
+      "type": "string"
+    },
+    "report": {
+      "$ref": "#/$defs/ReportDigests"
+    },
+    "schema": {
+      "const": "steward.digest/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    },
+    "tree_digest": {
+      "title": "Tree Digest",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "tool_version",
+    "inputs_digest",
+    "tree_digest",
+    "report",
+    "current",
+    "changed",
+    "reason"
+  ],
+  "title": "Digest",
+  "type": "object"
+}

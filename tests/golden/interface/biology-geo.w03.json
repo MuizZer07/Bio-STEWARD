@@ -1,0 +1,151 @@
+{
+  "next": {
+    "milestone": {
+      "blockers": [],
+      "command": "steward timeline",
+      "days_left": 4.0,
+      "due": "2026-12-01T00:00:00+00:00",
+      "id": "review",
+      "kind": "other",
+      "open_work": 0,
+      "state": "on track",
+      "title": "Review the example"
+    },
+    "notes": [
+      "exchange peer PEER: not checked (a peer declared by URL is read only with `steward exchange status --fetch`)"
+    ],
+    "now": "2026-11-27T00:00:00Z",
+    "project": "biology-geo",
+    "resume": null,
+    "schema": "steward.next/0.1",
+    "tidy": {
+      "command": "steward tidy",
+      "counts": {
+        "contradiction": 0,
+        "exchange": 0,
+        "leftover": 0,
+        "memory": 0,
+        "stale_page": 0,
+        "stale_task": 0
+      },
+      "total": 0
+    },
+    "tool_version": "(version)",
+    "waiting_on_agents": [],
+    "waiting_on_human": [
+      {
+        "command": "steward authorize sign-pending",
+        "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "kind": "signature",
+        "source": ".steward/pending/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.txt",
+        "time": "2026-11-26T00:00:00Z",
+        "title": "spend (scope task=PRJ-001, expires 2026-12-31T00:00:00Z)"
+      },
+      {
+        "command": "steward exchange state STW-REL-099 adopted --note 99.0.0",
+        "id": "STW-REL-099",
+        "kind": "exchange",
+        "source": "exchange/inbox/STW-REL-099.md",
+        "time": "2026-11-25T00:00:00Z",
+        "title": "release from STW: Release v99.0.0"
+      },
+      {
+        "command": "steward sprint go s1 B --retry",
+        "id": "s1/B",
+        "kind": "task_failed",
+        "source": "development/sprints/s1.jsonl",
+        "time": "2026-11-27T00:00:00Z",
+        "title": "sprint s1 task B: second failed: exit 1"
+      },
+      {
+        "command": "steward sprint go s1 C",
+        "id": "s1/C",
+        "kind": "task_waiting",
+        "source": "development/sprints/s1.jsonl",
+        "time": "2026-11-27T00:00:00Z",
+        "title": "sprint s1 task C: third waits for an order"
+      }
+    ]
+  },
+  "notifications": {
+    "days": 14,
+    "items": [
+      {
+        "command": "steward sprint go s1 C",
+        "id": "task_waiting:s1/C",
+        "kind": "task_waiting",
+        "source": "development/sprints/s1.jsonl",
+        "time": "2026-11-27T00:00:00Z",
+        "title": "sprint s1 task C: third waits for an order",
+        "urgent": false
+      },
+      {
+        "command": "steward sprint report s1",
+        "id": "task_finished:s1/A",
+        "kind": "task_finished",
+        "source": "development/sprints/s1.jsonl",
+        "time": "2026-11-27T00:00:00Z",
+        "title": "sprint s1 task A: first done",
+        "urgent": false
+      },
+      {
+        "command": "steward sprint go s1 B --retry",
+        "id": "task_failed:s1/B",
+        "kind": "task_failed",
+        "source": "development/sprints/s1.jsonl",
+        "time": "2026-11-27T00:00:00Z",
+        "title": "sprint s1 task B: second failed",
+        "urgent": true
+      },
+      {
+        "command": "steward authorize sign-pending",
+        "id": "approval:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "kind": "approval",
+        "source": ".steward/pending/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.txt",
+        "time": "2026-11-26T00:00:00Z",
+        "title": "spend waits for a signature (expires 2026-12-31T00:00:00Z)",
+        "urgent": true
+      },
+      {
+        "command": "steward exchange status",
+        "id": "upgrade:STW-REL-099",
+        "kind": "upgrade",
+        "source": "exchange/inbox/STW-REL-099.md",
+        "time": "2026-11-25T00:00:00Z",
+        "title": "Bio-STEWARD 99.0.0 is released, newer than this CLI (steward --version)",
+        "urgent": false
+      }
+    ],
+    "notes": [
+      "gates: not compared (pass --against REPORT, an earlier `steward check --format json` output)"
+    ],
+    "now": "2026-11-27T00:00:00Z",
+    "schema": "steward.notifications/0.1",
+    "tool_version": "(version)"
+  },
+  "tidy": {
+    "counts": {
+      "contradiction": 0,
+      "exchange": 0,
+      "leftover": 0,
+      "memory": 0,
+      "stale_page": 0,
+      "stale_task": 0
+    },
+    "items": [],
+    "notes": [
+      "exchange peer PEER: not checked (a peer declared by URL is read only with `steward exchange status --fetch`)"
+    ],
+    "now": "2026-11-27T00:00:00Z",
+    "schema": "steward.tidy/0.1",
+    "thresholds": {
+      "archive": "development/archive",
+      "handoff_days": 7,
+      "memory_days": 30,
+      "memory_folders": 0,
+      "stale_days": 14
+    },
+    "tool_version": "(version)",
+    "total": 0
+  }
+}

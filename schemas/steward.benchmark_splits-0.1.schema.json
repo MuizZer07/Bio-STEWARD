@@ -1,0 +1,164 @@
+{
+  "$defs": {
+    "GroupOverlap": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        },
+        "groups": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Groups",
+          "type": "array"
+        },
+        "splits": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Splits",
+          "type": "array"
+        }
+      },
+      "required": [
+        "splits",
+        "count",
+        "groups"
+      ],
+      "title": "GroupOverlap",
+      "type": "object"
+    },
+    "IdOverlap": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        },
+        "ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Ids",
+          "type": "array"
+        },
+        "splits": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Splits",
+          "type": "array"
+        }
+      },
+      "required": [
+        "splits",
+        "count",
+        "ids"
+      ],
+      "title": "IdOverlap",
+      "type": "object"
+    },
+    "JsonValue": {},
+    "Problem": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/JsonValue"
+        }
+      },
+      "required": [
+        "status",
+        "code"
+      ],
+      "title": "Problem",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "checked": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Checked",
+      "type": "array"
+    },
+    "counts": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Counts",
+      "type": "object"
+    },
+    "group_overlap": {
+      "items": {
+        "$ref": "#/$defs/GroupOverlap"
+      },
+      "title": "Group Overlap",
+      "type": "array"
+    },
+    "id_overlap": {
+      "items": {
+        "$ref": "#/$defs/IdOverlap"
+      },
+      "title": "Id Overlap",
+      "type": "array"
+    },
+    "problems": {
+      "items": {
+        "$ref": "#/$defs/Problem"
+      },
+      "title": "Problems",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.benchmark_splits/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "time_range": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "Time Range",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema",
+    "counts",
+    "id_overlap",
+    "group_overlap",
+    "time_range",
+    "checked",
+    "problems"
+  ],
+  "title": "BenchmarkSplits",
+  "type": "object"
+}

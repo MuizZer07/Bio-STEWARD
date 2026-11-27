@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" width="100%" role="img" aria-label="A sprint task's states: proposed, then add, planned, ready, go, running, checking, then done or failed. A failed task returns to ready with go --retry, or is checked again with recheck. Only done commands decide done.">
+  <style>
+    .bg { fill: #f6f8fb; } .box { fill: #ffffff; stroke: #c7cfdc; stroke-width: 1.5; } .ink { fill: #1d2330; }
+    .muted { fill: #5b6475; } .line { stroke: #8792a6; stroke-width: 1.6; fill: none; }
+    .done { fill: #e3f4e8; stroke: #3d9a5b; stroke-width: 1.5; } .fail { fill: #fbe7e7; stroke: #c44b4b; stroke-width: 1.5; }
+    .run { fill: #e6eefb; stroke: #4a72c4; stroke-width: 1.5; } .arrow { fill: #8792a6; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0f1219; } .box { fill: #171b25; stroke: #3a4254; } .ink { fill: #e6e9ef; } .muted { fill: #9aa3b5; }
+      .line { stroke: #6b768b; } .arrow { fill: #6b768b; }
+      .done { fill: #13301d; stroke: #4caf6e; } .fail { fill: #3a1818; stroke: #d06060; } .run { fill: #172440; stroke: #5b86d6; }
+    }
+    text { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 15px; }
+    .small { font-size: 12.5px; }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="arrow"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="960" height="300" rx="14"/>
+  <rect class="box" x="24" y="60" width="104" height="44" rx="10"/><text class="ink" x="76" y="87" text-anchor="middle">proposed</text>
+  <rect class="box" x="168" y="60" width="104" height="44" rx="10"/><text class="ink" x="220" y="87" text-anchor="middle">planned</text>
+  <rect class="box" x="312" y="60" width="104" height="44" rx="10"/><text class="ink" x="364" y="87" text-anchor="middle">ready</text>
+  <rect class="run" x="456" y="60" width="112" height="44" rx="10"/><text class="ink" x="512" y="87" text-anchor="middle">running</text>
+  <rect class="run" x="608" y="60" width="112" height="44" rx="10"/><text class="ink" x="664" y="87" text-anchor="middle">checking</text>
+  <rect class="done" x="776" y="22" width="152" height="44" rx="10"/><text class="ink" x="852" y="49" text-anchor="middle">done</text>
+  <rect class="fail" x="776" y="104" width="152" height="44" rx="10"/><text class="ink" x="852" y="131" text-anchor="middle">failed</text>
+  <path class="line" d="M128,82 H166" marker-end="url(#a)"/><text class="muted small" x="147" y="54" text-anchor="middle">add</text>
+  <path class="line" d="M272,82 H310" marker-end="url(#a)"/><text class="muted small" x="291" y="54" text-anchor="middle">after</text>
+  <path class="line" d="M416,82 H454" marker-end="url(#a)"/><text class="muted small" x="435" y="54" text-anchor="middle">go</text>
+  <path class="line" d="M568,82 H606" marker-end="url(#a)"/>
+  <path class="line" d="M720,76 L774,48" marker-end="url(#a)"/><text class="muted small" x="736" y="46">all exit 0</text>
+  <path class="line" d="M720,90 L774,122" marker-end="url(#a)"/>
+  <path class="line" d="M852,148 V196 H364 V106" marker-end="url(#a)"/>
+  <text class="muted small" x="600" y="214" text-anchor="middle">go --retry: the agent runs again</text>
+  <path class="line" d="M900,148 V246 H664 V106" marker-end="url(#a)"/>
+  <text class="muted small" x="782" y="264" text-anchor="middle">recheck: the done commands run again on the branch's head</text>
+  <text class="muted small" x="24" y="160">The task log: .steward/sprints/&lt;id&gt;/&lt;task&gt;.log</text>
+  <text class="muted small" x="24" y="180">sprint status --format json · sprint watch</text>
+  <text class="muted small" x="24" y="282">Done is decided by the task's commands, never by the agent.</text>
+</svg>

@@ -1,0 +1,55 @@
+{
+  "$defs": {
+    "SignerKey": {
+      "additionalProperties": false,
+      "properties": {
+        "hardware": {
+          "title": "Hardware",
+          "type": "string"
+        },
+        "principal": {
+          "title": "Principal",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "principal",
+        "type",
+        "hardware"
+      ],
+      "title": "SignerKey",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "baseline": {
+      "title": "Baseline",
+      "type": "string"
+    },
+    "keys": {
+      "items": {
+        "$ref": "#/$defs/SignerKey"
+      },
+      "title": "Keys",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.authorize_keys/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "baseline",
+    "keys"
+  ],
+  "title": "AuthorizeKeys",
+  "type": "object"
+}

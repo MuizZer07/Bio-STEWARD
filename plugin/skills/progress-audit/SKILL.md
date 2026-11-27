@@ -11,6 +11,7 @@ Run this when the human says **"Progress Audit"**. Start by saying in one line t
 ```bash
 steward audit progress            # where we are, use by other projects, pending work, reach
 steward timeline                  # milestones, if any
+steward tidy                      # stale tasks, pages, exchange items, leftovers, memory (read-only)
 STEWARD_NO_REGISTRY=1 steward check --summary   # the gates, without registering this checkout
 ```
 Never change code, files, items or plans during the audit.
@@ -23,6 +24,8 @@ Answer, each in two to four lines, naming the numbers you rely on:
 3. **Does it help:** defects reported against each version, especially false passes or false blocks; friction items.
 4. **What is pending:** open items, waiting signatures, milestones at risk, unfinished sprint tasks.
 5. **Reach:** what still stops a new adopter (the missing list), and what needs the owner's public-release decision.
+6. **Needs tidying:** what `steward tidy` lists, for each project. Ask "N tasks have not moved in D days: archive,
+   delete or keep?" and "M memory notes look out of date: clean them up?", and act only on the answer.
 
 ## 3. Recommend
 Give three to seven improvements, ranked by reach for the effort, each with its size (S, M, L) and the evidence line it

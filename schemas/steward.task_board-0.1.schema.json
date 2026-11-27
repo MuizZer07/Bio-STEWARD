@@ -1,0 +1,72 @@
+{
+  "$defs": {
+    "BoardTask": {
+      "additionalProperties": false,
+      "properties": {
+        "archived": {
+          "title": "Archived",
+          "type": "boolean"
+        },
+        "closed": {
+          "title": "Closed",
+          "type": "boolean"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "status",
+        "closed",
+        "archived"
+      ],
+      "title": "BoardTask",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "board": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Board"
+    },
+    "schema": {
+      "const": "steward.task_board/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tasks": {
+      "items": {
+        "$ref": "#/$defs/BoardTask"
+      },
+      "title": "Tasks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "board",
+    "tasks"
+  ],
+  "title": "TaskBoard",
+  "type": "object"
+}

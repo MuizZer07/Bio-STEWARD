@@ -42,7 +42,8 @@
         "licence",
         "data",
         "compare",
-        "models"
+        "models",
+        "tidy"
       ],
       "nothing_recorded": []
     },
@@ -63,11 +64,102 @@
       "waived": []
     }
   ],
+  "inputs": [
+    {
+      "path": "benchmarks/expr-clf.contract.toml",
+      "sha256": "b3041ba8fcbc847b5d10a764f2582cf06531a91065ae26cf82d129f9b7ba9328"
+    },
+    {
+      "path": "benchmarks/splits/test.txt",
+      "sha256": "8b58a9bd5469f0c408441a012eddc22b8a3ecdf072748ab6cb41f603070f1464"
+    },
+    {
+      "path": "benchmarks/splits/train.txt",
+      "sha256": "23073b182f2c142c25bcac14d8e765293c39fa35507a2c680bc9aedf31a435a4"
+    },
+    {
+      "path": "benchmarks/splits/validation.txt",
+      "sha256": "936f74965870a9ddf3fcdae48e9ad4459eb9fdd0fc56943190f7a857ddecced7"
+    },
+    {
+      "path": "data/samples.csv",
+      "sha256": "1b9d1d94bae5337f357a21f1093f1fef55932629502db50f184d55b863841998"
+    },
+    {
+      "path": "development/prior_work/expr-clf.prior.toml",
+      "sha256": "3377884883173b99de701ec37732e41adde0800e2a74952e59bd14fd9e93aa13"
+    },
+    {
+      "path": "paper/displays.lock",
+      "sha256": "81766a98cdccab7fb15afbcd9929d07b9c96f8fc36070f181685c9e9d12bead7"
+    },
+    {
+      "path": "paper/displays.toml",
+      "sha256": "de9f74a4e74c0d30e9dc4c75a1c21ea34d9269ca9fa456d2b625c05b93c7a927"
+    },
+    {
+      "path": "paper/figures/donors.tex",
+      "sha256": "bd2e9d3097ea993c774026389622a91c6c360092d298f45e9a7e8911c86a2b80"
+    },
+    {
+      "path": "paper/main.log",
+      "sha256": "5af6e5d05f0153cf08eac08fd186b21a8c0fc20c8f802bb54f05eed439818721"
+    },
+    {
+      "path": "paper/main.tex",
+      "sha256": "a49be569f01f6d813e62efd3f19e46d34a4981b1a7832ec3c2eb07b35444d116"
+    },
+    {
+      "path": "paper/refs.bib",
+      "sha256": "7c3af3814a6edcaae4143720d9b9e469549b2216d049a73ce52b540a2ec61415"
+    },
+    {
+      "path": "paper/spec.toml",
+      "sha256": "e148198672bc9af97489c17ee65ed41e42226b84bd5d3c3e03035fad8e0dd619"
+    },
+    {
+      "path": "paper/tables/splits.tex",
+      "sha256": "d399442187b0a25bb1952775c473c204014b43fe2a8aef41e5a0a93256fe6e3f"
+    },
+    {
+      "path": "paper/values.tex",
+      "sha256": "bbab263a2aec4b964d003344bf685c8b5a1edadbe821399fe7edb77227038d63"
+    },
+    {
+      "path": "paper/values.toml",
+      "sha256": "0254965925a63ccd90bd8e0c6f6bda7c483605a467d5438bb5b1633454527921"
+    },
+    {
+      "path": "paper/venue.toml",
+      "sha256": "d69d740576eb0447c312d4c98a363f4e1bed81bfbd07c2cced5a57fc5a6e9493"
+    },
+    {
+      "path": "steward.toml",
+      "sha256": "f8f2cae1ac5d86dd28ac7d0e419d53467ad168a955b3c18b50746b1026bcbb3b"
+    },
+    {
+      "path": "talks/progress-update/slides.log",
+      "sha256": "3168d2b843202f1f2c6affc36ca9297e02764e488fe751fba18c02e856055fff"
+    },
+    {
+      "path": "talks/progress-update/slides.pdf",
+      "sha256": "71f6b3a5738fe36a57a5c73de3fb24645ef1ab27d0e3f913f9914c07a1816c69"
+    },
+    {
+      "path": "talks/progress-update/slides.tex",
+      "sha256": "cd12d7c79ab5a1d02f0aa0c370a9841b9057b726928bdfed8a78ec7ed6b16f45"
+    },
+    {
+      "path": "talks/progress-update/talk.toml",
+      "sha256": "8e58b7f578674ddfc111066790049f1faa126e799b9402f8bed4e977705f13c2"
+    }
+  ],
   "inputs_digest": "sha256:aaa0ee0c7b1c38d46549bbf745da384a5d97920f7395ae520e685d29a2f733a5",
   "project": "toy-expression-benchmark",
   "repo_id": "78b19ff4-f1a8-4bb0-9d52-ab2fb34311c0",
   "results": [
     {
+      "area": "config",
       "details": [],
       "evidence": [
         {
@@ -83,6 +175,7 @@
       "subject": "steward.toml"
     },
     {
+      "area": "contract",
       "details": [],
       "evidence": [
         {
@@ -98,6 +191,7 @@
       "subject": "benchmarks/expr-clf.contract.toml"
     },
     {
+      "area": "contract",
       "details": [],
       "evidence": [
         {
@@ -113,6 +207,7 @@
       "subject": "benchmarks/expr-clf.contract.toml"
     },
     {
+      "area": "contract",
       "details": [
         {
           "code": "R-04.found",
@@ -130,6 +225,7 @@
       "subject": "."
     },
     {
+      "area": "prior-work",
       "details": [
         {
           "code": "R-05.human_judgment",
@@ -151,6 +247,7 @@
       "subject": "development/prior_work/expr-clf.prior.toml"
     },
     {
+      "area": "prior-work",
       "details": [
         {
           "code": "R-06.found",
@@ -168,6 +265,7 @@
       "subject": "."
     },
     {
+      "area": "privacy",
       "details": [],
       "evidence": [],
       "name": "privacy.denylist",
@@ -178,6 +276,7 @@
       "subject": "."
     },
     {
+      "area": "paper",
       "details": [],
       "evidence": [
         {
@@ -193,6 +292,7 @@
       "subject": "paper/spec.toml"
     },
     {
+      "area": "paper",
       "details": [],
       "evidence": [
         {
@@ -208,6 +308,7 @@
       "subject": "paper/venue.toml"
     },
     {
+      "area": "paper",
       "details": [
         {
           "code": "R-09.mode",
@@ -223,6 +324,7 @@
       "subject": "paper"
     },
     {
+      "area": "paper",
       "details": [
         {
           "code": "R-10.unused",
@@ -267,6 +369,7 @@
       "subject": "paper/values.toml"
     },
     {
+      "area": "paper",
       "details": [
         {
           "code": "R-11.fingerprints_compared",
@@ -287,6 +390,7 @@
       "subject": "paper/displays.toml"
     },
     {
+      "area": "paper",
       "details": [
         {
           "code": "R-12.mode",
@@ -307,6 +411,7 @@
       "subject": "paper/main.log"
     },
     {
+      "area": "paper",
       "details": [
         {
           "code": "R-13.mode",
@@ -331,6 +436,7 @@
       "subject": "paper/venue.toml"
     },
     {
+      "area": "paper",
       "details": [
         {
           "code": "R-14.verification",
@@ -351,6 +457,7 @@
       "subject": "paper"
     },
     {
+      "area": "paper",
       "details": [],
       "evidence": [
         {
@@ -366,6 +473,7 @@
       "subject": "paper/values.toml"
     },
     {
+      "area": "talk",
       "details": [],
       "evidence": [
         {
@@ -381,6 +489,7 @@
       "subject": "talks/progress-update/talk.toml"
     },
     {
+      "area": "talk",
       "details": [],
       "evidence": [],
       "name": "talk.stage_confirmed",
@@ -391,6 +500,7 @@
       "subject": "talks/progress-update/talk.toml"
     },
     {
+      "area": "talk",
       "details": [
         {
           "code": "R-23.ceiling",
@@ -411,6 +521,7 @@
       "subject": "talks/progress-update/talk.toml"
     },
     {
+      "area": "talk",
       "details": [],
       "evidence": [],
       "name": "talk.values",
@@ -421,6 +532,7 @@
       "subject": "talks/progress-update"
     },
     {
+      "area": "talk",
       "details": [],
       "evidence": [],
       "name": "talk.limitations",
@@ -431,6 +543,7 @@
       "subject": "talks/progress-update/talk.toml"
     },
     {
+      "area": "talk",
       "details": [],
       "evidence": [
         {
@@ -446,6 +559,7 @@
       "subject": "talks/progress-update/talk.toml"
     },
     {
+      "area": "talk",
       "details": [],
       "evidence": [],
       "name": "talk.figures",
@@ -456,6 +570,7 @@
       "subject": "talks/progress-update"
     },
     {
+      "area": "talk",
       "details": [
         {
           "code": "R-28.engine",
@@ -486,6 +601,7 @@
       "subject": "talks/progress-update"
     },
     {
+      "area": "talk",
       "details": [],
       "evidence": [],
       "name": "talk.language",
@@ -496,6 +612,7 @@
       "subject": "talks/progress-update"
     },
     {
+      "area": "run",
       "details": [],
       "evidence": [],
       "name": "ledger.integrity",
@@ -506,6 +623,7 @@
       "subject": "."
     },
     {
+      "area": "run",
       "details": [],
       "evidence": [],
       "name": "run.records",
@@ -516,6 +634,7 @@
       "subject": "."
     },
     {
+      "area": "policy",
       "details": [],
       "evidence": [],
       "name": "policy.baseline",
@@ -526,6 +645,7 @@
       "subject": "."
     },
     {
+      "area": "spend",
       "details": [],
       "evidence": [],
       "name": "spend.ledger",
@@ -536,6 +656,7 @@
       "subject": "."
     },
     {
+      "area": "integrity",
       "details": [],
       "evidence": [],
       "name": "integrity.frozen",
@@ -546,6 +667,7 @@
       "subject": "."
     },
     {
+      "area": "integrity",
       "details": [],
       "evidence": [],
       "name": "integrity.datasets",
@@ -556,6 +678,7 @@
       "subject": "."
     },
     {
+      "area": "integrity",
       "details": [],
       "evidence": [],
       "name": "integrity.sealed_use",
@@ -566,6 +689,7 @@
       "subject": "."
     },
     {
+      "area": "integrity",
       "details": [],
       "evidence": [],
       "name": "integrity.decisions",
@@ -576,6 +700,7 @@
       "subject": "."
     },
     {
+      "area": "integrity",
       "details": [],
       "evidence": [],
       "name": "integrity.contract_frozen",
@@ -586,6 +711,7 @@
       "subject": "."
     },
     {
+      "area": "evidence",
       "details": [],
       "evidence": [],
       "name": "evidence.claims",
@@ -596,6 +722,7 @@
       "subject": "."
     },
     {
+      "area": "evidence",
       "details": [],
       "evidence": [],
       "name": "prior_work.links",
@@ -606,6 +733,7 @@
       "subject": "development/prior_work/expr-clf.prior.toml"
     },
     {
+      "area": "release",
       "details": [],
       "evidence": [],
       "name": "release.integrity",
@@ -616,6 +744,7 @@
       "subject": "."
     },
     {
+      "area": "release",
       "details": [
         {
           "code": "R-43.recommended",
@@ -631,6 +760,7 @@
       "subject": "."
     },
     {
+      "area": "release",
       "details": [],
       "evidence": [],
       "name": "release.fingerprint",
@@ -641,6 +771,7 @@
       "subject": "."
     },
     {
+      "area": "benchmark",
       "details": [
         {
           "code": "R-45.checked",
@@ -678,6 +809,7 @@
       "subject": "benchmarks/expr-clf.contract.toml"
     },
     {
+      "area": "benchmark",
       "details": [
         {
           "code": "R-46.not_a_repository_file",
@@ -694,6 +826,7 @@
       "subject": "benchmarks/expr-clf.contract.toml"
     },
     {
+      "area": "benchmark",
       "details": [],
       "evidence": [],
       "name": "benchmark.results",
@@ -704,6 +837,7 @@
       "subject": "."
     },
     {
+      "area": "benchmark",
       "details": [],
       "evidence": [],
       "name": "benchmark.comparison",
@@ -714,6 +848,7 @@
       "subject": "."
     },
     {
+      "area": "benchmark",
       "details": [
         {
           "code": "R-49.declared_not_applicable",
@@ -765,6 +900,7 @@
       "subject": "benchmarks/expr-clf.contract.toml"
     },
     {
+      "area": "storage",
       "details": [],
       "evidence": [],
       "name": "storage.artifacts",
@@ -775,6 +911,7 @@
       "subject": "."
     },
     {
+      "area": "governance",
       "details": [],
       "evidence": [
         {
@@ -790,6 +927,7 @@
       "subject": "steward.toml"
     },
     {
+      "area": "repro",
       "details": [],
       "evidence": [],
       "name": "repro.current",
@@ -800,6 +938,7 @@
       "subject": "."
     },
     {
+      "area": "governance",
       "details": [],
       "evidence": [],
       "name": "exchange.items",
@@ -810,6 +949,7 @@
       "subject": "."
     },
     {
+      "area": "governance",
       "details": [],
       "evidence": [],
       "name": "exchange.inbox",
@@ -820,6 +960,7 @@
       "subject": "."
     },
     {
+      "area": "session",
       "details": [],
       "evidence": [],
       "name": "session.handoff",
@@ -830,6 +971,7 @@
       "subject": "."
     },
     {
+      "area": "boundary",
       "details": [],
       "evidence": [],
       "name": "boundary.imports",
@@ -840,6 +982,7 @@
       "subject": "."
     },
     {
+      "area": "tasks",
       "details": [],
       "evidence": [],
       "name": "tasks.board",
@@ -850,6 +993,7 @@
       "subject": "."
     },
     {
+      "area": "changelog",
       "details": [],
       "evidence": [],
       "name": "changelog.unreleased",
@@ -860,6 +1004,7 @@
       "subject": "."
     },
     {
+      "area": "branches",
       "details": [],
       "evidence": [],
       "name": "branches.model",
@@ -870,6 +1015,7 @@
       "subject": "."
     },
     {
+      "area": "skills",
       "details": [],
       "evidence": [],
       "name": "skills.copies",
@@ -880,6 +1026,7 @@
       "subject": "."
     },
     {
+      "area": "files",
       "details": [],
       "evidence": [],
       "name": "files.conflict_markers",
@@ -890,6 +1037,7 @@
       "subject": "."
     },
     {
+      "area": "agents",
       "details": [],
       "evidence": [],
       "name": "agents.ledger",
@@ -900,6 +1048,7 @@
       "subject": "."
     },
     {
+      "area": "frozen",
       "details": [],
       "evidence": [],
       "name": "frozen.sets",
@@ -910,6 +1059,7 @@
       "subject": "."
     },
     {
+      "area": "containers",
       "details": [],
       "evidence": [],
       "name": "containers.context",
@@ -920,6 +1070,7 @@
       "subject": "."
     },
     {
+      "area": "containers",
       "details": [],
       "evidence": [],
       "name": "containers.compose",
@@ -930,6 +1081,7 @@
       "subject": "."
     },
     {
+      "area": "dependencies",
       "details": [],
       "evidence": [],
       "name": "dependencies.parity",
@@ -940,6 +1092,7 @@
       "subject": "."
     },
     {
+      "area": "benchmark",
       "details": [],
       "evidence": [],
       "name": "benchmark.power",
@@ -950,6 +1103,7 @@
       "subject": "."
     },
     {
+      "area": "stages",
       "details": [],
       "evidence": [],
       "name": "stages.records",
@@ -960,6 +1114,7 @@
       "subject": "."
     },
     {
+      "area": "docs",
       "details": [],
       "evidence": [],
       "name": "docs.current",
@@ -970,6 +1125,7 @@
       "subject": "."
     },
     {
+      "area": "milestones",
       "details": [],
       "evidence": [],
       "name": "milestones.valid",
@@ -980,6 +1136,7 @@
       "subject": "development/milestones.toml"
     },
     {
+      "area": "sprints",
       "details": [],
       "evidence": [],
       "name": "sprint.valid",
@@ -990,6 +1147,7 @@
       "subject": "development/sprints"
     },
     {
+      "area": "sprints",
       "details": [],
       "evidence": [],
       "name": "sprint.closed",
@@ -1000,6 +1158,7 @@
       "subject": "development/sprints"
     },
     {
+      "area": "pins",
       "details": [],
       "evidence": [],
       "name": "pins.records",
@@ -1010,6 +1169,7 @@
       "subject": "."
     },
     {
+      "area": "pins",
       "details": [],
       "evidence": [],
       "name": "pins.retirement",
@@ -1020,6 +1180,7 @@
       "subject": "."
     },
     {
+      "area": "studies",
       "details": [],
       "evidence": [],
       "name": "studies.records",
@@ -1030,6 +1191,7 @@
       "subject": "."
     },
     {
+      "area": "research",
       "details": [],
       "evidence": [],
       "name": "research.records",
@@ -1040,6 +1202,7 @@
       "subject": "."
     },
     {
+      "area": "paper",
       "details": [],
       "evidence": [],
       "name": "paper.citations_verified",
@@ -1050,6 +1213,7 @@
       "subject": "."
     },
     {
+      "area": "benchmark",
       "details": [],
       "evidence": [],
       "name": "benchmark.llm_eval",
@@ -1060,6 +1224,7 @@
       "subject": "."
     },
     {
+      "area": "licence",
       "details": [],
       "evidence": [],
       "name": "licence.declared",
@@ -1070,6 +1235,7 @@
       "subject": "."
     },
     {
+      "area": "licence",
       "details": [],
       "evidence": [],
       "name": "licence.dependencies",
@@ -1080,6 +1246,7 @@
       "subject": "."
     },
     {
+      "area": "licence",
       "details": [],
       "evidence": [],
       "name": "licence.code",
@@ -1090,6 +1257,7 @@
       "subject": "."
     },
     {
+      "area": "licence",
       "details": [],
       "evidence": [],
       "name": "licence.provenance",
@@ -1100,6 +1268,7 @@
       "subject": "."
     },
     {
+      "area": "data",
       "details": [],
       "evidence": [],
       "name": "data.contracts",
@@ -1110,6 +1279,7 @@
       "subject": "."
     },
     {
+      "area": "compare",
       "details": [],
       "evidence": [],
       "name": "compare.shadow",
@@ -1120,6 +1290,7 @@
       "subject": "."
     },
     {
+      "area": "paper",
       "details": [],
       "evidence": [],
       "name": "paper.data_availability",
@@ -1130,6 +1301,7 @@
       "subject": "."
     },
     {
+      "area": "models",
       "details": [],
       "evidence": [],
       "name": "model.records",
@@ -1140,6 +1312,7 @@
       "subject": "."
     },
     {
+      "area": "release",
       "details": [],
       "evidence": [],
       "name": "release.stranger_test",
@@ -1148,16 +1321,33 @@
       "rule_version": 1,
       "status": "NOT_APPLICABLE",
       "subject": "."
+    },
+    {
+      "area": "tidy",
+      "details": [],
+      "evidence": [],
+      "name": "tidy.stale",
+      "reason": "[tidy] is not configured",
+      "rule": "R-88",
+      "rule_version": 1,
+      "status": "NOT_APPLICABLE",
+      "subject": "."
     }
   ],
+  "scope": {
+    "areas": [],
+    "full": true,
+    "rule": null
+  },
   "summary": {
     "counts": {
       "FAIL": 0,
       "INCOMPLETE": 0,
-      "NOT_APPLICABLE": 54,
+      "NOT_APPLICABLE": 55,
       "PASS": 28,
       "UNKNOWN": 0
     },
     "worst": "PASS"
-  }
+  },
+  "tree_digest": "sha256:182a4c9e77c8078c413c7a1ce07647a5357b30d985159d96ec30e84962239ddc"
 }

@@ -1,0 +1,85 @@
+{
+  "$defs": {
+    "ErrorFrame": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "pattern": "^steward/(?:[a-z_][a-z_0-9]*/)*[a-z_][a-z_0-9]*\\.py$",
+          "title": "File",
+          "type": "string"
+        },
+        "line": {
+          "minimum": 1,
+          "title": "Line",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "file",
+        "line"
+      ],
+      "title": "ErrorFrame",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "command": {
+      "pattern": "^[a-z][a-z-]*(?: [a-z][a-z-]*)?$",
+      "title": "Command",
+      "type": "string"
+    },
+    "error_type": {
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+      "title": "Error Type",
+      "type": "string"
+    },
+    "exit_code": {
+      "title": "Exit Code",
+      "type": "integer"
+    },
+    "fingerprint": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Fingerprint",
+      "type": "string"
+    },
+    "flags": {
+      "items": {
+        "pattern": "^--?[a-zA-Z][a-zA-Z0-9-]*$",
+        "type": "string"
+      },
+      "title": "Flags",
+      "type": "array"
+    },
+    "frames": {
+      "items": {
+        "$ref": "#/$defs/ErrorFrame"
+      },
+      "title": "Frames",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.last_error/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tool_version": {
+      "pattern": "^v?[0-9]+\\.[0-9]+\\.[0-9]+[a-zA-Z0-9.+-]*$",
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "fingerprint",
+    "tool_version",
+    "command",
+    "flags",
+    "exit_code",
+    "error_type",
+    "frames"
+  ],
+  "title": "LastError",
+  "type": "object"
+}

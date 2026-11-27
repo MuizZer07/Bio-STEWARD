@@ -102,7 +102,7 @@ def test_R09_marker_in_text_is_incomplete_in_draft_fail_in_final(cli, example):
     code, rep = cli.check(example)
     res = one(rep, "R-09")
     assert res["status"] == "INCOMPLETE" and code == 2
-    assert {"code": "R-09.marker", "path": TEX, "value": "pattern #1"} == {k: v for k, v in res["details"][1].items() if k != "line"}
+    assert {"code": "R-09.marker", "path": TEX, "value": "pattern #1"} == {k: v for k, v in res["details"][1].items() if k not in ("line", "column")}
     code, _, _ = cli("check", "--repo", example, "--final", "--format", "json")
     assert code == 1
 

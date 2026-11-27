@@ -1,0 +1,711 @@
+{
+  "check (area, scope)": {
+    "areas": [
+      [
+        "R-01",
+        "config"
+      ],
+      [
+        "R-02",
+        "contract"
+      ],
+      [
+        "R-03",
+        "contract"
+      ],
+      [
+        "R-04",
+        "contract"
+      ],
+      [
+        "R-05",
+        "prior-work"
+      ],
+      [
+        "R-06",
+        "prior-work"
+      ],
+      [
+        "R-07",
+        "privacy"
+      ],
+      [
+        "R-08",
+        "paper"
+      ],
+      [
+        "R-09",
+        "paper"
+      ],
+      [
+        "R-10",
+        "paper"
+      ],
+      [
+        "R-11",
+        "paper"
+      ],
+      [
+        "R-12",
+        "paper"
+      ],
+      [
+        "R-13",
+        "paper"
+      ],
+      [
+        "R-14",
+        "paper"
+      ],
+      [
+        "R-15",
+        "paper"
+      ],
+      [
+        "R-21",
+        "talk"
+      ],
+      [
+        "R-22",
+        "talk"
+      ],
+      [
+        "R-23",
+        "talk"
+      ],
+      [
+        "R-24",
+        "talk"
+      ],
+      [
+        "R-25",
+        "talk"
+      ],
+      [
+        "R-26",
+        "talk"
+      ],
+      [
+        "R-27",
+        "talk"
+      ],
+      [
+        "R-28",
+        "talk"
+      ],
+      [
+        "R-29",
+        "talk"
+      ],
+      [
+        "R-31",
+        "run"
+      ],
+      [
+        "R-32",
+        "run"
+      ],
+      [
+        "R-33",
+        "policy"
+      ],
+      [
+        "R-34",
+        "spend"
+      ],
+      [
+        "R-35",
+        "integrity"
+      ],
+      [
+        "R-36",
+        "integrity"
+      ],
+      [
+        "R-37",
+        "integrity"
+      ],
+      [
+        "R-38",
+        "integrity"
+      ],
+      [
+        "R-39",
+        "integrity"
+      ],
+      [
+        "R-40",
+        "evidence"
+      ],
+      [
+        "R-41",
+        "evidence"
+      ],
+      [
+        "R-42",
+        "release"
+      ],
+      [
+        "R-43",
+        "release"
+      ],
+      [
+        "R-44",
+        "release"
+      ],
+      [
+        "R-45",
+        "benchmark"
+      ],
+      [
+        "R-46",
+        "benchmark"
+      ],
+      [
+        "R-47",
+        "benchmark"
+      ],
+      [
+        "R-48",
+        "benchmark"
+      ],
+      [
+        "R-49",
+        "benchmark"
+      ],
+      [
+        "R-50",
+        "storage"
+      ],
+      [
+        "R-51",
+        "governance"
+      ],
+      [
+        "R-52",
+        "repro"
+      ],
+      [
+        "R-53",
+        "governance"
+      ],
+      [
+        "R-54",
+        "governance"
+      ],
+      [
+        "R-55",
+        "session"
+      ],
+      [
+        "R-56",
+        "boundary"
+      ],
+      [
+        "R-57",
+        "tasks"
+      ],
+      [
+        "R-58",
+        "changelog"
+      ],
+      [
+        "R-59",
+        "branches"
+      ],
+      [
+        "R-60",
+        "skills"
+      ],
+      [
+        "R-61",
+        "files"
+      ],
+      [
+        "R-62",
+        "agents"
+      ],
+      [
+        "R-63",
+        "frozen"
+      ],
+      [
+        "R-64",
+        "containers"
+      ],
+      [
+        "R-65",
+        "containers"
+      ],
+      [
+        "R-66",
+        "dependencies"
+      ],
+      [
+        "R-67",
+        "benchmark"
+      ],
+      [
+        "R-68",
+        "stages"
+      ],
+      [
+        "R-69",
+        "docs"
+      ],
+      [
+        "R-70",
+        "milestones"
+      ],
+      [
+        "R-71",
+        "sprints"
+      ],
+      [
+        "R-72",
+        "sprints"
+      ],
+      [
+        "R-73",
+        "pins"
+      ],
+      [
+        "R-74",
+        "pins"
+      ],
+      [
+        "R-75",
+        "studies"
+      ],
+      [
+        "R-76",
+        "research"
+      ],
+      [
+        "R-77",
+        "paper"
+      ],
+      [
+        "R-78",
+        "benchmark"
+      ],
+      [
+        "R-79",
+        "licence"
+      ],
+      [
+        "R-80",
+        "licence"
+      ],
+      [
+        "R-81",
+        "licence"
+      ],
+      [
+        "R-82",
+        "licence"
+      ],
+      [
+        "R-83",
+        "data"
+      ],
+      [
+        "R-84",
+        "compare"
+      ],
+      [
+        "R-85",
+        "paper"
+      ],
+      [
+        "R-86",
+        "models"
+      ],
+      [
+        "R-87",
+        "release"
+      ],
+      [
+        "R-88",
+        "tidy"
+      ]
+    ],
+    "scope": {
+      "areas": [],
+      "full": true,
+      "rule": null
+    }
+  },
+  "check --digest-only": {
+    "changed": [],
+    "current": true,
+    "inputs_digest": "sha256:846467247015fc573c9f49c02a3230c6b0a35df8694947ef83a36750a81f5aeb",
+    "reason": "the report's inputs and file list are unchanged",
+    "report": {
+      "inputs_digest": "sha256:846467247015fc573c9f49c02a3230c6b0a35df8694947ef83a36750a81f5aeb",
+      "tool_version": "(version)",
+      "tree_digest": "(file list)"
+    },
+    "schema": "steward.digest/0.1",
+    "tool_version": "(version)",
+    "tree_digest": "(file list)"
+  },
+  "explain R-60": {
+    "rules": [
+      {
+        "area": "skills",
+        "areas": [
+          "skills"
+        ],
+        "checks": "Skill copies for several agent harnesses match the one canonical copy.",
+        "codes": [
+          {
+            "code": "R-60.copy",
+            "fix": "an identical copy; a link avoids drift"
+          },
+          {
+            "code": "R-60.dangling",
+            "fix": null
+          },
+          {
+            "code": "R-60.drift",
+            "fix": null
+          },
+          {
+            "code": "R-60.linked",
+            "fix": null
+          },
+          {
+            "code": "R-60.missing",
+            "fix": null
+          },
+          {
+            "code": "R-60.no_canonical",
+            "fix": null
+          },
+          {
+            "code": "R-60.pointer",
+            "fix": null
+          },
+          {
+            "code": "R-60.pointer_wrong",
+            "fix": null
+          },
+          {
+            "code": "R-60.wrong_target",
+            "fix": "links somewhere else"
+          }
+        ],
+        "fix": "edit only the canonical skills directory; replace a drifted copy by a link to it",
+        "governance": "project",
+        "name": "skills.copies",
+        "pass_does_not_mean": "The skills are right.",
+        "rule": "R-60",
+        "run": "steward check skills --summary",
+        "version": 1,
+        "why": "Two drifting copies give two agents different instructions."
+      }
+    ],
+    "schema": "steward.explain/0.1",
+    "tool_version": "(version)"
+  },
+  "init --dry-run": {
+    "actions": [
+      {
+        "note": "exists; repo_id and profile kept",
+        "path": "steward.toml",
+        "verb": "skip"
+      },
+      {
+        "note": "exists",
+        "path": "development/DECISIONS.md",
+        "verb": "skip"
+      },
+      {
+        "note": "exists",
+        "path": "development/templates/task.md",
+        "verb": "skip"
+      },
+      {
+        "note": "steward block current",
+        "path": ".gitignore",
+        "verb": "unchanged"
+      },
+      {
+        "note": "steward block",
+        "path": "AGENTS.md",
+        "verb": "update"
+      }
+    ],
+    "dry_run": true,
+    "goals": [
+      "agents"
+    ],
+    "kits": [
+      "core"
+    ],
+    "next": [
+      "steward run --wall 3600 --mem 8000 --hang-cpu 600 -- python your_job.py",
+      "steward task template review --output development/tasks/T-001.md && steward task brief development/tasks/T-001.md --for codex",
+      "steward tokens report"
+    ],
+    "profile": "exploratory",
+    "schema": "steward.init_plan/0.1",
+    "tables": [
+      "agents"
+    ],
+    "templates": [],
+    "tool_version": "(version)"
+  },
+  "not configured": {
+    "code": "not_configured",
+    "exit": 78,
+    "hint": "steward init --for benchmark|reanalysis|paper|agents|licence",
+    "message": "not a steward repository (no steward.toml)",
+    "schema": "steward.error/0.1",
+    "tool_version": "(version)"
+  },
+  "skills list": {
+    "bundles": [
+      {
+        "budget_words": 325,
+        "name": "core",
+        "skills": [
+          "using-steward",
+          "task-lifecycle",
+          "benchmark-contract",
+          "prior-work-grounding",
+          "signature-and-attribution",
+          "negative-results",
+          "run-estimate",
+          "no-paid-tests",
+          "change-impact",
+          "red-team-review",
+          "container-release",
+          "dependency-upgrade"
+        ]
+      },
+      {
+        "budget_words": 200,
+        "name": "paper",
+        "skills": [
+          "paper-kit",
+          "submission-readiness",
+          "number-crosscheck",
+          "figures-and-tables",
+          "manuscript-drafting",
+          "manuscript-review"
+        ]
+      },
+      {
+        "budget_words": 120,
+        "name": "talk",
+        "skills": [
+          "presentation-planning",
+          "presentation-building",
+          "presentation-review"
+        ]
+      },
+      {
+        "budget_words": 80,
+        "name": "manage",
+        "skills": [
+          "progress-audit"
+        ]
+      },
+      {
+        "budget_words": 60,
+        "name": "research",
+        "skills": [
+          "research-review"
+        ]
+      },
+      {
+        "budget_words": 50,
+        "name": "licence",
+        "skills": [
+          "licence-compliance"
+        ]
+      }
+    ],
+    "project": {
+      "canonical": null,
+      "canonical_usable": null,
+      "configured": false,
+      "copies": [],
+      "installed": []
+    },
+    "schema": "steward.skills/0.1",
+    "skills": [
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Fix datasets, splits, baselines, metrics, comparison and thresholds before results are seen. Use when designing an evaluation, comparing methods with baselines, or planning a confirmatory analysis.",
+        "name": "benchmark-contract"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Trace which results, contracts and artifacts a change may invalidate, and state what was not traced. Use after changing preprocessing, data, parameters, metrics, baselines, prompts or evaluation code.",
+        "name": "change-impact"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Ship container images after auditing build contexts and compose files, then record and verify the bundle. Use before shipping images.",
+        "name": "container-release"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Upgrade a pinned dependency with parity harnesses, a record and approval before the pins move. Use before changing a pin.",
+        "name": "dependency-upgrade"
+      },
+      {
+        "bundles": [
+          "paper"
+        ],
+        "description": "Build every figure and table with a declared script from declared inputs, record the build, and keep displays cited and current. Use when making or changing a figure or table.",
+        "name": "figures-and-tables"
+      },
+      {
+        "bundles": [
+          "licence"
+        ],
+        "description": "Check licences before adding a dependency, copying or porting code, or bundling data. Use when a task adds a package, vendors or translates code, or the project moves towards release.",
+        "name": "licence-compliance"
+      },
+      {
+        "bundles": [
+          "paper"
+        ],
+        "description": "Draft or revise paper sections from the approved spec, with registered numbers, cited displays, matched claim strength and stated limitations. Use when writing or revising any manuscript section.",
+        "name": "manuscript-drafting"
+      },
+      {
+        "bundles": [
+          "paper"
+        ],
+        "description": "Review a draft with deterministic checks first, then advisory scientific, methodological and editorial comments kept apart; also structure responses to peer review. Use when asked to review a draft or answer reviewers.",
+        "name": "manuscript-review"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Record every failed or negative result with where it will be reported; never drop or relabel it. Use when an experiment, run, check or hypothesis fails or gives a null result.",
+        "name": "negative-results"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Keep tests free of live paid calls to LLM APIs or cloud services; use recorded fixtures. Use when writing or running tests or verification scripts for code calling paid services.",
+        "name": "no-paid-tests"
+      },
+      {
+        "bundles": [
+          "paper"
+        ],
+        "description": "Tie every reported number to a result file through the values registry and check relations between them. Use when adding numbers to a paper, after results change, or before sharing a draft.",
+        "name": "number-crosscheck"
+      },
+      {
+        "bundles": [
+          "paper"
+        ],
+        "description": "Set up and run a paper project (preprint, conference, journal, thesis) in LaTeX with a spec, venue profile and checks. Use when starting or restructuring a paper, or choosing a venue.",
+        "name": "paper-kit"
+      },
+      {
+        "bundles": [
+          "talk"
+        ],
+        "description": "Build slides in Beamer from an approved talk plan, with numbers and figures from the shared evidence and the presenter's style preferences. Use when creating or revising slides.",
+        "name": "presentation-building"
+      },
+      {
+        "bundles": [
+          "talk"
+        ],
+        "description": "Plan a talk from its confirmed research stage, purpose, audience, duration and feedback intent before building slides. Use when preparing any presentation, poster or demo.",
+        "name": "presentation-planning"
+      },
+      {
+        "bundles": [
+          "talk"
+        ],
+        "description": "Review a talk for stage-consistent claims, overstatement and understatement, audience fit and feedback intent, keeping objective check results apart from advice. Use before presenting or when asked to review slides.",
+        "name": "presentation-review"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Record closest prior methods, comparisons, claimed differences and distinguishing experiments; never judge novelty. Use when claiming a contribution, choosing baselines, writing related work, or after a failed experiment.",
+        "name": "prior-work-grounding"
+      },
+      {
+        "bundles": [
+          "manage"
+        ],
+        "description": "Audit a project's progress and usefulness when the human says \"Progress Audit\" - evidence from steward audit progress, ranked improvements, then an offer to plan a sprint with its signatures.",
+        "name": "progress-audit"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Run and record an independent adversarial review before a release, with findings, regression tests and re-verification kept separate from fixing. Use before any public release or when asked to red-team a repository.",
+        "name": "red-team-review"
+      },
+      {
+        "bundles": [
+          "research"
+        ],
+        "description": "Keep literature reviews, novelty maps, gap and flaw lists and dead-end reviews as checkable records. Use for a literature review, a novelty or overlap check, gaps or flaws, or negative results.",
+        "name": "research-review"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "State count, duration, memory, disk and cost before a run, with the basis; compare with actuals after. Use before long, heavy or paid computations.",
+        "name": "run-estimate"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Sign substantive work with date, harness, provider and exact model ID; unknowns stay unknown. Use when finishing a document, report, task, review or commit message.",
+        "name": "signature-and-attribution"
+      },
+      {
+        "bundles": [
+          "paper"
+        ],
+        "description": "Prepare a preprint, conference or journal submission with final-mode checks, the venue checklist and a clean package. Use when a paper is close to submission or a deadline.",
+        "name": "submission-readiness"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Spec, hold for a recorded GO, implement, get independent review, never self-approve. Use when starting, implementing or reviewing a task, or when a human grants or withholds a go-ahead.",
+        "name": "task-lifecycle"
+      },
+      {
+        "bundles": [
+          "core"
+        ],
+        "description": "Run and read steward checks. Use in any repository with steward.toml before reporting work as ready, or when asked whether research code, contracts or records are ready.",
+        "name": "using-steward"
+      }
+    ],
+    "tool_version": "(version)"
+  }
+}

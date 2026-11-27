@@ -178,7 +178,7 @@ def r57(ctx: Ctx) -> list[Result]:
     archive = [f for f in all_files if any(glob_match(f, g) for g in tc.archive)]
     specs = [f for f in all_files if any(glob_match(f, g) for g in tc.specs) and f not in archive and f != tc.board]
     seen: dict[str, str] = {}
-    open_ids: list[tuple[str, str]] = []
+    open_ids: list[tuple[str, str, int]] = []
     for rel in specs + archive:
         text = ctx.read(rel).decode("utf-8", errors="replace")
         m = ID_LINE.search(text)
@@ -187,19 +187,22 @@ def r57(ctx: Ctx) -> list[Result]:
             details.append({"code": "R-57.no_id", "path": rel, "message": f"no **ID:** line matching {tc.id_pattern}"})
             continue
         tid = m.group(1)
+        id_line = text.count("\n", 0, m.start(1)) + 1  # C4 (0.21.0): the location of the ID line
         if tid in seen:
             causes.append(Status.FAIL)
-            details.append({"code": "R-57.duplicate_id", "path": rel, "value": tid, "message": f"also in {seen[tid]}"})
+            details.append({"code": "R-57.duplicate_id", "path": rel, "line": id_line, "value": tid,
+                            "message": f"also in {seen[tid]}"})
         else:
             seen[tid] = rel
         s = STATUS_LINE.search(text)
         status = _status(s.group(1) if s else None, tc.statuses)
         if status is None or status not in tc.statuses:
             causes.append(Status.FAIL)
-            details.append({"code": "R-57.unknown_status", "path": rel, "value": status or "(none)",
+            details.append({"code": "R-57.unknown_status", "path": rel,
+                            "line": text.count("\n", 0, s.start()) + 1 if s else id_line, "value": status or "(none)",
                             "message": f"use one of: {' | '.join(tc.statuses)}"})
         if rel in specs and status not in tc.closed:
-            open_ids.append((tid, rel))
+            open_ids.append((tid, rel, id_line))
     if not (ctx.root / tc.board).is_file():
         causes.append(Status.FAIL)
         details.append({"code": "R-57.no_board", "path": tc.board})
@@ -208,10 +211,10 @@ def r57(ctx: Ctx) -> list[Result]:
         # Q17: an entry is a list item or a table row, not a mention in prose (the Next line lists nothing)
         listed = "\n".join(l for l in NEXT_LINE.sub("", btext).splitlines()
                            if re.match(r"^\s*([-*+]|\d+[.)]|\|)\s*", l))
-        for tid, rel in open_ids:
+        for tid, rel, id_line in open_ids:
             if not re.search(rf"(?<![\w-]){re.escape(tid)}(?![\w-])", listed):
                 causes.append(Status.FAIL)
-                details.append({"code": "R-57.not_on_board", "path": rel, "value": tid})
+                details.append({"code": "R-57.not_on_board", "path": rel, "line": id_line, "value": tid})
         nm = NEXT_LINE.search(btext)
         used = [n for n in (_num(t) for t in seen) if n]
         if nm is None:
@@ -469,48 +472,53 @@ def _tree(d: Path) -> dict[str, str]:
     return out
 
 
+def skills_copies(root: Path, sc: Any) -> tuple[bool, list[tuple[bool, dict[str, Any]]]]:
+    """R-60's view of a [skills] table, shared with `steward skills list` (C8): whether the canonical directory is
+    usable, and for each copy location (failed, detail)."""
+    canon = root / sc.canonical
+    if canon.is_symlink() or not canon.is_dir():
+        return False, []
+    out: list[tuple[bool, dict[str, Any]]] = []
+    ref = _tree(canon)
+    for c in sc.copies:
+        p = root / c
+        if p.is_symlink():
+            if not p.exists():
+                out.append((True, {"code": "R-60.dangling", "path": c}))
+            elif p.resolve() != canon.resolve():
+                out.append((True, {"code": "R-60.wrong_target", "path": c, "message": "links somewhere else"}))  # Q20
+            else:
+                out.append((False, {"code": "R-60.linked", "path": c}))
+        elif (p / POINTER).is_file():
+            target = (p / (p / POINTER).read_text(encoding="utf-8").strip()).resolve()
+            if target != canon.resolve():
+                out.append((True, {"code": "R-60.pointer_wrong", "path": f"{c}/{POINTER}"}))
+            else:
+                out.append((False, {"code": "R-60.pointer", "path": c}))
+        elif p.is_dir():
+            mine = _tree(p)
+            differ = sorted(k for k in set(ref) | set(mine) if ref.get(k) != mine.get(k))
+            if differ:
+                out.append((True, {"code": "R-60.drift", "path": c, "value": len(differ),
+                                   "message": "differs from the canonical copy: " + ", ".join(differ[:10])}))
+            else:
+                out.append((False, {"code": "R-60.copy", "path": c, "message": "an identical copy; a link avoids drift"}))
+        else:
+            out.append((True, {"code": "R-60.missing", "path": c}))
+    return True, out
+
+
 def r60(ctx: Ctx) -> list[Result]:
     assert ctx.config is not None
     sc = ctx.config.skills
     if sc is None:
         return [result("R-60", ".", Status.NOT_APPLICABLE, "[skills] is not configured")]
-    canon = ctx.root / sc.canonical
-    if canon.is_symlink() or not canon.is_dir():
+    usable, copies = skills_copies(ctx.root, sc)
+    if not usable:
         return [result("R-60", sc.canonical, Status.FAIL, "the canonical skills directory is missing or a link",
                        [{"code": "R-60.no_canonical", "path": sc.canonical}])]
-    causes: list[Status] = []
-    details: list[dict[str, Any]] = []
-    ref = _tree(canon)
-    for c in sc.copies:
-        p = ctx.root / c
-        if p.is_symlink():
-            if not p.exists():
-                causes.append(Status.FAIL)
-                details.append({"code": "R-60.dangling", "path": c})
-            elif p.resolve() != canon.resolve():
-                causes.append(Status.FAIL)
-                details.append({"code": "R-60.wrong_target", "path": c, "message": "links somewhere else"})  # Q20
-            else:
-                details.append({"code": "R-60.linked", "path": c})
-        elif (p / POINTER).is_file():
-            target = (p / (p / POINTER).read_text(encoding="utf-8").strip()).resolve()
-            if target != canon.resolve():
-                causes.append(Status.FAIL)
-                details.append({"code": "R-60.pointer_wrong", "path": f"{c}/{POINTER}"})
-            else:
-                details.append({"code": "R-60.pointer", "path": c})
-        elif p.is_dir():
-            mine = _tree(p)
-            differ = sorted(k for k in set(ref) | set(mine) if ref.get(k) != mine.get(k))
-            if differ:
-                causes.append(Status.FAIL)
-                details.append({"code": "R-60.drift", "path": c, "value": len(differ),
-                                "message": "differs from the canonical copy: " + ", ".join(differ[:10])})
-            else:
-                details.append({"code": "R-60.copy", "path": c, "message": "an identical copy; a link avoids drift"})
-        else:
-            causes.append(Status.FAIL)
-            details.append({"code": "R-60.missing", "path": c})
+    causes = [Status.FAIL for failed, _ in copies if failed]
+    details = [d for _, d in copies]
     status = combine(causes)
     return [result("R-60", sc.canonical, status, _why(status, f"{len(sc.copies)} copy location(s) match the canonical "
                    "directory", "a skills copy is missing, dangling or has drifted"), details)]

@@ -1,0 +1,166 @@
+{
+  "$defs": {
+    "Caller": {
+      "additionalProperties": false,
+      "properties": {
+        "ignored": {
+          "title": "Ignored",
+          "type": "boolean"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "via": {
+          "enum": [
+            "module",
+            "reference",
+            "module+reference"
+          ],
+          "title": "Via",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "via"
+      ],
+      "title": "Caller",
+      "type": "object"
+    },
+    "Pin": {
+      "additionalProperties": false,
+      "properties": {
+        "caller_detail": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Caller"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Caller Detail"
+        },
+        "caller_rule": {
+          "title": "Caller Rule",
+          "type": "string"
+        },
+        "callers": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Callers"
+        },
+        "deprecated": {
+          "$ref": "#/$defs/PinDeprecation"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "object": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Object",
+          "type": "string"
+        },
+        "package": {
+          "title": "Package",
+          "type": "string"
+        },
+        "protects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Protects",
+          "type": "array"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "package",
+        "version",
+        "state",
+        "reasons",
+        "protects"
+      ],
+      "title": "Pin",
+      "type": "object"
+    },
+    "PinDeprecation": {
+      "additionalProperties": false,
+      "description": "A pin announced for retirement (0.17.0, Muiz: \"deprecated soon\"): it stays installed and is reported while\nanything still depends on it.",
+      "properties": {
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "title": "PinDeprecation",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "pins": {
+      "items": {
+        "$ref": "#/$defs/Pin"
+      },
+      "title": "Pins",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.pins_status/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "pins"
+  ],
+  "title": "PinsStatus",
+  "type": "object"
+}

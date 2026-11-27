@@ -176,7 +176,10 @@ def test_C5_a_folder_replaced_after_the_plan_is_skipped(cli, proj, monkeypatch):
     (proj / "src/pkg/__pycache__/new.pyc").write_bytes(b"n")
     _tty(monkeypatch, ["y"] * 5)
     _, out, _ = cli("storage", "clean", "--apply", plan)
-    assert "not the folder that was planned" in out and (proj / "src/pkg/__pycache__/new.pyc").exists()
+    # On Linux the new folder can get the freed inode number of the old one; it is then skipped because its contents
+    # changed. Either reason keeps the folder that appeared after the plan.
+    assert ("not the folder that was planned" in out or "its contents changed since the plan" in out)
+    assert (proj / "src/pkg/__pycache__/new.pyc").exists()
 
 
 def test_C5_a_folder_another_project_uses_needs_its_name_typed(cli, proj, tmp_path, monkeypatch):

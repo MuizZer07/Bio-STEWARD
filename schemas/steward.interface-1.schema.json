@@ -1,0 +1,94 @@
+{
+  "$defs": {
+    "Command": {
+      "additionalProperties": false,
+      "properties": {
+        "argv": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Argv",
+          "type": "array"
+        },
+        "legacy_argv": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Legacy Argv",
+          "type": "array"
+        },
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Schema"
+        }
+      },
+      "required": [
+        "argv",
+        "schema"
+      ],
+      "title": "Command",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "commands": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Command"
+      },
+      "title": "Commands",
+      "type": "object"
+    },
+    "error_schema": {
+      "title": "Error Schema",
+      "type": "string"
+    },
+    "exit_codes": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Exit Codes",
+      "type": "object"
+    },
+    "interface_version": {
+      "const": 1,
+      "title": "Interface Version",
+      "type": "integer"
+    },
+    "schema": {
+      "const": "steward.interface/1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "schema_files": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Schema Files",
+      "type": "object"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "interface_version",
+    "tool_version",
+    "schema_files",
+    "error_schema",
+    "commands",
+    "exit_codes"
+  ],
+  "title": "Interface",
+  "type": "object"
+}

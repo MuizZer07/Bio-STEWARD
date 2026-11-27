@@ -63,6 +63,7 @@ class Result:
     reason: str
     details: list[dict[str, Any]] = field(default_factory=list)
     evidence: list[dict[str, str]] = field(default_factory=list)
+    waivers: tuple[tuple[str, str], ...] = ()  # finding ID and verified authorization tag, for gates
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -91,8 +92,8 @@ def summarize(results: list[Result]) -> dict[str, Any]:
 def evaluate_gate(name: str, require: list[str], results: list[Result], *, partial: bool, min_evaluated: int = 0) -> dict[str, Any]:
     """Gate eligibility (DESIGN_v0.4 §1).
 
-    Eligible iff every required result is PASS or NOT_APPLICABLE (or a waived UNKNOWN, from v0.2) and at least
-    one required result is PASS. A partial run never evaluates a gate.
+    Eligible iff there are no unwaived blockers and at least one required rule passes without a waiver.
+    A partial run never evaluates a gate.
     """
     required = [r for r in results if r.rule in require]
     gate: dict[str, Any] = {
@@ -101,7 +102,7 @@ def evaluate_gate(name: str, require: list[str], results: list[Result], *, parti
         "eligible": False,
         "required_count": len(require),
         "evaluated_count": len({r.rule for r in required}),
-        "pass_count": len({r.rule for r in required if r.status is Status.PASS}),
+        "pass_count": len({r.rule for r in required if r.status is Status.PASS and not r.waivers}),
         "not_applicable_count": len({r.rule for r in required if r.status is Status.NOT_APPLICABLE}
                                     - {r.rule for r in required if r.status is not Status.NOT_APPLICABLE}),
         "blocking": [],
@@ -112,9 +113,13 @@ def evaluate_gate(name: str, require: list[str], results: list[Result], *, parti
         return gate
     blocking = [r for r in required if r.status not in (Status.PASS, Status.NOT_APPLICABLE)]
     gate["blocking"] = [{"rule": r.rule, "subject": r.subject, "status": r.status.value} for r in blocking]
+    gate["waived"] = [
+        {"rule": r.rule, "subject": finding, "status": Status.FAIL.value, "authorization": tag}
+        for r in required for finding, tag in r.waivers
+    ]
     if blocking:
         gate["reason"] = "blocking results"
-    elif not any(r.status is Status.PASS for r in required):
+    elif not gate["pass_count"]:
         gate["reason"] = "gate.vacuous"
     elif gate["pass_count"] < min_evaluated:  # AR-19
         gate["reason"] = "gate.min_evaluated"
@@ -133,3 +138,8 @@ def gate_exit_code(gate: dict[str, Any]) -> int:
     if Status.INCOMPLETE.value in statuses:
         return EXIT_INCOMPLETE
     return EXIT_UNKNOWN
+
+
+class NotConfigured(Exception):
+    """No steward.toml here: the command needs a configured project (C6, 0.21.0). The CLI's dispatcher turns it into
+    exit 78, with a steward.error/0.1 document on stdout when JSON was asked for."""

@@ -10,16 +10,19 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from . import __version__
 from .fsutil import compact_json, git_run, sha256_bytes
-from .rules import AREAS, RULE_FUNCS, RULES, Ctx, not_evaluated, result
+from .rules import AREAS, RULE_FUNCS, RULES, Ctx, not_evaluated, result, rule_area
 from .status import Result, Status, evaluate_gate, sort_key, summarize
 
 INTEGRITY_RULES = ("R-11", "R-27", "R-31", "R-35", "R-36", "R-42")
 SUBJECT_EVIDENCE = {"R-42": "R-42.audited", "R-11": "R-11.fingerprints_compared"}  # the detail that shows the rule inspected artifacts, not only metadata
 NO_SUBJECT = {"R-27.nothing_to_trace", "R-11.nothing_to_check"}  # details that show a rule passed with nothing to inspect
+
+# These codes describe an implementation limit, independent of the project's records or installed dependencies.
+TOOLKIT_LIMITATIONS = {"R-13.pages_unsupported", "R-13.words_unsupported"}
 
 
 def coverage_statement(results: list[Result]) -> str:
@@ -77,7 +80,51 @@ class UnknownGate(Exception):
     pass
 
 
-def run_check(root: Path, areas: list[str] | None = None, gate: str = "default", final: bool = False) -> dict[str, Any]:
+def input_list(inputs: dict[str, str]) -> list[list[str]]:
+    """The check's inputs as the digest sees them: sorted [path, sha256] pairs."""
+    return sorted([p, h] for p, h in inputs.items())
+
+
+def inputs_digest(inputs: dict[str, str]) -> str:
+    """The verdict's `inputs_digest`: one function for `check` and `check --digest-only` (C5)."""
+    return "sha256:" + sha256_bytes(compact_json(input_list(inputs)).encode("utf-8"))
+
+
+def tree_digest(root: Path, exclude: tuple[str, ...] = ()) -> str:
+    """A digest of the repository's file list (names only, never contents), without `.git` folders, the process
+    locks in `.steward/owners`, and the given paths. A file added or removed anywhere changes it, so `check --digest-only` can tell when a check could read a
+    file the earlier one never saw (C5)."""
+    import os
+
+    names: list[str] = []
+    skip = set(exclude)
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
+        rel = Path(dirpath).relative_to(root)
+        # `.steward/owners` holds the locks of running steward processes (an MCP server's), not project content
+        dirnames[:] = sorted(d for d in dirnames if d != ".git" and (rel / d).as_posix() != ".steward/owners")
+        for d in dirnames:
+            if (Path(dirpath) / d).is_symlink():  # a linked folder is listed, never walked
+                names.append((rel / d).as_posix())
+        for f in filenames:
+            if f == ".git":
+                continue
+            p = (rel / f).as_posix()
+            if p not in skip:
+                names.append(p)
+    return "sha256:" + sha256_bytes("\n".join(sorted(names)).encode("utf-8"))
+
+
+def scope_of(areas: list[str] | None, rule: str | None) -> dict[str, Any]:
+    """What a run covered: every area, the named areas, or one rule's areas (STW-047, sprint task T04)."""
+    return {"full": not areas, "areas": sorted(set(areas or [])), "rule": rule}
+
+
+def run_check(root: Path, areas: list[str] | None = None, gate: str = "default", final: bool = False,
+              rule: str | None = None, exclude: tuple[str, ...] = (), *,
+              on_fault: Callable[[Exception | str], None] | None = None) -> dict[str, Any]:
+    """`rule`: the rule a `check --rule` run asked for (its areas are in `areas`). `exclude`: repository paths left
+    out of the tree digest (the report file this check writes)."""
+    scope = scope_of(areas, rule)
     ctx = Ctx(root=root, final=final)
     selected = list(RULES) if not areas else sorted({"R-01", *[r for a in areas for r in AREAS[a]]})
     results: list[Result] = []
@@ -88,8 +135,15 @@ def run_check(root: Path, areas: list[str] | None = None, gate: str = "default",
         try:
             results.extend(RULE_FUNCS[rule](ctx))
         except Exception as e:  # a rule bug must never pass silently or hide other rules
+            if on_fault is not None:
+                on_fault(e)
             results.append(result(rule, ".", Status.UNKNOWN, "internal_error", [{"code": "internal_error", "message": repr(e)}]))
     results.sort(key=sort_key)
+    if on_fault is not None:
+        limitations = {d.get("code") for r in results if scope["rule"] in (None, r.rule)
+                       for d in r.details if d.get("code") in TOOLKIT_LIMITATIONS}
+        for code in sorted(limitations):
+            on_fault(code)
 
     partial = bool(areas)
     if ctx.config is not None:
@@ -117,16 +171,18 @@ def run_check(root: Path, areas: list[str] | None = None, gate: str = "default",
         added = ctx.config.gate_added(name) if ctx.config else []
         if added:  # Q1: the overlay's rules must also pass, and never count toward the base minimum
             g_all = evaluate_gate(name, [*(req or []), *added], results, partial=partial, min_evaluated=0)
-            g = g_all if g["eligible"] else {**g, "required_count": g_all["required_count"]}
+            g = g_all if g["eligible"] else {**g, "required_count": g_all["required_count"], "waived": g_all["waived"]}
         gates.append(g)
 
-    inputs = sorted([p, h] for p, h in ctx.inputs.items())
     verdict = {
         "repo_id": ctx.config.steward.repo_id if ctx.config else "unknown",
         "project": ctx.config.steward.project if ctx.config else "unknown",
         "config_profile": ctx.config.steward.profile if ctx.config else "unknown",
-        "inputs_digest": "sha256:" + sha256_bytes(compact_json(inputs).encode("utf-8")),
-        "results": [r.to_json() for r in results],
+        "inputs_digest": inputs_digest(ctx.inputs),
+        "inputs": [{"path": p, "sha256": h} for p, h in input_list(ctx.inputs)],
+        "tree_digest": tree_digest(root, exclude),
+        "scope": scope,
+        "results": [{**r.to_json(), "area": rule_area(r.rule)} for r in results],
         "summary": summarize(results),
         "gates": gates,
         "coverage": {

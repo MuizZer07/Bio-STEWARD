@@ -305,7 +305,7 @@ def write_new(root: Path, sub: str, name: str, data: bytes) -> Path:
         try:
             created_st = os.fstat(fd)
             write_all(fd, data)  # R2
-            st = created_st
+            st = os.fstat(fd)  # after the write: its size and modification time are part of its identity
         except BaseException:  # nothing is left behind: the item is removed before the error propagates
             os.close(fd)
             try:  # U5 (0.13.0): removed only while the name is still the file this call created (when known)
@@ -318,13 +318,19 @@ def write_new(root: Path, sub: str, name: str, data: bytes) -> Path:
             raise
         os.close(fd)
         forget(dest)
-        CREATED[dest] = (held, name, (st.st_dev, st.st_ino))  # K4 (R6): the directory is held until done
+        # K4 (R6): the directory is held until done. The identity adds size and modification time to (device, inode):
+        # Linux reuses a freed inode number at once, so a file swapped in under the name can carry the same inode.
+        CREATED[dest] = (held, name, _identity(st))
     finally:
         os.close(dfd)
     return dest
 
 
-CREATED: dict[Path, tuple[int, str, tuple[int, int]]] = {}
+CREATED: dict[Path, tuple[int, str, tuple[int, int, int, int]]] = {}
+
+
+def _identity(st) -> tuple[int, int, int, int]:
+    return (st.st_dev, st.st_ino, st.st_size, st.st_mtime_ns)
 
 
 def forget(dest: Path) -> None:
@@ -357,7 +363,7 @@ def rollback(root: Path, dest: Path) -> None:
         return
     try:
         st = os.stat(aside, dir_fd=dfd, follow_symlinks=False)
-        if (st.st_dev, st.st_ino) == ident:
+        if _identity(st) == ident:
             os.unlink(aside, dir_fd=dfd)
         else:
             # U5 (0.13.0): put back without replacing anything that appeared meanwhile (a hard link fails if the name
@@ -438,7 +444,7 @@ def init(root: Path, code: str) -> list[str]:
         except LinkRefused as e:
             raise BoundaryError(f"{FOLDER}/{sub}: {e.strerror or e}") from None
         if not existed:
-            write_new(root, sub, ".keep", b"")
+            forget(write_new(root, sub, ".keep", b""))  # no state to record: release the held directory now
             made.append(f"{FOLDER}/{sub}/")
     guard(root, "README.md")
     if not (folder(root) / "README.md").is_file():
@@ -560,6 +566,22 @@ def machine_for(place: str, kind: str | None) -> dict[str | None, set[str]]:
     if kind == "response" and place == "inbox":
         return RESPONSE
     return REQUESTER if place == "outbox" else TWO_WAY
+
+
+def file_outbox(root: Path, repo_id: str, item: Item, data: bytes) -> Path:
+    """Write an outgoing item and its filed state, recovering the file if the state was never appended."""
+    ledger_ok(root)
+    path = write_new(root, "outbox", f"{item.id}.md", data)
+    before = entries_of(root, item.id)
+    try:
+        set_state(root, repo_id, item.id, "filed", None, item.from_, False, item.kind, place="outbox")
+    except BaseException:
+        if not keep_if_appended(root, path, item.id, before, "filed"):
+            rollback(root, path)
+        raise
+    finally:
+        forget(path)
+    return path
 
 
 def set_state(root: Path, repo_id: str, item_id: str, state: str, note: str | None, by: str, one_way: bool,

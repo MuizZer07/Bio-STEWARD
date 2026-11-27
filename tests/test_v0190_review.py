@@ -46,7 +46,7 @@ def test_AF2_AF3_the_staged_tree_is_the_scanned_export_and_a_tampered_stage_is_r
     (stage / "src/tool.py").write_text("tampered\n")  # change and retag the staged release
     gsh(stage, "git", "add", "-A")
     subprocess.run(["git", "-c", "user.name=x", "-c", "user.email=x@example.org", "commit", "-qm", "x"], cwd=stage, check=True)
-    gsh(stage, "git", "tag", "-f", "-a", "v1.0.0", "-m", "x")
+    gsh(stage, "git", "-c", "user.name=x", "-c", "user.email=x@example.org", "tag", "-f", "-a", "v1.0.0", "-m", "x")
     code, _, err = cli("release", "publish", "v1.0.0", "--push")
     assert code == 65 and ("differs" in err or "did not build" in err)  # refused before anything is sent
     assert subprocess.run(["git", "tag", "--list"], cwd=pub, capture_output=True, text=True).stdout.strip() == ""

@@ -191,8 +191,9 @@ def _decisions_text(root: Path, cfg: Any) -> str:
     return p.read_text(encoding="utf-8", errors="replace") if p.is_file() else ""
 
 
-def evaluate(root: Path, cfg: Any, ff: FindingsFile) -> tuple[list[str], list[dict[str, Any]]]:
-    """Returns (causes as status names, details). Status names: FAIL, INCOMPLETE, UNKNOWN."""
+def evaluate(root: Path, cfg: Any, ff: FindingsFile, *,
+             waivers: list[tuple[str, str]] | None = None) -> tuple[list[str], list[dict[str, Any]]]:
+    """Returns (causes as status names, details), with verified findings and tags collected for gate reporting."""
     from . import authorize as az
 
     causes: list[str] = []
@@ -271,6 +272,8 @@ def evaluate(root: Path, cfg: Any, ff: FindingsFile) -> tuple[list[str], list[di
                 try:
                     v = az.verify(root, cfg, f.waiver, action="waive", consumed=set(), require_pinned=True)
                     ok = f"finding={f.id}" in v.payload["scope"].split()
+                    if ok and waivers is not None:
+                        waivers.append((f.id, v.tag))
                 except az.AuthError as err:
                     unavailable = err.step == "unavailable"  # M1: not verifiable here, not unwaived
             if unavailable:

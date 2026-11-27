@@ -1,0 +1,19 @@
+{
+  "blocking": [],
+  "eligible": true,
+  "evaluated": true,
+  "evaluated_count": 2,
+  "name": "waiver",
+  "not_applicable_count": 0,
+  "pass_count": 1,
+  "reason": "eligible",
+  "required_count": 2,
+  "waived": [
+    {
+      "authorization": "steward/auth/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "rule": "R-43",
+      "status": "FAIL",
+      "subject": "A1"
+    }
+  ]
+}

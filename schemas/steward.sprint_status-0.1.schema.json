@@ -1,0 +1,411 @@
+{
+  "$defs": {
+    "Limits": {
+      "additionalProperties": false,
+      "properties": {
+        "idle_minutes": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Idle Minutes"
+        },
+        "wall_minutes": {
+          "default": 60,
+          "exclusiveMinimum": 0,
+          "title": "Wall Minutes",
+          "type": "number"
+        }
+      },
+      "title": "Limits",
+      "type": "object"
+    },
+    "SprintCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "title": "Command",
+          "type": "string"
+        },
+        "exit": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Exit"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "exit"
+      ],
+      "title": "SprintCheck",
+      "type": "object"
+    },
+    "SprintCommit": {
+      "additionalProperties": false,
+      "properties": {
+        "commit": {
+          "title": "Commit",
+          "type": "string"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        }
+      },
+      "required": [
+        "commit",
+        "subject"
+      ],
+      "title": "SprintCommit",
+      "type": "object"
+    },
+    "SprintStep": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "title": "Command",
+          "type": "string"
+        },
+        "tool": {
+          "title": "Tool",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool",
+        "command"
+      ],
+      "title": "SprintStep",
+      "type": "object"
+    },
+    "SprintTask": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "items": {
+            "type": "string"
+          },
+          "title": "After",
+          "type": "array"
+        },
+        "agent": {
+          "enum": [
+            "claude-code",
+            "codex",
+            "antigravity",
+            "shell"
+          ],
+          "title": "Agent",
+          "type": "string"
+        },
+        "branch": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Branch"
+        },
+        "changed_files": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Changed Files",
+          "type": "array"
+        },
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/SprintCheck"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "commit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Commit"
+        },
+        "commits": {
+          "items": {
+            "$ref": "#/$defs/SprintCommit"
+          },
+          "title": "Commits",
+          "type": "array"
+        },
+        "ended": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ended"
+        },
+        "held": {
+          "title": "Held",
+          "type": "boolean"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "last_commit_subject": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Last Commit Subject"
+        },
+        "last_step": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SprintStep"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "limits": {
+          "$ref": "#/$defs/Limits"
+        },
+        "log": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Log"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Model"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Note"
+        },
+        "ordered": {
+          "title": "Ordered",
+          "type": "boolean"
+        },
+        "permissions": {
+          "anyOf": [
+            {
+              "enum": [
+                "read-only",
+                "edit",
+                "edit-and-run"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Permissions"
+        },
+        "run": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Run"
+        },
+        "run_log": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Run Log"
+        },
+        "started": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Started"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "uncommitted": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Uncommitted",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "state",
+        "ordered",
+        "held",
+        "after",
+        "branch",
+        "run",
+        "commit",
+        "checks",
+        "limits",
+        "note",
+        "agent",
+        "model",
+        "permissions",
+        "started",
+        "ended",
+        "log",
+        "run_log",
+        "commits",
+        "changed_files",
+        "last_commit_subject",
+        "last_step",
+        "uncommitted"
+      ],
+      "title": "SprintTask",
+      "type": "object"
+    },
+    "Window": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "Window",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "dispatch": {
+      "enum": [
+        "order",
+        "auto"
+      ],
+      "title": "Dispatch",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.sprint_status/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tasks": {
+      "items": {
+        "$ref": "#/$defs/SprintTask"
+      },
+      "title": "Tasks",
+      "type": "array"
+    },
+    "window": {
+      "$ref": "#/$defs/Window"
+    },
+    "window_state": {
+      "enum": [
+        "not open",
+        "open",
+        "ended"
+      ],
+      "title": "Window State",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "id",
+    "path",
+    "window",
+    "window_state",
+    "dispatch",
+    "tasks"
+  ],
+  "title": "SprintStatus",
+  "type": "object"
+}

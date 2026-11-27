@@ -207,7 +207,7 @@
         },
         "waived": {
           "items": {
-            "$ref": "#/$defs/GateRef"
+            "$ref": "#/$defs/WaivedGateRef"
           },
           "title": "Waived",
           "type": "array"
@@ -279,6 +279,18 @@
     "ResultItem": {
       "additionalProperties": false,
       "properties": {
+        "area": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Area"
+        },
         "details": {
           "items": {
             "additionalProperties": true,
@@ -340,6 +352,40 @@
       "title": "ResultItem",
       "type": "object"
     },
+    "Scope": {
+      "additionalProperties": false,
+      "properties": {
+        "areas": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Areas",
+          "type": "array"
+        },
+        "full": {
+          "title": "Full",
+          "type": "boolean"
+        },
+        "rule": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rule"
+        }
+      },
+      "required": [
+        "full",
+        "areas"
+      ],
+      "title": "Scope",
+      "type": "object"
+    },
     "Summary": {
       "additionalProperties": false,
       "properties": {
@@ -382,6 +428,21 @@
           "title": "Gates",
           "type": "array"
         },
+        "inputs": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/EvidenceItem"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Inputs"
+        },
         "inputs_digest": {
           "pattern": "^sha256:[0-9a-f]{64}$",
           "title": "Inputs Digest",
@@ -402,8 +463,32 @@
           "title": "Results",
           "type": "array"
         },
+        "scope": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Scope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "summary": {
           "$ref": "#/$defs/Summary"
+        },
+        "tree_digest": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tree Digest"
         }
       },
       "required": [
@@ -417,6 +502,42 @@
         "coverage"
       ],
       "title": "Verdict",
+      "type": "object"
+    },
+    "WaivedGateRef": {
+      "additionalProperties": false,
+      "properties": {
+        "authorization": {
+          "title": "Authorization",
+          "type": "string"
+        },
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "INCOMPLETE",
+            "UNKNOWN",
+            "NOT_APPLICABLE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule",
+        "subject",
+        "status",
+        "authorization"
+      ],
+      "title": "WaivedGateRef",
       "type": "object"
     }
   },

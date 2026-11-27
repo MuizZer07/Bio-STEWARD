@@ -1,0 +1,350 @@
+{
+  "$defs": {
+    "AgentTotal": {
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "title": "Agent",
+          "type": "string"
+        },
+        "tokens": {
+          "title": "Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "agent",
+        "tokens"
+      ],
+      "title": "AgentTotal",
+      "type": "object"
+    },
+    "FileReads": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "reads": {
+          "title": "Reads",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "reads"
+      ],
+      "title": "FileReads",
+      "type": "object"
+    },
+    "ModelTotal": {
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "title": "Agent",
+          "type": "string"
+        },
+        "cache_read": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cache Read"
+        },
+        "cache_write": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cache Write"
+        },
+        "cost": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cost"
+        },
+        "input": {
+          "title": "Input",
+          "type": "integer"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Model"
+        },
+        "output": {
+          "title": "Output",
+          "type": "integer"
+        },
+        "tokens": {
+          "title": "Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "agent",
+        "tokens",
+        "model",
+        "input",
+        "output",
+        "cache_read",
+        "cache_write",
+        "cost"
+      ],
+      "title": "ModelTotal",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "files": {
+          "items": {
+            "$ref": "#/$defs/SourceFile"
+          },
+          "title": "Files",
+          "type": "array"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "files"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "SourceFile": {
+      "additionalProperties": false,
+      "properties": {
+        "issues": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Issues",
+          "type": "array"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "status",
+        "issues"
+      ],
+      "title": "SourceFile",
+      "type": "object"
+    },
+    "TaskTokens": {
+      "additionalProperties": false,
+      "properties": {
+        "agents": {
+          "items": {
+            "$ref": "#/$defs/AgentTotal"
+          },
+          "title": "Agents",
+          "type": "array"
+        },
+        "cost": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cost"
+        },
+        "files_read": {
+          "items": {
+            "$ref": "#/$defs/FileReads"
+          },
+          "title": "Files Read",
+          "type": "array"
+        },
+        "issues": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Issues",
+          "type": "array"
+        },
+        "models": {
+          "items": {
+            "$ref": "#/$defs/ModelTotal"
+          },
+          "title": "Models",
+          "type": "array"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "task": {
+          "title": "Task",
+          "type": "string"
+        },
+        "tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Tokens"
+        },
+        "tool_outputs": {
+          "items": {
+            "$ref": "#/$defs/ToolOutput"
+          },
+          "title": "Tool Outputs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "task",
+        "tokens",
+        "cost",
+        "models",
+        "agents",
+        "status",
+        "issues",
+        "files_read",
+        "tool_outputs"
+      ],
+      "title": "TaskTokens",
+      "type": "object"
+    },
+    "ToolOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "title": "Agent",
+          "type": "string"
+        },
+        "bytes": {
+          "title": "Bytes",
+          "type": "integer"
+        },
+        "log_path": {
+          "title": "Log Path",
+          "type": "string"
+        },
+        "paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Paths",
+          "type": "array"
+        },
+        "session": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Session"
+        },
+        "time_ms": {
+          "title": "Time Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "agent",
+        "session",
+        "bytes",
+        "log_path",
+        "time_ms",
+        "paths"
+      ],
+      "title": "ToolOutput",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "currency": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Currency"
+    },
+    "issues": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Issues",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.tokens_report/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "sources": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Source"
+      },
+      "title": "Sources",
+      "type": "object"
+    },
+    "tasks": {
+      "items": {
+        "$ref": "#/$defs/TaskTokens"
+      },
+      "title": "Tasks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "tasks",
+    "sources",
+    "issues",
+    "currency"
+  ],
+  "title": "TokensReport",
+  "type": "object"
+}

@@ -1,0 +1,68 @@
+{
+  "$defs": {
+    "ResearchRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "check": {
+          "title": "Check",
+          "type": "string"
+        },
+        "date": {
+          "title": "Date",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "date",
+        "check"
+      ],
+      "title": "ResearchRecord",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "invalid": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Invalid",
+      "type": "array"
+    },
+    "records": {
+      "items": {
+        "$ref": "#/$defs/ResearchRecord"
+      },
+      "title": "Records",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.research_list/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "records",
+    "invalid"
+  ],
+  "title": "ResearchList",
+  "type": "object"
+}

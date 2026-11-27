@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "merge": {
+      "title": "Merge",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.shards/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "shards": {
+      "items": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "Shards",
+      "type": "array"
+    },
+    "totals": {
+      "items": {
+        "type": "number"
+      },
+      "title": "Totals",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "shards",
+    "totals",
+    "merge"
+  ],
+  "title": "Shards",
+  "type": "object"
+}

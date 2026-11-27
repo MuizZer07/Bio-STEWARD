@@ -1,0 +1,117 @@
+{
+  "$defs": {
+    "Delivery": {
+      "additionalProperties": false,
+      "properties": {
+        "peer": {
+          "title": "Peer",
+          "type": "string"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "peer",
+        "state"
+      ],
+      "title": "Delivery",
+      "type": "object"
+    },
+    "ExchangeItem": {
+      "additionalProperties": false,
+      "properties": {
+        "delivery": {
+          "$ref": "#/$defs/Delivery"
+        },
+        "id": {
+          "$ref": "#/$defs/JsonValue"
+        },
+        "kind": {
+          "$ref": "#/$defs/JsonValue"
+        },
+        "observed": {
+          "$ref": "#/$defs/Observation"
+        },
+        "observed_latest": {
+          "$ref": "#/$defs/Observation"
+        },
+        "place": {
+          "enum": [
+            "inbox",
+            "outbox",
+            "responses",
+            "oneway",
+            "peer"
+          ],
+          "title": "Place",
+          "type": "string"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        },
+        "title": {
+          "$ref": "#/$defs/JsonValue"
+        }
+      },
+      "required": [
+        "id",
+        "place",
+        "kind",
+        "title",
+        "state"
+      ],
+      "title": "ExchangeItem",
+      "type": "object"
+    },
+    "JsonValue": {},
+    "Observation": {
+      "additionalProperties": false,
+      "properties": {
+        "by": {
+          "title": "By",
+          "type": "string"
+        },
+        "evidence": {
+          "title": "Evidence",
+          "type": "string"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "by",
+        "state",
+        "evidence"
+      ],
+      "title": "Observation",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "items": {
+        "$ref": "#/$defs/ExchangeItem"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.exchange_status/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "items"
+  ],
+  "title": "ExchangeStatus",
+  "type": "object"
+}

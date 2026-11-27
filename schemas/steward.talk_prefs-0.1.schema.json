@@ -1,0 +1,57 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "Preference": {
+      "additionalProperties": false,
+      "properties": {
+        "layer": {
+          "title": "Layer",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/JsonValue"
+        }
+      },
+      "required": [
+        "value",
+        "layer"
+      ],
+      "title": "Preference",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "preferences": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Preference"
+      },
+      "title": "Preferences",
+      "type": "object"
+    },
+    "schema": {
+      "const": "steward.talk_prefs/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "talk": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Talk"
+    }
+  },
+  "required": [
+    "schema",
+    "talk",
+    "preferences"
+  ],
+  "title": "TalkPrefs",
+  "type": "object"
+}

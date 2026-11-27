@@ -112,7 +112,8 @@ def test_a_channel_switch_prints_then_installs_and_records(cli, xproj, monkeypat
         f.write('\n[[channel]]\nname = "bio-steward"\nstable = "git+https://example.org/public.git"\n'
                 'dev = "git+ssh://git@example.org/private.git"\n')
     code, out, _ = cli("channel", "use", "bio-steward", "stable", "--tag", "v1.0.0")
-    assert code == 0 and "uv tool install --force 'bio-steward @ git+https://example.org/public.git@v1.0.0'" in out
+    assert code == 0 and ("uv tool install --no-config --force 'bio-steward @ git+https://example.org/public.git@v1.0.0'"
+                          in out)
     assert "printed only" in out
     calls = []
     monkeypatch.setattr(subprocess, "run", lambda cmd, **kw: (calls.append(cmd), subprocess.CompletedProcess(cmd, 0))[1])

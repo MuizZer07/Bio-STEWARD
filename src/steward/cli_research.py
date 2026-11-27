@@ -5,12 +5,13 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-from .fsutil import canonical_json
+from .interface import wants_json, write_json
 from .status import EXIT_DATAERR, EXIT_OK, EXIT_USAGE
 
 ID_RX = r"^[a-z0-9][a-z0-9._-]{0,63}$"
@@ -337,8 +338,8 @@ def cmd_study(args: argparse.Namespace) -> int:
     if c == "list":
         rows = [{"id": sid, "title": s.title, "kind": s.kind, "status": s.status, "check": verdict.get(sid),
                  "inputs": len(s.inputs), "papers": s.papers} for sid, (_, s) in sorted(studies.items())]
-        if args.json:
-            sys.stdout.write(canonical_json({"studies": rows, "invalid": [r for r, _ in invalid]}))
+        if wants_json(args):
+            write_json(args, {"studies": rows, "invalid": [r for r, _ in invalid]})
             return EXIT_OK
         for r in rows:
             print(f"{r['check'] or '—':<11} {r['id']:<24} {r['status']:<8} {r['title']}")
@@ -349,7 +350,12 @@ def cmd_study(args: argparse.Namespace) -> int:
         if args.id not in studies:
             print(f"steward: no study {args.id}", file=sys.stderr)
             return EXIT_USAGE
-        sys.stdout.write(rc.card(studies[args.id][1], verdict))
+        rel, study = studies[args.id]
+        if wants_json(args):
+            write_json(args, {"path": rel, "check": verdict.get(args.id),
+                              "study": study.model_dump(mode="json", by_alias=True)})
+        else:
+            sys.stdout.write(rc.card(study, verdict))
         return EXIT_OK
     return EXIT_USAGE
 
@@ -377,10 +383,10 @@ def cmd_research(args: argparse.Namespace) -> int:
         return EXIT_OK
     recs, bad = rc.load_research(root, cfg)
     verdict = {Path(s).stem: (st, d) for s, st, _, d in rc.check_research(root, cfg, rc.today_utc())}
-    if args.json:
-        sys.stdout.write(canonical_json({"records": [{"id": i, "kind": r.kind, "title": r.title, "date": r.date.isoformat(),
-                                                      "check": verdict.get(i, ("—",))[0]} for i, (_, r) in sorted(recs.items())],
-                                         "invalid": [r for r, _ in bad]}))
+    if wants_json(args):
+        rows = [{"id": i, "kind": r.kind, "title": r.title, "date": r.date.isoformat(),
+                 "check": verdict.get(i, ("—",))[0]} for i, (_, r) in sorted(recs.items())]
+        write_json(args, {"records": rows, "invalid": [rel for rel, _ in bad]})
         return EXIT_OK
     for i, (_, r) in sorted(recs.items(), key=lambda kv: kv[1][1].date, reverse=True):
         st, det = verdict.get(i, ("—", []))
@@ -393,8 +399,101 @@ def cmd_research(args: argparse.Namespace) -> int:
 
 
 # ---------------------------------------------------------------- steward task brief / template
+def _dispatch(args: argparse.Namespace) -> int:
+    """0.20.4 (STW-046): `steward task dispatch TASK --to codex|antigravity`."""
+    import datetime as _dt
+
+    from . import briefs as br
+    from . import dispatch as dp
+    from .fsutil import find_root, git_run
+
+    src: Path = args.task
+    if not src.is_file():
+        print(f"steward: {src} not found", file=sys.stderr)
+        return EXIT_USAGE
+    root = (args.repo.resolve() if args.repo else find_root(Path.cwd())) or Path.cwd()
+    task_text = src.read_text(encoding="utf-8")
+    left = br.unfilled(task_text)
+    if left:
+        print(f"steward: {src} still holds template placeholders in: {', '.join(left)}; fill them first", file=sys.stderr)
+        return EXIT_USAGE
+    git = {}
+    b = git_run(root, "rev-parse", "--abbrev-ref", "HEAD", text=True, timeout=10)
+    h = git_run(root, "rev-parse", "--short", "HEAD", text=True, timeout=10)
+    if b.returncode == 0:
+        git["branch"] = b.stdout.strip()
+    if h.returncode == 0:
+        git["commit"] = h.stdout.strip()
+    agent_key = "codex" if args.agent == "codex" else "gemini"
+    prompt = br.brief(task_text, agent_key, root, git)
+    prompt = prompt.rsplit("\n---\nHow to run:", 1)[0] + "\n"  # the footer is for a human; the dispatch runs it
+    if not args.implement:
+        prompt += ("\nThis checkout is the commit under review, detached and clean: a local clone with its own .git, "
+                   "so git log, git diff and git show work here, with every branch and tag. Do not modify any file; "
+                   "scratch work only in a temporary folder. Print your full report as your answer.\n")
+    if args.inline:
+        docs, cut = dp.scope_documents(root, task_text)
+        prompt = dp.inline_prompt(prompt, docs, cut)
+    name = re.sub(r"[^A-Za-z0-9_.-]+", "-", br.parse_task(task_text)["fields"].get("ID") or src.stem).strip("-") or "task"
+    stamp = _dt.date.today().isoformat()
+    report = args.output or root / dp.DIR / f"{stamp}-{name}-{args.agent}.md"
+    try:
+        cwd = root if args.dry_run else dp.checkout(root, name) if args.implement else dp.review_clone(root, name)
+        cmd = dp.command(args.agent, prompt, cwd, root, args.implement, args.model, args.inline)
+    except (OSError, RuntimeError, ValueError) as e:  # W12c (N3b): OSError covers a refused link (LinkRefused)
+        print(f"steward: {e}", file=sys.stderr)
+        return EXIT_USAGE
+    shown = [c if len(c) < 200 else f"<the brief, {len(c)} characters>" for c in cmd]
+    print("Dispatch: " + " ".join(shown) + f"\n  in: {cwd}\n  report: {report}")
+    if args.dry_run:
+        print("(dry run: nothing was run)")
+        return EXIT_OK
+    report.parent.mkdir(parents=True, exist_ok=True)
+    errors = report.with_suffix(".err")
+    with open(report, "w", encoding="utf-8") as out, open(errors, "w", encoding="utf-8") as err:
+        code = subprocess.run(cmd, cwd=cwd, stdin=subprocess.DEVNULL, stdout=out, stderr=err).returncode
+    text_out, text_err = report.read_text(encoding="utf-8"), errors.read_text(encoding="utf-8")
+    dirty = dp.changed(cwd)
+    if not args.implement:
+        dp.remove_checkout(root, cwd)
+    if args.agent == "antigravity" and not text_out.strip() and dp.AGY_DENIED.search(text_err):
+        print("steward: Antigravity produced no report: its headless mode refused a command it was not allowed to "
+              "run. Run again with --inline (the documents in the prompt, an answer in text only); never "
+              "--dangerously-skip-permissions.", file=sys.stderr)
+        return EXIT_DATAERR
+    if code != 0 or not text_out.strip():
+        print(f"steward: the agent exited {code} with no usable report; see {errors}", file=sys.stderr)
+        return EXIT_DATAERR
+    if dirty and not args.implement:
+        print(f"warning: the reviewer changed {len(dirty)} file(s) in its checkout (removed): {'; '.join(dirty[:5])}",
+              file=sys.stderr)
+    where = f" (its checkout: {cwd}; nothing committed)" if args.implement else ""
+    print(f"{report}: the {args.agent} report{where}. Read it, then record it in development/assessment/.")
+    return EXIT_OK
+
+
 def cmd_task(args: argparse.Namespace) -> int:
     from . import briefs as br
+
+    if args.task_command == "dispatch":
+        return _dispatch(args)
+
+    if args.task_command == "board":
+        from .cockpit import board_tasks
+
+        root, cfg = _cfg(args)
+        if cfg is None:
+            return EXIT_USAGE
+        rows = board_tasks(root, cfg, use_default=True)
+        if wants_json(args):
+            write_json(args, {"board": cfg.tasks.board if cfg.tasks else None, "tasks": rows})
+        elif rows:
+            for row in rows:
+                archived = " (archived)" if row["archived"] else ""
+                print(f"{row['id']:<16} {row['status']:<14} {row['path']}{archived}")
+        else:
+            print("no task records")
+        return EXIT_OK
 
     if args.task_command == "template":
         if not args.name:
@@ -512,8 +611,10 @@ def cmd_paper_citations(args: argparse.Namespace) -> int:
     except rc.RecordRefused as e:
         print(f"steward: refused: {e}", file=sys.stderr)
         return EXIT_DATAERR
-    for d in problems:
-        print(f"steward: {d.get('message', d['code'])}", file=sys.stderr)
+    json_output = wants_json(args)
+    if not json_output:
+        for d in problems:
+            print(f"steward: {d.get('message', d['code'])}", file=sys.stderr)
     todo, mismatch, ok = [], [], 0
     for _, e, cid in cited:
         r = have.get(e.key)
@@ -525,6 +626,12 @@ def cmd_paper_citations(args: argparse.Namespace) -> int:
                 mismatch.append((e.key, cid, r.title))
             continue
         todo.append((e, cid))
+    if json_output:
+        write_json(args, {"paper": name, "path": rel, "verified": ok,
+                          "mismatched": [{"key": key, "id": cid, "title": title} for key, cid, title in mismatch],
+                          "unverified": [{"key": e.key, "id": cid} for e, cid in todo],
+                          "problems": problems})
+        return EXIT_DATAERR if mismatch or problems else EXIT_OK
     if not args.fetch:
         print(f"{ok} verified, {len(mismatch)} mismatched or untitled, {len(todo)} without a record (--fetch resolves them)")
         for k, cid, t in mismatch:
@@ -596,8 +703,8 @@ def cmd_diff_runs(args: argparse.Namespace, root: Path, cfg: Any) -> int:
     except ValueError as e:
         print(f"steward: {e}", file=sys.stderr)
         return EXIT_DATAERR
-    if args.json:
-        sys.stdout.write(canonical_json({"runs": rows}))
+    if wants_json(args):
+        write_json(args, {"runs": rows})
     else:
         print(f"{'Label':<28} {'Status':<11} {'Duration s':>11} {'Peak MB':>9}  Run")
         for r in rows:
@@ -632,9 +739,11 @@ def cmd_licence(args: argparse.Namespace) -> int:
     for p in problems:
         print(f"steward: {p}", file=sys.stderr)
     if args.licence_command == "inventory":
-        if args.json:
-            sys.stdout.write(canonical_json({"declared": cfg.licence.declared, "distribution": cfg.licence.distribution,
-                                             "policy": cfg.licence.policy, "dependencies": rows}))
+        if wants_json(args):
+            write_json(args, {
+                "declared": cfg.licence.declared, "distribution": cfg.licence.distribution,
+                "policy": cfg.licence.policy, "dependencies": rows,
+            })
         else:
             print(f"{cfg.licence.declared} · {cfg.licence.distribution} · {cfg.licence.policy}")
             for r in rows:
@@ -800,6 +909,9 @@ def cmd_publish(args: argparse.Namespace) -> int:
             return EXIT_OK
         if args.release_command == "status":
             st = pb.status(root, cfg)
+            if wants_json(args):
+                write_json(args, st)
+                return EXIT_OK
             print(f"mode {st['mode']} · public {st['remote'] or '(not set)'}")
             print(f"last public release: {st['last_public'] or 'none'}" + ("" if st["last_public_pushed"] is None else
                   (" (pushed)" if st["last_public_pushed"] else " (not pushed yet)")))
@@ -837,6 +949,12 @@ def cmd_channel(args: argparse.Namespace) -> int:
     chans = {c.name: c for c in cfg.channel}
     if args.channel_command == "status":
         st = pb.channel_state(root)
+        if wants_json(args):
+            write_json(args, {"channels": [
+                {"name": name, "channel": st.get(name, {}).get("channel"), "tag": st.get(name, {}).get("tag"),
+                 "time": st.get(name, {}).get("time")} for name in sorted(chans)
+            ]})
+            return EXIT_OK
         if not chans:
             print("no [[channel]] declared")
         for n in sorted(chans):
@@ -852,7 +970,11 @@ def cmd_channel(args: argparse.Namespace) -> int:
     if not args.yes:
         print("(printed only; run it with --yes)")
         return EXIT_OK
-    r = subprocess.run(cmd)
+    try:
+        r = pb.run_installer(cmd)  # W12 F4: from an empty temporary directory, so no project file steers it
+    except OSError:
+        print("steward: could not start the installer; the recorded channel is unchanged", file=sys.stderr)
+        return EXIT_DATAERR
     if r.returncode != 0:
         print(f"steward: the install failed (exit {r.returncode}); the recorded channel is unchanged", file=sys.stderr)
         return EXIT_DATAERR

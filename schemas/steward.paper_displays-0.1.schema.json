@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "DisplayStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "figure",
+            "table"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "missing": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Missing",
+          "type": "array"
+        },
+        "output": {
+          "title": "Output",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "label",
+        "output",
+        "missing"
+      ],
+      "title": "DisplayStatus",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "displays": {
+      "items": {
+        "$ref": "#/$defs/DisplayStatus"
+      },
+      "title": "Displays",
+      "type": "array"
+    },
+    "paper": {
+      "title": "Paper",
+      "type": "string"
+    },
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.paper_displays/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "paper",
+    "path",
+    "displays"
+  ],
+  "title": "PaperDisplays",
+  "type": "object"
+}

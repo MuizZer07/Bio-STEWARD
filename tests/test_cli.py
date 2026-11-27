@@ -94,7 +94,7 @@ def test_init_copies_skills(cli, tmp_path):
 def test_T_CLI_03_check_outside_a_repository(cli, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     code, _, err = cli("check")
-    assert code == 64 and "not a steward repository" in err
+    assert code == 78 and "not a steward repository" in err  # 0.21.0 (STW-047 C6): was 64
 
 
 def test_check_finds_root_upwards(cli, example, monkeypatch):
@@ -145,7 +145,7 @@ def test_T_CLI_05_report_rejects_invalid_and_is_byte_stable(cli, example, tmp_pa
     code, md1, _ = cli("report", rep)
     _, md2, _ = cli("report", rep)
     assert code == 0 and md1 == md2
-    assert "PASS 28 · FAIL 0 · INCOMPLETE 0 · UNKNOWN 0 · NOT_APPLICABLE 54" in md1
+    assert "PASS 28 · FAIL 0 · INCOMPLETE 0 · UNKNOWN 0 · NOT_APPLICABLE 55" in md1
     assert "Scientific validity, and the correctness or acceptance of a manuscript, are not assessed by this tool." in md1
     assert md1.startswith("# Steward report: toy-expression-benchmark")
     _, txt, _ = cli("report", rep, "--format", "text")

@@ -1,0 +1,535 @@
+{
+  "authorize keys": {
+    "exit": 0,
+    "stdout": {
+      "baseline": "cccccccccccccccccccccccccccccccccccccccc",
+      "keys": [
+        {
+          "hardware": "yes",
+          "principal": "demo",
+          "type": "sk-ssh-ed25519@openssh.com"
+        }
+      ],
+      "schema": "steward.authorize_keys/0.1"
+    }
+  },
+  "authorize list": {
+    "exit": 0,
+    "stdout": {
+      "items": [],
+      "schema": "steward.authorize_list/0.1"
+    }
+  },
+  "authorize pending": {
+    "exit": 0,
+    "stdout": {
+      "items": [
+        {
+          "action": "spend",
+          "baseline": "cccccccccccccccccccccccccccccccccccccccc",
+          "budget": "2 USD",
+          "expires": "2099-12-31T00:00:00Z",
+          "nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "object": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "path": ".steward/pending/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.txt",
+          "payload_sha256": "4b1f6c2e5f2c7a3d72be450f6940bc66d9ea5066b5a71426670155fd9712b109",
+          "peer": null,
+          "project": "DEMO",
+          "repo_id": "c77f22b4-23a5-45c2-bdc7-a2b9dba8c46f",
+          "requester": null,
+          "scope": "task=DEMO-001",
+          "state": "waiting",
+          "summary": "Example spending request.",
+          "tag": "steward/auth/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "schema": "steward.authorize_pending/0.1",
+      "skipped": [
+        {
+          "peer": "PEER",
+          "reason": "no_local_checkout"
+        }
+      ],
+      "waiting": 1
+    }
+  },
+  "channel status": {
+    "exit": 0,
+    "stdout": {
+      "channels": [
+        {
+          "channel": "dev",
+          "name": "fixture-tool",
+          "tag": "v0.1.0",
+          "time": "2026-11-27T00:00:00Z"
+        },
+        {
+          "channel": null,
+          "name": "other-tool",
+          "tag": null,
+          "time": null
+        }
+      ],
+      "schema": "steward.channel_status/0.1"
+    }
+  },
+  "integrity status": {
+    "exit": 0,
+    "stdout": {
+      "datasets": [
+        {
+          "name": "example",
+          "role": "sealed"
+        }
+      ],
+      "frozen": [
+        {
+          "amendment_proposed": true,
+          "confirmatory": false,
+          "name": "fixture",
+          "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ],
+      "schema": "steward.integrity_status/0.1"
+    }
+  },
+  "paper citations": {
+    "exit": 0,
+    "stdout": {
+      "mismatched": [],
+      "paper": "main",
+      "path": "paper/citations.toml",
+      "problems": [],
+      "schema": "steward.paper_citations/0.1",
+      "unverified": [],
+      "verified": 0
+    }
+  },
+  "paper displays": {
+    "exit": 1,
+    "stdout": {
+      "displays": [
+        {
+          "id": "example",
+          "kind": "figure",
+          "label": "fig:example",
+          "missing": [
+            "paper/make-example.py",
+            "paper/example.pdf"
+          ],
+          "output": "paper/example.pdf"
+        }
+      ],
+      "paper": "main",
+      "path": "paper/displays.toml",
+      "schema": "steward.paper_displays/0.1"
+    }
+  },
+  "paper values": {
+    "exit": 0,
+    "stdout": {
+      "errors": {},
+      "paper": "main",
+      "path": "paper/values.toml",
+      "schema": "steward.paper_values/0.1",
+      "values": {
+        "n_control": "9",
+        "n_pd": "16",
+        "n_samples": "25",
+        "n_significant": "106",
+        "n_tested": "6899"
+      }
+    }
+  },
+  "release status": {
+    "exit": 0,
+    "stdout": {
+      "last_public": null,
+      "last_public_pushed": null,
+      "mode": "mirror",
+      "remote": "https://example.invalid/public.git",
+      "schema": "steward.release_status/0.1",
+      "staging": null,
+      "unpublished": [
+        "v0.2.0"
+      ]
+    }
+  },
+  "session start": {
+    "exit": 0,
+    "stdout": {
+      "constitution": "2",
+      "handoff": {
+        "commit": null,
+        "commit_date": null,
+        "path": "development/W05-HANDOFF.md",
+        "text": "# Handoff\n\nResume from the example records.\n"
+      },
+      "schema": "steward.session_start/0.1"
+    }
+  },
+  "spend status": {
+    "exit": 0,
+    "stdout": {
+      "actual": 1.0,
+      "calls": 1,
+      "cap": 5.0,
+      "committed": 1.0,
+      "currency": "USD",
+      "schema": "steward.spend_status/0.1",
+      "unknown_cost_calls": 0
+    }
+  },
+  "sprint status": {
+    "exit": 0,
+    "stdout": {
+      "dispatch": "order",
+      "id": "fixture",
+      "path": "development/sprints/fixture.toml",
+      "schema": "steward.sprint_status/0.1",
+      "tasks": [
+        {
+          "after": [],
+          "agent": "shell",
+          "branch": "sprint/fixture/T1",
+          "changed_files": [],
+          "checks": [
+            {
+              "command": "true",
+              "exit": 0
+            }
+          ],
+          "commit": "cccccccccccccccccccccccccccccccccccccccc",
+          "commits": [],
+          "ended": "2026-11-27T01:00:00Z",
+          "held": false,
+          "id": "T1",
+          "last_commit_subject": null,
+          "last_step": null,
+          "limits": {
+            "idle_minutes": null,
+            "wall_minutes": 60.0
+          },
+          "log": null,
+          "model": null,
+          "note": null,
+          "ordered": false,
+          "permissions": null,
+          "run": null,
+          "run_log": null,
+          "started": null,
+          "state": "done",
+          "title": "Check the example",
+          "uncommitted": []
+        },
+        {
+          "after": [
+            "T1"
+          ],
+          "agent": "shell",
+          "branch": null,
+          "changed_files": [],
+          "checks": [],
+          "commit": null,
+          "commits": [],
+          "ended": null,
+          "held": false,
+          "id": "T2",
+          "last_commit_subject": null,
+          "last_step": null,
+          "limits": {
+            "idle_minutes": null,
+            "wall_minutes": 60.0
+          },
+          "log": null,
+          "model": null,
+          "note": null,
+          "ordered": true,
+          "permissions": null,
+          "run": null,
+          "run_log": null,
+          "started": null,
+          "state": "ready",
+          "title": "Review the example",
+          "uncommitted": []
+        }
+      ],
+      "window": {
+        "end": "2026-11-27T08:00:00Z",
+        "start": "2026-11-27T00:00:00Z"
+      },
+      "window_state": "ended"
+    }
+  },
+  "study show": {
+    "exit": 0,
+    "stdout": {
+      "check": "PASS",
+      "path": "development/studies/pd-substantia-nigra.toml",
+      "schema": "steward.study_show/0.1",
+      "study": {
+        "depends_on": [],
+        "id": "pd-substantia-nigra",
+        "inputs": [
+          {
+            "accession": "GSE7621",
+            "files": [
+              {
+                "md5": null,
+                "path": "data/raw/GSE7621/GSE7621_series_matrix.txt.gz",
+                "sha256": "1389f0dc93fcde0e2e7c1996b1b4f33f1eebe30c11c6684907171ec5873c3aeb",
+                "size": 3450662,
+                "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE7nnn/GSE7621/matrix/GSE7621_series_matrix.txt.gz"
+              }
+            ],
+            "id": "GSE7621",
+            "references": null,
+            "retrieved": "2026-11-25",
+            "source": "GEO",
+            "url": null
+          }
+        ],
+        "kind": "reanalysis",
+        "notes": "A reanalysis of Lesnick et al. 2007 (PMID 17571925) to show the workflow; not a new finding.",
+        "papers": [
+          "main"
+        ],
+        "plan": "development/plans/pd-substantia-nigra.md",
+        "plan_sha256": "43f5623a0371ea00c3d598c9385a4ea5e2fd41c858fb7a15cf1d006d6021d414",
+        "references": {
+          "annotation": "GPL570 annotation (NCBI GEO, annotation date 2016-08-09)",
+          "chromosome_naming": null,
+          "coordinate_base": null,
+          "databases": {},
+          "genome": null,
+          "id_namespace": "Affymetrix HG-U133 Plus 2.0 probe set",
+          "mapping": {
+            "path": "data/probe-to-gene.tsv",
+            "sha256": "4636e823219d8f1e4ed3aed6c502e424a52d4a471c30096c9029c2b3929754c6",
+            "version": "GPL570 annotation, NCBI GEO, 2016-08-09"
+          },
+          "organism": "Homo sapiens",
+          "taxon": 9606
+        },
+        "results": [
+          {
+            "md5": null,
+            "path": "results/de.tsv",
+            "sha256": "d889fb59aa5436c604cde636e43f80821de0c61de70c76aa457e9a10ef87428a",
+            "size": null,
+            "url": null
+          },
+          {
+            "md5": null,
+            "path": "results/top_genes.tsv",
+            "sha256": "9f857ba138d3b9c9f78a4f67dd08abe52591f5737dcc56c07442ea2e66d63b86",
+            "size": null,
+            "url": null
+          },
+          {
+            "md5": null,
+            "path": "results/summary.toml",
+            "sha256": "27f198acda9a48b1a4e8987aa12e8702f6b78ce14c4e00b5dfa35808e839cf23",
+            "size": null,
+            "url": null
+          }
+        ],
+        "samples": {
+          "allowed": {
+            "condition": [
+              "control",
+              "parkinsons_disease"
+            ],
+            "sex": [
+              "female",
+              "male"
+            ]
+          },
+          "id_column": "sample",
+          "matrix": [
+            {
+              "path": "data/raw/GSE7621/GSE7621_series_matrix.txt.gz",
+              "skip_columns": 1,
+              "subset": false
+            }
+          ],
+          "path": "data/samples.tsv",
+          "required": [
+            "organism",
+            "tissue",
+            "condition",
+            "sex"
+          ],
+          "sha256": "03f9ced768e2053aaedc0f1edf1794700561b8e4972a67cbc167f8b085268b10"
+        },
+        "schema": "steward.study/1",
+        "status": "active",
+        "title": "Parkinson's disease substantia nigra expression (GSE7621)",
+        "tools": [
+          {
+            "name": "python",
+            "version": "3 (standard library only)"
+          }
+        ]
+      }
+    }
+  },
+  "talk plan": {
+    "exit": 2,
+    "stdout": {
+      "audience": "technical",
+      "feedback": "targeted",
+      "missing": [
+        "purpose"
+      ],
+      "path": "talks/progress-update/talk.toml",
+      "purpose": "TBD",
+      "schema": "steward.talk_plan/0.1",
+      "stage": "development",
+      "stage_source": "confirmed",
+      "suggestion": null,
+      "talk": "progress-update"
+    }
+  },
+  "talk prefs": {
+    "exit": 0,
+    "stdout": {
+      "preferences": {
+        "accessibility.alt_text": {
+          "layer": "default",
+          "value": true
+        },
+        "accessibility.min_contrast": {
+          "layer": "default",
+          "value": 4.5
+        },
+        "motion.transitions": {
+          "layer": "default",
+          "value": "minimal"
+        },
+        "notes.mode": {
+          "layer": "default",
+          "value": "bullets"
+        },
+        "palette.background": {
+          "layer": "default",
+          "value": "#ffffff"
+        },
+        "palette.text": {
+          "layer": "default",
+          "value": "#1a1a1a"
+        },
+        "style.aspect": {
+          "layer": "default",
+          "value": "16:9"
+        },
+        "style.density": {
+          "layer": "default",
+          "value": "balanced"
+        },
+        "typography.min_font_pt": {
+          "layer": "default",
+          "value": 14.0
+        }
+      },
+      "schema": "steward.talk_prefs/0.1",
+      "talk": "progress-update"
+    }
+  },
+  "task board": {
+    "exit": 0,
+    "stdout": {
+      "board": "development/TASKS.md",
+      "schema": "steward.task_board/0.1",
+      "tasks": [
+        {
+          "archived": true,
+          "closed": true,
+          "id": "DEMO-002",
+          "path": "development/archive/DEMO-002.md",
+          "status": "done"
+        },
+        {
+          "archived": false,
+          "closed": false,
+          "id": "DEMO-001",
+          "path": "development/tasks/DEMO-001.md",
+          "status": "in progress"
+        }
+      ]
+    }
+  },
+  "tokens report": {
+    "exit": 0,
+    "stdout": {
+      "currency": "USD",
+      "issues": [],
+      "schema": "steward.tokens_report/0.1",
+      "sources": {
+        "claude": {
+          "files": [
+            {
+              "issues": [],
+              "path": "claude log 1",
+              "status": "available"
+            }
+          ],
+          "status": "available"
+        },
+        "codex": {
+          "files": [],
+          "status": "unavailable"
+        },
+        "gemini": {
+          "files": [],
+          "status": "unavailable"
+        }
+      },
+      "tasks": [
+        {
+          "agents": [
+            {
+              "agent": "claude",
+              "tokens": 80
+            }
+          ],
+          "cost": null,
+          "files_read": [
+            {
+              "path": "src/example.py",
+              "reads": 1
+            }
+          ],
+          "issues": [],
+          "models": [
+            {
+              "agent": "claude",
+              "cache_read": 20,
+              "cache_write": 10,
+              "cost": null,
+              "input": 60,
+              "model": "claude-test",
+              "output": 20,
+              "tokens": 80
+            }
+          ],
+          "status": "available",
+          "task": "all activity",
+          "tokens": 80,
+          "tool_outputs": [
+            {
+              "agent": "claude",
+              "bytes": 38,
+              "log_path": "claude log 1",
+              "paths": [
+                "src/example.py"
+              ],
+              "session": "session-306e5f52",
+              "time_ms": 1795608060000
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

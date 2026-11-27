@@ -1,0 +1,96 @@
+{
+  "$defs": {
+    "GitState": {
+      "additionalProperties": false,
+      "properties": {
+        "dirty": {
+          "title": "Dirty",
+          "type": "string"
+        },
+        "head": {
+          "title": "Head",
+          "type": "string"
+        }
+      },
+      "required": [
+        "head",
+        "dirty"
+      ],
+      "title": "GitState",
+      "type": "object"
+    },
+    "ManifestFile": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size": {
+          "title": "Size",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "size",
+        "sha256"
+      ],
+      "title": "ManifestFile",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "files": {
+      "items": {
+        "$ref": "#/$defs/ManifestFile"
+      },
+      "title": "Files",
+      "type": "array"
+    },
+    "git": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GitState"
+        },
+        {
+          "const": "unknown",
+          "type": "string"
+        }
+      ],
+      "title": "Git"
+    },
+    "not_present": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Not Present",
+      "type": "array"
+    },
+    "paper": {
+      "title": "Paper",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.submission_manifest/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "paper",
+    "git",
+    "files",
+    "not_present"
+  ],
+  "title": "SubmissionManifest",
+  "type": "object"
+}

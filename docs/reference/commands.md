@@ -16,6 +16,7 @@ Every `steward` command with its one-line purpose. `steward COMMAND --help` list
 | `steward compare` | compare two recorded pipeline runs |
 | `steward constitution` | print the Bio-STEWARD constitution (C-1) |
 | `steward data` | public data: fetch with provenance into a study (0.20.0) |
+| `steward decisions` | recorded decisions and open questions with their options |
 | `steward diff` | compare runs; change impact |
 | `steward docs` | generate project documentation and README content (R-69) |
 | `steward example` | copy a worked example into a new folder (0.20.0) |
@@ -26,9 +27,14 @@ Every `steward` command with its one-line purpose. `steward COMMAND --help` list
 | `steward hooks` | git hooks |
 | `steward init` | scaffold this repository (never overwrites) |
 | `steward integrity` | integrity status |
+| `steward interface` | describe JSON commands, schemas and exit codes |
+| `steward issue` | file a toolkit defect in the exchange outbox |
+| `steward issues` | read toolkit defect reports received through exchange |
 | `steward ledger` | ledger maintenance |
 | `steward licence` | licence governance: inventory and third-party notices (0.19.0) |
 | `steward mcp` | optional MCP server over stdio (read-only tools; v0.8) |
+| `steward next` | where you left off, the next milestone, what waits on you and on agents, what to tidy |
+| `steward notifications` | one feed: CLI releases, exchange items, sprint tasks, approvals, gates, milestones |
 | `steward paper` | PaperKit helpers |
 | `steward pins` | pinned dependencies: deprecate, retire (keep the artifact), restore (0.17.0) |
 | `steward release` | release manifest and distribution audit |
@@ -39,6 +45,7 @@ Every `steward` command with its one-line purpose. `steward COMMAND --help` list
 | `steward seal` | seal a dataset declared in datasets.toml |
 | `steward session` | session sign-off and resumption (constitution Article VIII.2) |
 | `steward shards` | balanced parallel shards from a cost file |
+| `steward skills` | the bundled skills, their bundles and this project's copies |
 | `steward spend` | spend guard for paid calls |
 | `steward sprint` | a supervised sequence of agent tasks for a window of time (0.13.0) |
 | `steward stage` | staged runs: a recorded GO before outcomes, accrual minimum |
@@ -47,6 +54,8 @@ Every `steward` command with its one-line purpose. `steward COMMAND --help` list
 | `steward study` | study records: inputs, references, tools, results, papers (0.18.0) |
 | `steward talk` | PresentationKit helpers |
 | `steward task` | prepare briefs and mark task windows |
-| `steward timeline` | milestones soonest first: days left, progress from the records, at risk or late (0.13.0) |
+| `steward tidy` | stale tasks, pages, exchange items, leftovers and memory (read-only; --archive moves tasks) |
+| `steward timeline` | milestone deadlines and progress, with plan drift in versioned JSON |
 | `steward tokens` | read usage from selected local agent logs |
 | `steward unseal` | unseal a dataset with a signed authorization (role becomes spent) |
+| `steward upgrade` | check for a CLI release or install an exact version |

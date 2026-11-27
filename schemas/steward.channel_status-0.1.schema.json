@@ -1,0 +1,80 @@
+{
+  "$defs": {
+    "ChannelStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "anyOf": [
+            {
+              "enum": [
+                "dev",
+                "stable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Channel"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "tag": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Tag"
+        },
+        "time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Time"
+        }
+      },
+      "required": [
+        "name",
+        "channel",
+        "tag",
+        "time"
+      ],
+      "title": "ChannelStatus",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "channels": {
+      "items": {
+        "$ref": "#/$defs/ChannelStatus"
+      },
+      "title": "Channels",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.channel_status/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "channels"
+  ],
+  "title": "ChannelsStatus",
+  "type": "object"
+}

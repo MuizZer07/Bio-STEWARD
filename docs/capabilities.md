@@ -75,19 +75,19 @@ Install only the kits you use: `steward init --skills DIR --kits core,paper`. Ea
 
 | Group | Commands |
 |---|---|
-| Start | `init` · `example` · `check` · `explain` · `report` |
+| Start | `init` · `example` · `check` · `explain` · `report` · `interface` · `skills` · `next` |
 | Plan | `benchmark` · `study` · `research` · `timeline` · `sprint` |
 | Run | `run` · `diff` · `compare` · `shards` · `stage` · `tokens` |
-| Data and records | `data` · `freeze` · `amend` · `seal` · `unseal` · `integrity` · `frozen` · `storage` · `pins` · `licence` |
+| Data and records | `data` · `freeze` · `amend` · `seal` · `unseal` · `integrity` · `frozen` · `storage` · `pins` · `licence` · `decisions` |
 | Papers and talks | `paper` · `talk` · `docs` |
 | Approvals | `authorize` · `spend` |
-| Agents and tasks | `task` · `agents` · `session` · `audit` |
-| Projects | `exchange` · `constitution` · `channel` |
-| Releases | `release` · `stranger-test` · `repro` · `hooks` · `ledger` · `mcp` |
+| Agents and tasks | `task (template` · `brief` · `dispatch)` · `agents` · `session` · `audit` · `tidy` · `notifications` |
+| Projects | `exchange` · `issue` · `issues` · `constitution` · `channel` |
+| Releases | `release` · `upgrade` · `stranger-test` · `repro` · `hooks` · `ledger` · `mcp` |
 
 Every command: `steward COMMAND --help`; the full list: [the command reference](reference/commands.md).
 
-## Rules (81, by area)
+## Rules (82, by area)
 
 | Area | Rules |
 |---|---|
@@ -129,5 +129,6 @@ Every command: `steward COMMAND --help`; the full list: [the command reference](
 | data | R-83 `data.contracts` |
 | compare | R-84 `compare.shadow` |
 | models | R-86 `model.records` |
+| tidy | R-88 `tidy.stale` |
 
-Advisory (reported, not in the default gate): R-55, R-58, R-70, R-71, R-72, R-74, R-76, R-82, R-84, R-87. What each rule checks: `steward explain R-xx`, or [the rule reference](reference/rules.md).
+Advisory (reported, not in the default gate): R-55, R-58, R-70, R-71, R-72, R-74, R-76, R-82, R-84, R-87, R-88. What each rule checks: `steward explain R-xx`, or [the rule reference](reference/rules.md).

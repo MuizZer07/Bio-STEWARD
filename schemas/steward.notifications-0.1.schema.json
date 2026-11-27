@@ -1,0 +1,110 @@
+{
+  "$defs": {
+    "Notification": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "title": "Command",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "upgrade",
+            "exchange",
+            "task_finished",
+            "task_failed",
+            "task_waiting",
+            "approval",
+            "gate",
+            "milestone"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Time"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "urgent": {
+          "title": "Urgent",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "time",
+        "source",
+        "title",
+        "command",
+        "urgent"
+      ],
+      "title": "Notification",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "days": {
+      "title": "Days",
+      "type": "integer"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/Notification"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
+    "now": {
+      "title": "Now",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.notifications/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "tool_version",
+    "now",
+    "days",
+    "items",
+    "notes"
+  ],
+  "title": "Notifications",
+  "type": "object"
+}

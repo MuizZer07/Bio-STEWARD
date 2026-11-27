@@ -62,7 +62,10 @@ def test_skills_are_short_and_name_their_rules():
         assert "R-0" in (REPO / "skills" / name / "SKILL.md").read_text(), name
 
 
-def test_committed_schemas_are_current():
+def test_committed_schemas_are_current(monkeypatch):
+    from steward.interface_schemas import SCHEMAS
+
+    monkeypatch.setattr(regenerate_schemas, "SCHEMAS", {**regenerate_schemas.SCHEMAS, **SCHEMAS})
     assert regenerate_schemas.main(["--check"]) == 0
 
 

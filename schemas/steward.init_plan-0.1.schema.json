@@ -1,0 +1,117 @@
+{
+  "$defs": {
+    "InitAction": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "verb": {
+          "enum": [
+            "create",
+            "skip",
+            "update",
+            "unchanged",
+            "print"
+          ],
+          "title": "Verb",
+          "type": "string"
+        }
+      },
+      "required": [
+        "verb",
+        "path",
+        "note"
+      ],
+      "title": "InitAction",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actions": {
+      "items": {
+        "$ref": "#/$defs/InitAction"
+      },
+      "title": "Actions",
+      "type": "array"
+    },
+    "dry_run": {
+      "const": true,
+      "title": "Dry Run",
+      "type": "boolean"
+    },
+    "goals": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Goals",
+      "type": "array"
+    },
+    "kits": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Kits",
+      "type": "array"
+    },
+    "next": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Next",
+      "type": "array"
+    },
+    "profile": {
+      "title": "Profile",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.init_plan/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tables": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Tables",
+      "type": "array"
+    },
+    "templates": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Templates",
+      "type": "array"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "tool_version",
+    "dry_run",
+    "profile",
+    "kits",
+    "goals",
+    "templates",
+    "actions",
+    "tables",
+    "next"
+  ],
+  "title": "InitPlan",
+  "type": "object"
+}

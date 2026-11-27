@@ -1344,6 +1344,7 @@ Every rule `steward check` evaluates, by area. `steward explain R-xx` prints the
 - **A PASS does not mean:** The tasks are the right ones, or their done commands test enough.
 - **Fix:** fix the sprint file named (steward sprint check ID), or recover its ledger
 - **Result codes:**
+  - `R-71.added_not_by_human`
   - `R-71.bad_transition`
   - `R-71.foreign_ledger`
   - `R-71.id`
@@ -1637,3 +1638,22 @@ Every rule `steward check` evaluates, by area. `steward explain R-xx` prints the
   - `R-57.no_next_id`: add a line: Next unused ID: …
   - `R-57.not_on_board`
   - `R-57.unknown_status`
+
+
+## tidy
+
+
+### R-88 `tidy.stale`
+
+*project governance · rule version 1*
+
+- **Checks:** Advisory: with [tidy] declared, the counts of steward tidy from the repository's records: open board tasks untouched for stale_days, board statuses a sprint ledger contradicts, own exchange items still open after their response, a handoff older than handoff_days or a state page naming no version as recent as the latest tag, received items not acknowledged in time, merged sprint branches and worktrees.
+- **Why:** Stale tasks and pages cost attention, and for agents tokens, at every session; naming them lets the owner archive, delete or keep each one.
+- **A PASS does not mean:** That a listed item should go: nothing is archived or deleted unless the owner asks. Memory folders and the peers' checkouts are outside the repository: steward tidy lists them.
+- **Fix:** run steward tidy, then ask the owner whether to archive, delete or keep each item
+- **Result codes:**
+  - `R-88.contradiction`
+  - `R-88.exchange`
+  - `R-88.leftover`
+  - `R-88.stale_page`
+  - `R-88.stale_task`

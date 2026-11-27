@@ -107,7 +107,7 @@ def test_A4_toolkit_distributions_are_audited_and_installable(cli, tmp_path):
     export.mkdir()
     archive = subprocess.run(["git", "archive", "HEAD"], cwd=REPO, capture_output=True, check=True).stdout
     tarfile.open(fileobj=io.BytesIO(archive)).extractall(export)
-    for rel in ("pyproject.toml", "src", "skills", "templates", "CITATION.cff"):  # the working-tree state under test
+    for rel in ("pyproject.toml", "src", "schemas", "skills", "templates", "CITATION.cff"):  # the working-tree state under test
         src, dst = REPO / rel, export / rel
         if src.is_dir():
             shutil.rmtree(dst, ignore_errors=True)
@@ -134,6 +134,16 @@ def test_A4_toolkit_distributions_are_audited_and_installable(cli, tmp_path):
                        capture_output=True, text=True)
     assert r.returncode == 0 and (proj / ".agents/skills/using-steward/SKILL.md").is_file()
     assert (proj / "paper/main.tex").is_file()
+    interface = subprocess.run([str(venv / "bin/steward"), "interface", "--format", "json"], cwd=proj,
+                               capture_output=True, text=True, check=True)
+    schema_files = json.loads(interface.stdout)["schema_files"]
+    assert schema_files["steward.interface/1"] == "steward.interface-1.schema.json"
+    with zipfile.ZipFile(wheel) as archive:
+        source_schemas = {p.name: p.read_bytes() for p in (REPO / "schemas").glob("*.schema.json")}
+        assert set(schema_files.values()) == source_schemas.keys()
+        for name, contents in source_schemas.items():
+            assert archive.read(f"steward/_bundled/schemas/{name}") == contents
+
     # S10 (0.13.0): the core quick start, from the installed artifact, in a fresh folder, to the gate it documents
     import re as _re
     qs = (REPO / "docs/quickstart.md").read_text()

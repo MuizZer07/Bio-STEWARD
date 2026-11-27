@@ -9,6 +9,7 @@ payload; keys usable by an agent reduce an authorization to a recorded decision.
 from __future__ import annotations
 
 import hashlib
+import io
 import os
 import re
 import shutil
@@ -23,6 +24,7 @@ from typing import Any
 ACTIONS = ("spend", "amend", "unseal", "freeze.confirmatory", "waive", "policy.change", "anchor", "pin.retire")
 SINGLE_USE = ("amend", "unseal", "freeze.confirmatory", "waive", "policy.change", "pin.retire")
 HEADER = "steward-authorization/1"
+PENDING_MAX_BYTES = 1 << 20
 FIELDS = ("repo_id", "action", "object", "scope", "budget", "expires", "baseline", "nonce")
 
 
@@ -221,8 +223,11 @@ def ssh_keygen() -> str:
 
 def signing_config() -> tuple[str, ...]:
     """`git -c` options that pin the signing program for `git tag -s` (STW-057): SSH signatures only, made by the
-    same pinned ssh-keygen that verifies them, and no repository-chosen command to pick the key."""
-    return ("-c", "gpg.format=ssh", "-c", f"gpg.ssh.program={ssh_keygen()}", "-c", "gpg.ssh.defaultKeyCommand=")
+    same pinned ssh-keygen that verifies them, and no repository-chosen command to pick the key. The tag message is
+    kept verbatim (W12 F2): with Git's default cleanup, a repository's `core.commentChar` would strip lines from the
+    payload, so the signed bytes would differ from the bytes shown and hashed."""
+    return ("-c", "gpg.format=ssh", "-c", f"gpg.ssh.program={ssh_keygen()}", "-c", "gpg.ssh.defaultKeyCommand=",
+            "-c", "tag.cleanup=verbatim")
 
 
 def object_hash(root: Path, ref: str) -> str:
@@ -332,18 +337,114 @@ def read_pending(root: Path, nonce: str) -> bytes:
     finally:
         os.close(dfd)
     with os.fdopen(fd, "rb") as f:
-        return f.read(1 << 20)
+        data = f.read(PENDING_MAX_BYTES + 1)
+    if len(data) > PENDING_MAX_BYTES:  # W12 F3: refused, never cut to a prefix that would then be hashed and signed
+        raise AuthError("sign", f"pending payload {nonce} is larger than {PENDING_MAX_BYTES} bytes; nothing signed")
+    return data
 
 
-def sign(root: Path, nonce: str, data: bytes | None = None) -> str:
+def decode(data: bytes) -> str:
+    """A payload's bytes as text; bytes that are not UTF-8 are refused as a payload error (W12 F3)."""
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        raise AuthError("payload", "not UTF-8") from None
+
+
+def this_repo_id(root: Path) -> str:
+    """The repo_id in `root`'s steward.toml; a configuration that cannot be read is refused (W12 F1)."""
+    from .models import load_config
+
+    try:
+        return load_config(root).steward.repo_id
+    except Exception:  # noqa: BLE001 - a repository whose configuration cannot be read is never signed for
+        raise AuthError("repo_id", "this repository's steward.toml cannot be read; nothing signed") from None
+
+
+def check_pinned(root: Path, repo_id: str) -> None:
+    """Refuse when a per-user pin records another repo_id for this checkout (W12c, N2; as current_policy_change() does):
+    steward.toml is in the working tree, which an agent can edit, so its repo_id alone does not say which repository
+    this is."""
+    pinned = pin_for_checkout(root)
+    if pinned and pinned != repo_id:
+        raise AuthError("repo_id", f"steward.toml names repo_id {repo_id!r}, but this checkout is pinned to {pinned!r}; "
+                                   "nothing signed")
+
+
+def check_repo_id(payload: dict[str, str], repo_id: str, root: Path | None = None) -> None:
+    """Refuse a payload prepared for another repository (W12 F1): its signature would verify there. With `root`, the
+    repo_id must also be the one pinned for that checkout, if any (W12c, N2)."""
+    if root is not None:
+        check_pinned(root, repo_id)
+    if payload.get("repo_id") != repo_id:
+        raise AuthError("repo_id", f"the payload belongs to repository {payload.get('repo_id')!r}, not this one "
+                                   f"({repo_id!r}); nothing signed")
+
+
+def payload_sha256(data: bytes) -> str:
+    """The SHA-256 of a payload's bytes, as `authorize pending --format json` reports it (`payload_sha256`)."""
+    return hashlib.sha256(data).hexdigest()
+
+
+def check_digest(data: bytes, expect_sha256: str | None) -> None:
+    """Refuse when the payload's bytes no longer have the hash the human was shown (STW-050, STW-057)."""
+    if expect_sha256 is None:
+        return
+    want = expect_sha256.strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", want):
+        raise AuthError("sign", f"--expect-sha256 must be 64 hexadecimal digits, got {expect_sha256!r}")
+    got = payload_sha256(data)
+    if got != want:
+        raise AuthError("sign", f"the payload changed since it was shown: its sha256 is {got}, expected {want}; "
+                                "nothing signed. Read it again (steward authorize pending) before signing")
+
+
+_NAMED_ESCAPES = {"\t": "\\t", "\r": "\\r", "\\": "\\\\"}
+
+
+def visible(data: bytes | str) -> tuple[str, int]:
+    """The payload as text with every control, format (bidirectional, zero-width), separator, private-use or
+    undecodable character written as an escape (`\\x1b`, `\\r`, `\\u202e`), and a backslash as `\\\\`, so an escape
+    in the output always stands for one character: `\\x80` – `\\xff` are bytes that are not UTF-8, `\\u0080` and up
+    are characters. Line feeds are kept. Returns the text and how many characters
+    were escaped (backslashes not counted)."""
+    import unicodedata
+
+    text = data.decode("utf-8", errors="surrogateescape") if isinstance(data, bytes) else data
+    out, hidden = [], 0
+    for ch in text:
+        o = ord(ch)
+        if ch == "\n":
+            out.append(ch)
+        elif ch == "\\":
+            out.append(_NAMED_ESCAPES[ch])
+        elif 0xDC80 <= o <= 0xDCFF:  # a byte that is not UTF-8, kept by surrogateescape
+            out.append(f"\\x{o - 0xDC00:02x}")
+            hidden += 1
+        elif unicodedata.category(ch) in ("Cc", "Cf", "Cs", "Co", "Cn", "Zl", "Zp"):
+            out.append(_NAMED_ESCAPES.get(ch) or (f"\\x{o:02x}" if o < 0x80 else f"\\u{o:04x}" if o < 0x10000
+                                                   else f"\\U{o:08x}"))
+            hidden += 1
+        else:
+            out.append(ch)
+    return "".join(out), hidden
+
+
+def sign(root: Path, nonce: str, data: bytes | None = None, *, expect_sha256: str | None = None,
+         repo_id: str | None = None) -> str:
     """Create the signed tag from exactly `data` (the bytes the human was shown), or from the payload read now. The
-    signing key's own prompt (PIN, touch, confirmation) is the human step (U3: the signed bytes are the shown bytes)."""
+    signing key's own prompt (PIN, touch, confirmation) is the human step (U3: the signed bytes are the shown bytes).
+    With `expect_sha256`, the bytes must still have that hash, or nothing is signed. The payload's repo_id must be
+    `repo_id` (by default, the one in `root`'s steward.toml), or nothing is signed (W12 F1); a pin for this checkout
+    that records another repo_id refuses signing (W12c, N2)."""
     import tempfile
 
     data = read_pending(root, nonce) if data is None else data
-    payload = parse(data.decode("utf-8"))
+    check_digest(data, expect_sha256)
+    payload = parse(decode(data))
     if payload.get("nonce") != nonce:
         raise AuthError("sign", "the payload's nonce is not the one named")
+    check_repo_id(payload, this_repo_id(root) if repo_id is None else repo_id, root)
     tag = tag_name(payload)
     with tempfile.NamedTemporaryFile("wb", prefix="steward-sign-", suffix=".txt", delete=False) as f:
         f.write(data)
@@ -354,7 +455,7 @@ def sign(root: Path, nonce: str, data: bytes | None = None) -> str:
         # the program that runs as the human and holds their key agent, and `gpg.ssh.defaultKeyCommand` a command run
         # to pick the key. The key itself may still come from any config: a signature by the wrong key is refused when
         # it is verified against the allowed signers.
-        out = _git(root, *signing_config(), "tag", "-s", tag, "-F", tmp, user_config=True)
+        out = _git(root, *signing_config(), "tag", "-s", "--cleanup=verbatim", tag, "-F", tmp, user_config=True)
     finally:
         os.unlink(tmp)
     if out.returncode != 0:
@@ -362,20 +463,46 @@ def sign(root: Path, nonce: str, data: bytes | None = None) -> str:
     return tag
 
 
-def pending(root: Path, now: datetime | None = None) -> list[dict[str, str]]:
+def pending(root: Path, now: datetime | None = None, *, include_digest: bool = False,
+            repo_id: str | None = None) -> list[dict[str, str]]:
     """The queue of prepared, unsigned authorizations (0.12.0, deferred signing): each payload under
-    .steward/pending/ with its nonce, its tag and a state: `waiting`, `signed` (its tag exists) or `expired`. Links and
-    unreadable or foreign files are skipped; the queue is local and never itself evidence of approval."""
+    .steward/pending/ with its nonce, its tag and a state: `waiting`, `signed` (its tag exists), `expired`, or
+    `foreign` (W12 F1: its repo_id is not `repo_id`, by default the one in `root`'s steward.toml; a foreign payload is
+    never signable here, and with no readable configuration every payload is foreign; so is every payload when a pin
+    for this checkout records another repo_id, W12c N2). Links and unreadable files are
+    skipped; the queue is local and never itself evidence of approval.
+    With a digest, parse and hash the same bytes from a link-safe read."""
+    from .records import open_rel
+
     d = root / ".steward" / "pending"
     if not d.is_dir() or d.is_symlink():
         return []
     now = now or datetime.now(timezone.utc)
+    if repo_id is None:
+        try:
+            repo_id = this_repo_id(root)
+        except AuthError:
+            repo_id = None
+    if repo_id is not None:
+        try:
+            check_pinned(root, repo_id)
+        except AuthError:
+            repo_id = None
     out = []
     for f in sorted(d.glob("*.txt")):
         if f.is_symlink() or not f.is_file():
             continue
+        rel = f.relative_to(root).as_posix()
         try:
-            payload = parse(f.read_text(encoding="utf-8"))
+            if include_digest:
+                with io.BufferedReader(open_rel(root, rel)) as stream:
+                    data = stream.read(PENDING_MAX_BYTES + 1)
+                if len(data) > PENDING_MAX_BYTES:
+                    continue
+                payload = parse(data.decode("utf-8"))
+                payload["payload_sha256"] = hashlib.sha256(data).hexdigest()
+            else:
+                payload = parse(f.read_text(encoding="utf-8"))
             exp = datetime.strptime(payload["expires"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
             tag = tag_name(payload)
         except (AuthError, KeyError, ValueError, OSError, UnicodeDecodeError):
@@ -383,8 +510,9 @@ def pending(root: Path, now: datetime | None = None) -> list[dict[str, str]]:
         if payload.get("nonce") != f.stem:
             continue
         signed = _git(root, "rev-parse", "--verify", "--quiet", f"refs/tags/{tag}").returncode == 0
-        state = "signed" if signed else "expired" if exp < now else "waiting"
-        out.append({**payload, "tag": tag, "state": state, "path": f.relative_to(root).as_posix()})
+        state = ("foreign" if repo_id is None or payload.get("repo_id") != repo_id
+                 else "signed" if signed else "expired" if exp < now else "waiting")
+        out.append({**payload, "tag": tag, "state": state, "path": rel})
     return out
 
 

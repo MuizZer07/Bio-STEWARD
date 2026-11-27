@@ -1,7 +1,7 @@
 # Track tokens per task
 
-Mark the start and end of a task in the worktree where you do the work. Then pass the session logs you want Steward to
-count. The commands work locally and make no network calls.
+Mark the start and end of a task in the worktree where you do the work. Select session logs with the project's
+`[tokens]` table or pass them on the command line. The commands work locally and make no network calls.
 
 ```sh
 steward task start PROJ-042
@@ -14,6 +14,22 @@ Set each variable to a log file for a session that worked on this project. Pass 
 flag for multiple files. Steward reads only the selected files and opens them read-only. A report shows unavailable
 usage for unsupported formats or missing measurements. A partial result shows the observed subtotal. Keep any
 session logs you want to use for later reports.
+
+## Configure log files for a project
+
+Put a `[tokens]` table in `steward.toml`.
+
+```toml
+[tokens]
+claude = ["~/.claude/projects/project/session.jsonl"]
+codex = [".steward/usage/rollout.jsonl"]
+gemini = []
+```
+
+Each list accepts individual files. Absolute paths and `~` are supported, and relative paths resolve from the
+project root. With no per-agent flags, `steward tokens report --format json` and `steward tokens check` use
+these lists. Supplying any of `--claude`, `--codex` or `--gemini` selects only the supplied files for that
+invocation. The Claude hook and status line use the transcript from their input.
 
 | Agent | Supported local records |
 | --- | --- |
@@ -95,3 +111,5 @@ commands and tool result contents stay out of the report.
 ---
 
 2026-11-25 · STW-018 · implementation · Codex (installed CLI 0.171.0) · OpenAI · exact model ID unknown · verified with fixture logs and simulated Claude integration input.
+
+2026-11-27 · W05 documentation · Codex CLI 0.171.0 · OpenAI · exact model ID unknown · verified with worked-example fixtures.

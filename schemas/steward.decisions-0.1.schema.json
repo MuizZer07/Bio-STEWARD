@@ -1,0 +1,163 @@
+{
+  "$defs": {
+    "DecisionQuote": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "who": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Who"
+        }
+      },
+      "required": [
+        "who",
+        "text"
+      ],
+      "title": "DecisionQuote",
+      "type": "object"
+    },
+    "OpenDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "line": {
+          "title": "Line",
+          "type": "integer"
+        },
+        "options": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "question": {
+          "title": "Question",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question",
+        "options",
+        "path",
+        "line"
+      ],
+      "title": "OpenDecision",
+      "type": "object"
+    },
+    "RecordedDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "title": "Body",
+          "type": "string"
+        },
+        "consequences": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Consequences"
+        },
+        "date": {
+          "title": "Date",
+          "type": "string"
+        },
+        "decision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Decision"
+        },
+        "heading": {
+          "title": "Heading",
+          "type": "string"
+        },
+        "line": {
+          "title": "Line",
+          "type": "integer"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "quotes": {
+          "items": {
+            "$ref": "#/$defs/DecisionQuote"
+          },
+          "title": "Quotes",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "line",
+        "heading",
+        "date",
+        "title",
+        "quotes",
+        "decision",
+        "consequences",
+        "body"
+      ],
+      "title": "RecordedDecision",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "entries": {
+      "items": {
+        "$ref": "#/$defs/RecordedDecision"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "open_decisions": {
+      "items": {
+        "$ref": "#/$defs/OpenDecision"
+      },
+      "title": "Open Decisions",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.decisions/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "entries",
+    "open_decisions"
+  ],
+  "title": "Decisions",
+  "type": "object"
+}

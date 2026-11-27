@@ -55,6 +55,17 @@ steward channel use bio-steward dev --yes                   # back to developmen
 steward channel status
 ```
 
+## Check for a CLI upgrade
+
+```bash
+steward upgrade --check
+steward upgrade --to 0.21.0
+```
+
+`steward upgrade --check` reports the installed and newest known versions, the install method (a stable or dev
+channel when the install matches the `[[channel]]` declaration above) and the exact install command; `--to` runs it
+after you confirm in the terminal. See [Upgrade the CLI](upgrade.md).
+
 ## Later: open development (model B)
 `steward release setup --mode open` prints the plan: move `development/` and `exchange/` to a private records
 repository (`[paths] records`), and the history's author addresses and commits with private content, with two

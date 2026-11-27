@@ -46,5 +46,6 @@ Each recipe is something you can ask your agent to do; the commands show what it
 === "Dispatch a review to another agent"
 
     1. `steward task template review --output development/tasks/R-001.md` and fill it in.
-    2. `steward task brief development/tasks/R-001.md --for codex --output brief.md`
-    3. Hand it over; record the result in `development/assessment/`.
+    2. `steward task dispatch development/tasks/R-001.md --to codex` (or `--to antigravity`; add `--inline` when its
+       tools are refused), or `steward task brief … --for AGENT --output brief.md` to paste it yourself.
+    3. Read the report it keeps in `.steward/dispatch/`; record it in `development/assessment/`.

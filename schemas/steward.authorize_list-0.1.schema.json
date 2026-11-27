@@ -1,0 +1,98 @@
+{
+  "$defs": {
+    "UnverifiedAuthorization": {
+      "additionalProperties": false,
+      "properties": {
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "step": {
+          "title": "Step",
+          "type": "string"
+        },
+        "tag": {
+          "title": "Tag",
+          "type": "string"
+        },
+        "verified": {
+          "const": false,
+          "title": "Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "tag",
+        "verified",
+        "step",
+        "message"
+      ],
+      "title": "UnverifiedAuthorization",
+      "type": "object"
+    },
+    "VerifiedAuthorization": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "principal": {
+          "title": "Principal",
+          "type": "string"
+        },
+        "tag": {
+          "title": "Tag",
+          "type": "string"
+        },
+        "trust_source": {
+          "title": "Trust Source",
+          "type": "string"
+        },
+        "verified": {
+          "const": true,
+          "title": "Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "tag",
+        "verified",
+        "action",
+        "principal",
+        "trust_source"
+      ],
+      "title": "VerifiedAuthorization",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/VerifiedAuthorization"
+          },
+          {
+            "$ref": "#/$defs/UnverifiedAuthorization"
+          }
+        ]
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.authorize_list/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "items"
+  ],
+  "title": "AuthorizeList",
+  "type": "object"
+}

@@ -33,6 +33,7 @@ class ResultItem(_M):
     reason: str
     details: list[dict[str, Any]]
     evidence: list[EvidenceItem]
+    area: str | None = None  # 0.21.0 (STW-047): the rule's area; absent from earlier reports
 
 
 class Counts(_M):
@@ -54,6 +55,10 @@ class GateRef(_M):
     status: StatusName
 
 
+class WaivedGateRef(GateRef):
+    authorization: str
+
+
 class Gate(_M):
     name: str
     evaluated: bool
@@ -64,7 +69,7 @@ class Gate(_M):
     pass_count: int = 0
     not_applicable_count: int = 0
     blocking: list[GateRef]
-    waived: list[GateRef]
+    waived: list[WaivedGateRef]
 
 
 class NotEvaluated(_M):
@@ -84,11 +89,22 @@ class Coverage(_M):
     areas: Areas = Areas()
 
 
+class Scope(_M):
+    full: bool
+    areas: list[str]
+    rule: str | None = None
+
+
 class Verdict(_M):
     repo_id: str
     project: str
     config_profile: str
     inputs_digest: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    # 0.21.0 (STW-047): the inputs behind the digest, the file-list digest, and what the run covered. Absent from
+    # earlier reports.
+    inputs: list[EvidenceItem] | None = None
+    tree_digest: str | None = Field(None, pattern=r"^sha256:[0-9a-f]{64}$")
+    scope: Scope | None = None
     results: list[ResultItem]
     summary: Summary
     gates: list[Gate]
@@ -183,6 +199,7 @@ NEXT = {
     "R-83": "inspect the reported row and column, then correct the export or the declared table contract",
     "R-85": "name every accession of the cited studies in the paper's data-availability statement",
     "R-87": "run a stranger test on the coming release: steward stranger-test brief --tag TAG --for AGENT",
+    "R-88": "run steward tidy, then ask the owner whether to archive, delete or keep each item",
     "R-84": "keep both recorded outputs and run steward compare record with the shadow stage name",
     "R-86": "check the weights and training studies, then record a current evaluation run and use its metric values",
     "R-56": "remove the forbidden import or dependency named, or move it to an allowed group",
@@ -256,10 +273,12 @@ def summary_line(counts: dict[str, int]) -> str:
 def gate_line(g: dict[str, Any]) -> str:
     if not g["evaluated"]:
         return f"Gate {g['name']}: not evaluated ({g['reason']}; only a full `steward check` evaluates gates)"
+    waived = ", ".join(f"{w['rule']} {w['subject']} ({w['authorization']})" for w in g["waived"])
+    suffix = f" · waived: {waived}" if waived else ""
     if g["eligible"]:  # AR-19: say how much the eligibility rests on
         return (f"Gate {g['name']}: ELIGIBLE ({g['required_count']} required: {g.get('pass_count', '?')} passed, "
-                f"{g.get('not_applicable_count', '?')} not applicable)")
-    return f"Gate {g['name']}: NOT ELIGIBLE ({g['reason']}; {len(g['blocking'])} blocking)"
+                f"{g.get('not_applicable_count', '?')} not applicable)" + suffix)
+    return f"Gate {g['name']}: NOT ELIGIBLE ({g['reason']}; {len(g['blocking'])} blocking)" + suffix
 
 
 def _detail_text(d: dict[str, Any]) -> str:

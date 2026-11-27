@@ -1,0 +1,395 @@
+{
+  "audit progress": {
+    "exit": 0,
+    "stdout": {
+      "pending": {
+        "exchange_open": [],
+        "milestones": [
+          {
+            "days_left": 4.0,
+            "id": "review",
+            "state": "on track"
+          }
+        ],
+        "own_open": [
+          "DEMO-REQ-001"
+        ],
+        "signatures_waiting": [],
+        "sprints": []
+      },
+      "reach": {
+        "installed_here_as_a_package": true,
+        "missing": [
+          "a GitHub Action",
+          "a citation file",
+          "a code of conduct",
+          "a licence",
+          "a quick start",
+          "a security policy",
+          "a user guide",
+          "contribution guidelines",
+          "pre-commit hooks",
+          "worked examples"
+        ],
+        "note": "PyPI, Zenodo and a public repository are D3 decisions (DESIGN_BRIEF_public_release §5 – §6)",
+        "present": [
+          "a README"
+        ]
+      },
+      "schema": "steward.progress_audit/0.1",
+      "usage": {
+        "consumers": {
+          "PEER": {
+            "by_kind": {},
+            "by_version": {},
+            "filed": 0,
+            "median_days_to_ship": null,
+            "notices": {},
+            "open": []
+          }
+        }
+      },
+      "where": {
+        "branch": null,
+        "known_issues": [],
+        "latest_tag": null,
+        "project_version": null,
+        "toolkit_version": "0.20.7"
+      }
+    }
+  },
+  "benchmark results": {
+    "exit": 0,
+    "stdout": {
+      "cells": {
+        "test/candidate/auroc": "0.8",
+        "test/logistic-regression/auroc": "0.7",
+        "test/majority-class/auroc": "0.5"
+      },
+      "missing": [],
+      "problems": [],
+      "thresholds": [
+        {
+          "against": "logistic-regression",
+          "message": "test: auroc candidate - logistic-regression = 0.1 >= 0.05",
+          "metric": "auroc",
+          "split": "test",
+          "state": "met"
+        }
+      ]
+    }
+  },
+  "benchmark splits": {
+    "exit": 0,
+    "stdout": {
+      "checked": [
+        "ids",
+        "groups"
+      ],
+      "counts": {
+        "test": 24,
+        "train": 72,
+        "validation": 24
+      },
+      "group_overlap": [],
+      "id_overlap": [],
+      "problems": [],
+      "time_range": {}
+    }
+  },
+  "diff impact": {
+    "exit": 1,
+    "stdout": {
+      "coverage": "0 of 3 files under results/ and outputs/ have run records; impact through undeclared dependencies is not traced",
+      "downstream": [],
+      "outputs": [
+        {
+          "code_changed": [],
+          "inputs_changed": [],
+          "output": "fixture-results.json",
+          "run": "second",
+          "state": "changed since run"
+        }
+      ]
+    }
+  },
+  "diff run": {
+    "exit": 0,
+    "stdout": {
+      "compared": 1,
+      "environment_differences": [],
+      "evidence": 1,
+      "finished": true,
+      "metrics_precision": {
+        "a": "none",
+        "b": "none"
+      },
+      "not_comparable": 0,
+      "repeatable": true,
+      "results": [
+        {
+          "a": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "b": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "leaf": true,
+          "output": "fixture-results.json",
+          "state": "equal",
+          "within": true
+        }
+      ],
+      "verdict": "repeatable"
+    }
+  },
+  "diff runs": {
+    "exit": 0,
+    "stdout": {
+      "runs": [
+        {
+          "duration_s": 1.0,
+          "exit_code": 0,
+          "label": "fixture",
+          "peak_rss_mb": 2.0,
+          "run": "first",
+          "status": "finished",
+          "time": "2026-11-27T00:00:00Z"
+        },
+        {
+          "duration_s": 1.0,
+          "exit_code": 0,
+          "label": "fixture",
+          "peak_rss_mb": 2.0,
+          "run": "second",
+          "status": "finished",
+          "time": "2026-11-27T00:00:00Z"
+        }
+      ]
+    }
+  },
+  "exchange status": {
+    "exit": 0,
+    "stdout": [
+      {
+        "id": "DEMO-REQ-001",
+        "kind": "request",
+        "place": "outbox",
+        "state": "(none)",
+        "title": "Example request"
+      }
+    ]
+  },
+  "licence inventory": {
+    "exit": 65,
+    "stdout": {
+      "declared": "MIT",
+      "dependencies": [
+        {
+          "how": null,
+          "licence": null,
+          "name": "fixture",
+          "status": "UNKNOWN",
+          "version": "1",
+          "why": "not installed in the declared environment"
+        }
+      ],
+      "distribution": "internal",
+      "policy": "weak-copyleft-ok"
+    }
+  },
+  "pins status": {
+    "exit": 0,
+    "stdout": {
+      "pins": [
+        {
+          "caller_detail": null,
+          "caller_rule": "module",
+          "callers": null,
+          "name": "fixture",
+          "package": "fixture",
+          "protects": [],
+          "reasons": [
+            "not deprecated: declare deprecated = { reason = … } first"
+          ],
+          "state": "active",
+          "version": "1"
+        }
+      ]
+    }
+  },
+  "research list": {
+    "exit": 0,
+    "stdout": {
+      "invalid": [],
+      "records": []
+    }
+  },
+  "storage audit": {
+    "exit": 0,
+    "stdout": {
+      "directories": [
+        {
+          "cap_mb": 1.0,
+          "over": false,
+          "path": "results",
+          "size_mb": 0.387,
+          "state": "present"
+        }
+      ],
+      "largest_untracked": []
+    }
+  },
+  "storage scan": {
+    "exit": 0,
+    "stdout": {
+      "candidates": [
+        {
+          "cls": "declared",
+          "entries": 1,
+          "external": false,
+          "kind": "file",
+          "path": "fixture-output",
+          "refusals": [
+            "the artifact registry records something under it"
+          ],
+          "size": 7,
+          "users": [
+            "running processes: could not be checked"
+          ],
+          "volume": "/"
+        }
+      ]
+    }
+  },
+  "storage verify": {
+    "exit": 1,
+    "stdout": {
+      "artifacts": [
+        {
+          "path": "fixture-output",
+          "sha256": "f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d",
+          "size": 7,
+          "state": "present"
+        }
+      ],
+      "problems": [
+        {
+          "code": "R-50.hash_mismatch",
+          "path": "fixture-output",
+          "status": "FAIL"
+        },
+        {
+          "code": "R-50.git_unavailable",
+          "message": "git could not list tracked files; large files not checked",
+          "status": "INFO"
+        }
+      ]
+    }
+  },
+  "study list": {
+    "exit": 0,
+    "stdout": {
+      "invalid": [],
+      "studies": [
+        {
+          "check": "PASS",
+          "id": "pd-substantia-nigra",
+          "inputs": 1,
+          "kind": "reanalysis",
+          "papers": [
+            "main"
+          ],
+          "status": "active",
+          "title": "Parkinson's disease substantia nigra expression (GSE7621)"
+        }
+      ]
+    }
+  },
+  "timeline": {
+    "exit": 0,
+    "stdout": {
+      "milestones": [
+        {
+          "days_left": 4.0,
+          "due": "2026-12-01T00:00:00+00:00",
+          "id": "review",
+          "internal": "2026-12-01T00:00:00+00:00",
+          "kind": "other",
+          "open_work": 0,
+          "progress": {},
+          "state": "on track",
+          "title": "Review the example"
+        }
+      ]
+    }
+  },
+  "tokens report": {
+    "exit": 0,
+    "stdout": {
+      "currency": null,
+      "issues": [],
+      "sources": {
+        "claude": {
+          "files": [
+            {
+              "issues": [],
+              "path": "claude log 1",
+              "status": "available"
+            }
+          ],
+          "status": "available"
+        },
+        "codex": {
+          "files": [],
+          "status": "unavailable"
+        },
+        "gemini": {
+          "files": [],
+          "status": "unavailable"
+        }
+      },
+      "tasks": [
+        {
+          "agents": [
+            {
+              "agent": "claude",
+              "tokens": 80
+            }
+          ],
+          "cost": null,
+          "files_read": [
+            {
+              "path": "src/example.py",
+              "reads": 1
+            }
+          ],
+          "issues": [],
+          "models": [
+            {
+              "agent": "claude",
+              "cache_read": 20,
+              "cache_write": 10,
+              "cost": null,
+              "input": 60,
+              "model": "claude-test",
+              "output": 20,
+              "tokens": 80
+            }
+          ],
+          "status": "available",
+          "task": "all activity",
+          "tokens": 80,
+          "tool_outputs": [
+            {
+              "agent": "claude",
+              "bytes": 38,
+              "log_path": "claude log 1",
+              "paths": [
+                "src/example.py"
+              ],
+              "session": "session-306e5f52",
+              "time_ms": 1795608060000
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

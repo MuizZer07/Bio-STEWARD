@@ -78,7 +78,8 @@ def _task_states(root: Path, cfg: Any) -> dict[str, str] | None:
     return out
 
 
-def progress(root: Path, cfg: Any, m: Milestone, gate_cache: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def progress(root: Path, cfg: Any, m: Milestone, gate_cache: dict[str, dict[str, Any]],
+             now: dt.datetime | None = None) -> dict[str, Any]:
     from . import authorize as az
     from . import exchange as xc
 
@@ -123,7 +124,8 @@ def progress(root: Path, cfg: Any, m: Milestone, gate_cache: dict[str, dict[str,
             waiting = [i for i in m.items if xc.current(hist.get(i, [])) not in DONE_ITEM]
             out["items"] = {"done": len(m.items) - len(waiting), "total": len(m.items), "waiting": waiting}
     if m.needs:
-        pend = [q for q in az.pending(root) if q["state"] == "waiting"]
+        # W12 F12: the same `now` as the rest of the timeline, so `--now` decides which payloads have expired
+        pend = [q for q in az.pending(root, now=now, repo_id=cfg.steward.repo_id) if q["state"] == "waiting"]
         out["signatures"] = {"needed": list(m.needs),
                              "waiting": sorted({q["action"] for q in pend if q["action"] in m.needs})}
     return out
@@ -150,7 +152,7 @@ def timeline(root: Path, cfg: Any, now: dt.datetime | None = None) -> list[dict[
     rows = []
     for m in sorted(mf.milestone, key=lambda x: x.due):
         internal = m.due - dt.timedelta(days=m.buffer_days)
-        p = progress(root, cfg, m, cache) if m.outcome is None else {}
+        p = progress(root, cfg, m, cache, now=now) if m.outcome is None else {}
         open_work = _open_work(p)
         days_left = (m.due - now).total_seconds() / 86400
         if m.outcome is not None:

@@ -1,0 +1,66 @@
+{
+  "$defs": {
+    "JsonValue": {}
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "anyOf": [
+    {
+      "required": [
+        "where",
+        "usage",
+        "pending",
+        "reach"
+      ]
+    },
+    {
+      "required": [
+        "(withheld: a private term or a local path)"
+      ]
+    }
+  ],
+  "properties": {
+    "(withheld: a private term or a local path)": {
+      "$ref": "#/$defs/JsonValue",
+      "default": null
+    },
+    "pending": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Pending",
+      "type": "object"
+    },
+    "reach": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Reach",
+      "type": "object"
+    },
+    "schema": {
+      "const": "steward.progress_audit/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "usage": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Usage",
+      "type": "object"
+    },
+    "where": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Where",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema"
+  ],
+  "title": "ProgressAudit",
+  "type": "object"
+}

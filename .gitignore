@@ -16,6 +16,8 @@ build/
 *.egg-info/
 .pytest_cache/
 .steward/
+# uv creates it in every checkout (the sprint's worktrees too); it is not committed
+uv.lock
 
 # Files the example and the tests need, re-included despite common global ignores (*.pdf, *.lock, *.log).
 # Red-team A5 / C2: a clean checkout must contain everything `steward check` and the tests read.

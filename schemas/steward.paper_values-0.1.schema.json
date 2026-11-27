@@ -1,0 +1,63 @@
+{
+  "$defs": {
+    "ReadProblem": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "ReadProblem",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "errors": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ReadProblem"
+      },
+      "title": "Errors",
+      "type": "object"
+    },
+    "paper": {
+      "title": "Paper",
+      "type": "string"
+    },
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.paper_values/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "values": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Values",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema",
+    "paper",
+    "path",
+    "values",
+    "errors"
+  ],
+  "title": "PaperValues",
+  "type": "object"
+}

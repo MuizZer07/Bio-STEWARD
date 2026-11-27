@@ -261,14 +261,17 @@ def test_R18_control_null_repotags_is_an_untagged_image(tmp_path):
 
 # ---------------------------------------------------------------- R20: a supervision error still records an outcome
 def test_R20_an_error_during_supervision_records_a_failed_outcome(cli, proj, monkeypatch):
-    from steward import runner
+    from steward import issues, runner
     from steward.ledger import verify
 
     def broken(*a, **k):
         raise RuntimeError("process table unavailable")
     monkeypatch.setattr(runner, "_watch", broken)
-    code, _, _ = cli("run", "--", "sleep", "30")
+    code, _, err = cli("run", "--", "sleep", "30")
     assert code != 0
+    fault = issues.read_last_error(proj)
+    assert fault.command == "run" and fault.exit_code == code and issues.HINT in err
+    assert not fault.flags and fault.error_type == "RuntimeError"
     out = [e for e in verify(proj / "development/runs.jsonl").entries if e.get("kind") == "outcome"]
     assert len(out) == 1 and out[0]["status"] == "failed" and out[0]["cleanup"] == "incomplete", out
 

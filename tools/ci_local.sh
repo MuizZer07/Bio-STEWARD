@@ -24,9 +24,14 @@ for v in ${versions[@]}; do
     apt-get -qq update >/dev/null 2>&1 && apt-get -qq install -y git >/dev/null 2>&1
     cp -r /src /w && cd /w && rm -rf .venv
     pip install -q --root-user-action=ignore -e ".[dev]" >/dev/null 2>&1
-    python -m pytest -q
-    python tools/lint_language.py
-    python tools/measure_footprint.py --check
-    python tools/regenerate_schemas.py --check
-    steward check --final --summary --repo examples/toy-expression-benchmark'
+    # As GitHub CI sees it: a git checkout (the export has no .git) and a user who is not root (root ignores the
+    # file permissions that the refusal tests rely on).
+    useradd -m ci && chown -R ci /w
+    su ci -c "set -e; cd /w
+      git init -q && git add -A && git -c user.name=CI -c user.email=ci@example.invalid commit -qm export
+      python -m pytest -q
+      python tools/lint_language.py
+      python tools/measure_footprint.py --check
+      python tools/regenerate_schemas.py --check
+      steward check --final --summary --repo examples/toy-expression-benchmark"'
 done

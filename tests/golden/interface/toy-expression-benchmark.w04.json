@@ -1,0 +1,58 @@
+{
+  "decisions": {
+    "entries": [
+      {
+        "body": "- **Quote:** \"Go ahead with the contract and baselines; keep it confirmatory and split by donor.\"\n- **Decision:** GO for task `development/tasks/expr-clf-baselines.md`, confirmatory analysis, donor-level splits.\n- **Consequences:** model training waits for stage 2; the contract is not changed after results are seen.",
+        "consequences": "model training waits for stage 2; the contract is not changed after results are seen.",
+        "date": "2026-01-15",
+        "decision": "GO for task `development/tasks/expr-clf-baselines.md`, confirmatory analysis, donor-level splits.",
+        "heading": "2026-01-15: benchmark design for responder classification (fictional example)",
+        "line": 12,
+        "path": "development/DECISIONS.md",
+        "quotes": [
+          {
+            "text": "\"Go ahead with the contract and baselines; keep it confirmatory and split by donor.\"",
+            "who": null
+          }
+        ],
+        "title": "benchmark design for responder classification (fictional example)"
+      }
+    ],
+    "open_decisions": [
+      {
+        "line": 4,
+        "options": [
+          "Keep December",
+          "Move to January"
+        ],
+        "path": "development/INDEX.md",
+        "question": "Choose the next review date"
+      }
+    ],
+    "schema": "steward.decisions/0.1"
+  },
+  "timeline": {
+    "drift": {
+      "changes": [],
+      "date": [],
+      "history": "unavailable",
+      "notes": [],
+      "order": [],
+      "scope": []
+    },
+    "milestones": [
+      {
+        "days_left": 4.0,
+        "due": "2026-12-01T00:00:00+00:00",
+        "id": "review",
+        "internal": "2026-12-01T00:00:00+00:00",
+        "kind": "other",
+        "open_work": 0,
+        "progress": {},
+        "state": "on track",
+        "title": "Review the example"
+      }
+    ],
+    "schema": "steward.timeline/0.1"
+  }
+}

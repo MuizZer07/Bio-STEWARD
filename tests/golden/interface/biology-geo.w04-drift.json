@@ -1,0 +1,49 @@
+{
+  "drift": {
+    "changes": [
+      {
+        "commit": null,
+        "decision": null,
+        "due": {
+          "after": "2026-12-04T00:00:00+00:00",
+          "before": "2026-12-01T00:00:00+00:00"
+        },
+        "fields": [
+          "due"
+        ],
+        "id": "review",
+        "kind": "milestone",
+        "path": "development/milestones.toml",
+        "time": null
+      }
+    ],
+    "date": [
+      {
+        "current_due": "2026-12-04T00:00:00+00:00",
+        "days": 3.0,
+        "first_due": "2026-12-01T00:00:00+00:00",
+        "id": "review",
+        "moves": 1,
+        "recorded_move": false
+      }
+    ],
+    "history": "available",
+    "notes": [],
+    "order": [],
+    "scope": []
+  },
+  "milestones": [
+    {
+      "days_left": 7.0,
+      "due": "2026-12-04T00:00:00+00:00",
+      "id": "review",
+      "internal": "2026-12-04T00:00:00+00:00",
+      "kind": "other",
+      "open_work": 0,
+      "progress": {},
+      "state": "on track",
+      "title": "Review the example"
+    }
+  ],
+  "schema": "steward.timeline/0.1"
+}

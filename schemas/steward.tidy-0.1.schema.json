@@ -1,0 +1,191 @@
+{
+  "$defs": {
+    "TidyCounts": {
+      "additionalProperties": false,
+      "properties": {
+        "contradiction": {
+          "title": "Contradiction",
+          "type": "integer"
+        },
+        "exchange": {
+          "title": "Exchange",
+          "type": "integer"
+        },
+        "leftover": {
+          "title": "Leftover",
+          "type": "integer"
+        },
+        "memory": {
+          "title": "Memory",
+          "type": "integer"
+        },
+        "stale_page": {
+          "title": "Stale Page",
+          "type": "integer"
+        },
+        "stale_task": {
+          "title": "Stale Task",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "stale_task",
+        "contradiction",
+        "stale_page",
+        "exchange",
+        "leftover",
+        "memory"
+      ],
+      "title": "TidyCounts",
+      "type": "object"
+    },
+    "TidyItem": {
+      "additionalProperties": false,
+      "properties": {
+        "age_days": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Age Days"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Command"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "stale_task",
+            "contradiction",
+            "stale_page",
+            "exchange",
+            "leftover",
+            "memory"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "subject",
+        "message",
+        "age_days",
+        "command"
+      ],
+      "title": "TidyItem",
+      "type": "object"
+    },
+    "TidyThresholds": {
+      "additionalProperties": false,
+      "properties": {
+        "archive": {
+          "title": "Archive",
+          "type": "string"
+        },
+        "handoff_days": {
+          "title": "Handoff Days",
+          "type": "integer"
+        },
+        "memory_days": {
+          "title": "Memory Days",
+          "type": "integer"
+        },
+        "memory_folders": {
+          "title": "Memory Folders",
+          "type": "integer"
+        },
+        "stale_days": {
+          "title": "Stale Days",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "stale_days",
+        "handoff_days",
+        "memory_days",
+        "archive",
+        "memory_folders"
+      ],
+      "title": "TidyThresholds",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "counts": {
+      "$ref": "#/$defs/TidyCounts"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/TidyItem"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
+    "now": {
+      "title": "Now",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.tidy/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "thresholds": {
+      "$ref": "#/$defs/TidyThresholds"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    },
+    "total": {
+      "title": "Total",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema",
+    "tool_version",
+    "now",
+    "thresholds",
+    "items",
+    "counts",
+    "total",
+    "notes"
+  ],
+  "title": "Tidy",
+  "type": "object"
+}

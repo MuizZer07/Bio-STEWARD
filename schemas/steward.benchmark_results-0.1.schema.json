@@ -1,0 +1,124 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "Problem": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/JsonValue"
+        }
+      },
+      "required": [
+        "status",
+        "code"
+      ],
+      "title": "Problem",
+      "type": "object"
+    },
+    "Threshold": {
+      "additionalProperties": false,
+      "properties": {
+        "against": {
+          "title": "Against",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "metric": {
+          "title": "Metric",
+          "type": "string"
+        },
+        "split": {
+          "title": "Split",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "met",
+            "not met",
+            "not evaluable"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "split",
+        "metric",
+        "against",
+        "state",
+        "message"
+      ],
+      "title": "Threshold",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "cells": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Cells",
+      "type": "object"
+    },
+    "missing": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing",
+      "type": "array"
+    },
+    "problems": {
+      "items": {
+        "$ref": "#/$defs/Problem"
+      },
+      "title": "Problems",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.benchmark_results/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "thresholds": {
+      "items": {
+        "$ref": "#/$defs/Threshold"
+      },
+      "title": "Thresholds",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "cells",
+    "missing",
+    "thresholds",
+    "problems"
+  ],
+  "title": "BenchmarkResults",
+  "type": "object"
+}

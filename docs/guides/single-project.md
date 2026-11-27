@@ -11,3 +11,9 @@ One repository, one owner, one or more agents. What it gives you:
 - **Session continuity:** `steward session close` writes one short handoff; the next session starts with
   `steward session start` instead of a transcript.
 - **Private overlays:** `steward.local.toml` can add requirements on a private branch, never remove them.
+
+## Read decisions and open questions
+
+Run `steward decisions` for a summary or `steward decisions --format json` for `steward.decisions/0.1`: the dated
+decisions from the logs and the open questions from the project index and the session handoff, each with its file
+and line. See [Read decisions and open questions](decisions.md).

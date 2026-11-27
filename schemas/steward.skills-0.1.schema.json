@@ -1,0 +1,197 @@
+{
+  "$defs": {
+    "Bundle": {
+      "additionalProperties": false,
+      "properties": {
+        "budget_words": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Budget Words"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "skills": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Skills",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "budget_words",
+        "skills"
+      ],
+      "title": "Bundle",
+      "type": "object"
+    },
+    "JsonValue": {},
+    "Skill": {
+      "additionalProperties": false,
+      "properties": {
+        "bundles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Bundles",
+          "type": "array"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "bundles",
+        "description"
+      ],
+      "title": "Skill",
+      "type": "object"
+    },
+    "SkillCopy": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "failed": {
+          "title": "Failed",
+          "type": "boolean"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/JsonValue"
+        }
+      },
+      "required": [
+        "code",
+        "path",
+        "failed"
+      ],
+      "title": "SkillCopy",
+      "type": "object"
+    },
+    "SkillsProject": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Canonical"
+        },
+        "canonical_usable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Canonical Usable"
+        },
+        "configured": {
+          "title": "Configured",
+          "type": "boolean"
+        },
+        "copies": {
+          "items": {
+            "$ref": "#/$defs/SkillCopy"
+          },
+          "title": "Copies",
+          "type": "array"
+        },
+        "installed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Installed",
+          "type": "array"
+        }
+      },
+      "required": [
+        "configured",
+        "canonical",
+        "canonical_usable",
+        "installed",
+        "copies"
+      ],
+      "title": "SkillsProject",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "bundles": {
+      "items": {
+        "$ref": "#/$defs/Bundle"
+      },
+      "title": "Bundles",
+      "type": "array"
+    },
+    "project": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SkillsProject"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "schema": {
+      "const": "steward.skills/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "skills": {
+      "items": {
+        "$ref": "#/$defs/Skill"
+      },
+      "title": "Skills",
+      "type": "array"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "tool_version",
+    "bundles",
+    "skills",
+    "project"
+  ],
+  "title": "SkillsList",
+  "type": "object"
+}

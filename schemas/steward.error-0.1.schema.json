@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "enum": [
+        "not_configured",
+        "invalid_input"
+      ],
+      "title": "Code",
+      "type": "string"
+    },
+    "exit": {
+      "title": "Exit",
+      "type": "integer"
+    },
+    "hint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Hint"
+    },
+    "message": {
+      "title": "Message",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.error/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "tool_version",
+    "code",
+    "message",
+    "exit",
+    "hint"
+  ],
+  "title": "Error",
+  "type": "object"
+}

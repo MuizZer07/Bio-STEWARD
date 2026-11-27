@@ -22,7 +22,8 @@ PUBLISHED = ["README.md", "CHANGELOG.md", "CONSTITUTION.md", "docs", "skills", "
              "examples", "tests", "tools", "mkdocs.yml", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md",
              "action.yml", ".pre-commit-hooks.yaml", ".claude-plugin", ".github", "paper", "plugin", "CITATION.cff",
              "pyproject.toml"]
-EMAIL = re.compile(r"(?<![\\\w.%+-])[A-Za-z0-9._%+-]+@(?!example\.(?:org|com)\b|noreply\.)[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,6}\b")
+# `…@openssh.com` names are OpenSSH protocol identifiers (key types such as sk-ssh-ed25519@openssh.com), not addresses.
+EMAIL = re.compile(r"(?<![\\\w.%+-])[A-Za-z0-9._%+-]+@(?!example\.(?:org|com)\b|noreply\.|openssh\.com\b)[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,6}\b")
 HOME = re.compile(r"(?<![\w/])(?:/Users/|/home/)(?!(?:you|user|username|name|someone|example|shared|user2)/)[A-Za-z0-9._-]+/")
 ALLOW = "scrub: allow"
 

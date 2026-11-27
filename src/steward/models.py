@@ -69,8 +69,8 @@ Hex64 = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 RULE_IDS = ("R-01", "R-02", "R-03", "R-04", "R-05", "R-06", "R-07", "R-08", "R-09", "R-10", "R-11", "R-12", "R-13", "R-14", "R-15",
             "R-21", "R-22", "R-23", "R-24", "R-25", "R-26", "R-27", "R-28", "R-29", "R-31", "R-32", "R-33", "R-34",
             "R-35", "R-36", "R-37", "R-38", "R-39", "R-40", "R-41", "R-42", "R-43", "R-44",
-            "R-45", "R-46", "R-47", "R-48", "R-49", "R-50", "R-51", "R-52", "R-53", "R-54", "R-55", "R-56", "R-57", "R-58", "R-59", "R-60", "R-61", "R-62", "R-63", "R-64", "R-65", "R-66", "R-67", "R-68", "R-69", "R-70", "R-71", "R-72", "R-73", "R-74", "R-75", "R-76", "R-77", "R-78", "R-79", "R-80", "R-81", "R-82", "R-83", "R-84", "R-85", "R-86", "R-87")
-ADVISORY = ("R-55", "R-58", "R-70", "R-71", "R-72", "R-74", "R-76", "R-82", "R-84", "R-87")  # rules the default gate does not require; a named gate may (0.9.0 B5)
+            "R-45", "R-46", "R-47", "R-48", "R-49", "R-50", "R-51", "R-52", "R-53", "R-54", "R-55", "R-56", "R-57", "R-58", "R-59", "R-60", "R-61", "R-62", "R-63", "R-64", "R-65", "R-66", "R-67", "R-68", "R-69", "R-70", "R-71", "R-72", "R-73", "R-74", "R-75", "R-76", "R-77", "R-78", "R-79", "R-80", "R-81", "R-82", "R-83", "R-84", "R-85", "R-86", "R-87", "R-88")
+ADVISORY = ("R-55", "R-58", "R-70", "R-71", "R-72", "R-74", "R-76", "R-82", "R-84", "R-87", "R-88")  # rules the default gate does not require; a named gate may (0.9.0 B5)
 CONFIG_SCHEMAS = ("steward.toml/0.1", "steward.toml/0.2")
 
 
@@ -398,6 +398,10 @@ class ExchangeSection(Strict):
     uses: dict[Annotated[str, Field(pattern=r"^[A-Z]{2,6}$")], str] = Field(default_factory=dict)  # D2: code -> version used
 
 
+class ReportSection(Strict):
+    to: Annotated[str, Field(pattern=r"^[A-Z]{2,6}$")] = "STW"
+
+
 class GovernanceSection(Strict):
     required: bool = False  # C-1: the constitution must be declared, and its records present
 
@@ -504,6 +508,17 @@ class StrangerTestSection(Strict):
     must_not_read: list[Text] = Field(default_factory=lambda: ["src/", "tests/", "development/"])
     install: Text | None = None                    # shell lines installing the release; {repo} and {tag} are filled in
     max_age_days: int = Field(default=120, ge=1)   # R-87: the last record older than this is due again
+
+
+class TidySection(Strict):
+    """Tidying (0.21.0, STW-048 C12; R-88 advisory): the thresholds `steward tidy` and `steward next` use, and the
+    memory folders a harness keeps for this project. The toolkit lists what looks stale; it deletes nothing."""
+    stale_days: int = Field(default=14, ge=1, le=3650)    # an open task untouched for longer is stale
+    handoff_days: int = Field(default=7, ge=1, le=3650)   # a session handoff committed longer ago is stale
+    memory_days: int = Field(default=30, ge=1, le=3650)   # a memory entry not changed for longer is listed
+    memory: list[Text] = Field(default_factory=list)      # folders (may be outside the repository; ~ is expanded)
+    index: SafePath = "development/INDEX.md"              # the state page checked against the latest tag
+    archive: SafePath = "development/archive"             # where `steward tidy --archive ID` moves task files
 
 
 class PublishSection(Strict):
@@ -680,6 +695,17 @@ class TasksSection(Strict):
         return v
 
 
+LogPath = Annotated[str, Field(min_length=1, pattern=r"^[^\x00\r\n]+$")]
+
+
+class TokensSection(Strict):
+    """Local session log files selected for per-project token reporting."""
+
+    claude: list[LogPath] = Field(default_factory=list)
+    codex: list[LogPath] = Field(default_factory=list)
+    gemini: list[LogPath] = Field(default_factory=list)
+
+
 class TaskTokenBudget(Strict):
     """Optional token budget declared in a Markdown task file."""
 
@@ -836,8 +862,10 @@ class StewardConfig(Strict):
     storage: StorageSection | None = None
     governance: GovernanceSection | None = None
     exchange: ExchangeSection | None = None
+    report: ReportSection | None = None
     boundary: BoundarySection | None = None
     tasks: TasksSection | None = None
+    tokens: TokensSection | None = None
     changelog: ChangelogSection | None = None
     branches: BranchesSection | None = None
     skills: SkillsSection | None = None
@@ -852,6 +880,7 @@ class StewardConfig(Strict):
     licence: LicenceSection | None = None                    # 0.19.0: licence governance (R-79 – R-82)
     publish: PublishSection | None = None                    # 0.19.0: release publishing (model A or B)
     stranger_test: StrangerTestSection | None = None          # 0.20.2: the stranger test (R-87, advisory)
+    tidy: TidySection | None = None                          # 0.21.0: stale tasks, pages and memory (R-88, advisory)
     channel: list[Channel] = Field(default_factory=list)     # 0.19.0: tools installed from a stable or a dev source
     data: DataSection | None = None
     model: list[ModelRecord] = Field(default_factory=list)
@@ -897,7 +926,7 @@ class StewardConfig(Strict):
         # a value equal to the built-in default follows the root (templates write defaults out); a customised one stays
         if self.paths.prior_work == PathsSection.model_fields["prior_work"].default_factory():
             self.paths.prior_work = [moved(v) for v in self.paths.prior_work]
-        for sec in (self.run, self.policy, self.spend, self.integrity, self.evidence, self.release, self.storage, self.repro, self.session, self.agents):
+        for sec in (self.run, self.policy, self.spend, self.integrity, self.evidence, self.release, self.storage, self.repro, self.session, self.agents, self.tidy):
             if sec is None:
                 continue
             for name, f in type(sec).model_fields.items():

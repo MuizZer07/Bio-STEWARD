@@ -1,0 +1,451 @@
+{
+  "$defs": {
+    "DateDrift": {
+      "additionalProperties": false,
+      "properties": {
+        "current_due": {
+          "title": "Current Due",
+          "type": "string"
+        },
+        "days": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Days"
+        },
+        "first_due": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "First Due"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "moves": {
+          "title": "Moves",
+          "type": "integer"
+        },
+        "recorded_move": {
+          "title": "Recorded Move",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "first_due",
+        "current_due",
+        "days",
+        "moves",
+        "recorded_move"
+      ],
+      "title": "DateDrift",
+      "type": "object"
+    },
+    "DecisionSource": {
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "title": "Heading",
+          "type": "string"
+        },
+        "line": {
+          "title": "Line",
+          "type": "integer"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "line",
+        "heading"
+      ],
+      "title": "DecisionSource",
+      "type": "object"
+    },
+    "DueChange": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "title": "After",
+          "type": "string"
+        },
+        "before": {
+          "title": "Before",
+          "type": "string"
+        }
+      },
+      "required": [
+        "before",
+        "after"
+      ],
+      "title": "DueChange",
+      "type": "object"
+    },
+    "JsonValue": {},
+    "MilestoneStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "days_left": {
+          "title": "Days Left",
+          "type": "number"
+        },
+        "due": {
+          "title": "Due",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "internal": {
+          "title": "Internal",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "open_work": {
+          "title": "Open Work",
+          "type": "integer"
+        },
+        "outcome": {
+          "$ref": "#/$defs/Outcome"
+        },
+        "progress": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
+            "type": "object"
+          },
+          "title": "Progress",
+          "type": "object"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "kind",
+        "due",
+        "internal",
+        "days_left",
+        "state",
+        "open_work",
+        "progress"
+      ],
+      "title": "MilestoneStatus",
+      "type": "object"
+    },
+    "OrderDrift": {
+      "additionalProperties": false,
+      "properties": {
+        "earlier": {
+          "title": "Earlier",
+          "type": "string"
+        },
+        "later": {
+          "title": "Later",
+          "type": "string"
+        },
+        "started_tasks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Started Tasks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "earlier",
+        "later",
+        "started_tasks"
+      ],
+      "title": "OrderDrift",
+      "type": "object"
+    },
+    "Outcome": {
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "title": "Decision",
+          "type": "string"
+        },
+        "on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "On"
+        },
+        "state": {
+          "enum": [
+            "met",
+            "moved",
+            "dropped"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "decision"
+      ],
+      "title": "Outcome",
+      "type": "object"
+    },
+    "PlanChange": {
+      "additionalProperties": false,
+      "properties": {
+        "commit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Commit"
+        },
+        "decision": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecisionSource"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "due": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DueChange"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "milestone",
+            "roadmap"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Time"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "path",
+        "commit",
+        "time",
+        "fields",
+        "due",
+        "decision"
+      ],
+      "title": "PlanChange",
+      "type": "object"
+    },
+    "ScopeDrift": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "line": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Line"
+        },
+        "milestone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Milestone"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "unassigned_task",
+            "missing_task",
+            "dropped_task",
+            "unstarted_task",
+            "roadmap_without_task"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason",
+        "id",
+        "milestone",
+        "path",
+        "line"
+      ],
+      "title": "ScopeDrift",
+      "type": "object"
+    },
+    "TimelineDrift": {
+      "additionalProperties": false,
+      "properties": {
+        "changes": {
+          "items": {
+            "$ref": "#/$defs/PlanChange"
+          },
+          "title": "Changes",
+          "type": "array"
+        },
+        "date": {
+          "items": {
+            "$ref": "#/$defs/DateDrift"
+          },
+          "title": "Date",
+          "type": "array"
+        },
+        "history": {
+          "enum": [
+            "available",
+            "unavailable",
+            "shallow",
+            "partial"
+          ],
+          "title": "History",
+          "type": "string"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "order": {
+          "items": {
+            "$ref": "#/$defs/OrderDrift"
+          },
+          "title": "Order",
+          "type": "array"
+        },
+        "scope": {
+          "items": {
+            "$ref": "#/$defs/ScopeDrift"
+          },
+          "title": "Scope",
+          "type": "array"
+        }
+      },
+      "required": [
+        "history",
+        "notes",
+        "date",
+        "scope",
+        "order",
+        "changes"
+      ],
+      "title": "TimelineDrift",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "drift": {
+      "$ref": "#/$defs/TimelineDrift"
+    },
+    "milestones": {
+      "items": {
+        "$ref": "#/$defs/MilestoneStatus"
+      },
+      "title": "Milestones",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.timeline/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "milestones",
+    "drift"
+  ],
+  "title": "Timeline",
+  "type": "object"
+}

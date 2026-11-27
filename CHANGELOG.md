@@ -2,7 +2,183 @@
 
 Pre-release. Not published on PyPI. Versions follow semantic versioning once released.
 
-## Unreleased
+## 0.21.0 (2026-11-27): the cockpit
+Per Muiz, 2026-11-27: "go for the cockpit cli release. we want this to be MVP before going to marketplace". Per
+development/design/RELEASE_v0.21.0_SPEC.md (sprint `2026-11-27-cli-0.21`, W01 – W12). The CLI
+now answers, as versioned JSON for the terminal, CI and agents, the questions a session starts with: where you left
+off, what waits, what is stale, what was decided, which CLI is newest, and what every command emits. Every new JSON
+output has a schema in `schemas/` (bundled in the wheel) and a `schema` tag; every existing `--json` output is
+byte-identical to 0.20.7. No command opens a network connection unless asked (`upgrade --check --online`). The
+biology checks planned for 0.21 move to 0.22.0. Read the upgrade notes below: a missing `steward.toml` now exits 78.
+
+### Added
+- **`steward interface --format json`** (STW-047 C1; `steward.interface/1`): from any directory, the commands that
+ emit JSON with the arguments that ask for it, their schema IDs, the bundled schema files, Steward's exit codes and
+ the error schema. The schemas ship in the wheel (`steward.resources.schemas_dir`). See [CI](docs/ci.md).
+- **`--format json` with a `schema` tag on every read command that had `--json`** (STW-047 C2): `audit progress`,
+ `benchmark results`, `benchmark splits`, `diff impact`, `diff run`, `diff runs`, `exchange status`,
+ `licence inventory`, `pins status`, `research list`, `storage audit|scan|verify`, `study list`, `timeline` and
+ `tokens report`. `--json` is unchanged. The tagged `exchange status` document holds its rows in `items`.
+- **`--format json` for the status and record views** (STW-050 C9): `task board`, `authorize pending` (the full nonce,
+ the payload's SHA-256, action, scope, budget, expiry and peer), `authorize list`, `authorize keys`,
+ `sprint status`, `session start`, `study show`, `integrity status`, `spend status`, `release status`,
+ `channel status`, `paper values|displays|citations`, `talk plan` and `talk prefs`, each with its schema.
+- **A `[tokens]` table** (STW-050): the local log files of each agent (`claude`, `codex`, `gemini`) for
+ `steward tokens report`, relative to the project. See [Track tokens per task](docs/guides/tokens.md).
+- **`steward decisions [--format json]`** (STW-048 C14; `steward.decisions/0.1`): the dated decisions of the logs
+ with their quotes, decision and consequences, and the open questions with their options from the project index and
+ the session handoff, each with its file and line. See [Read decisions and open questions](docs/guides/decisions.md).
+- **Drift in `steward timeline --format json`** (STW-048 C15): date, scope and order drift of the milestones against
+ their git history, each change with its matching decision or none. See [Plan to a deadline](docs/guides/timeline.md).
+- **`steward upgrade`** (C20, STW-058; `steward.upgrade/0.1`): `--check` reports the installed version, the newest
+ known one (from received release notices; from PyPI only with `--online`), the install method (uv tool, pipx, pip,
+ or a declared channel) and the exact install command. `--to VERSION` runs that command in the foreground after you
+ confirm in an interactive terminal; an older version needs `--allow-downgrade`. See
+ [Upgrade the CLI](docs/guides/upgrade.md).
+- **Waivers in gates** (STW-055): a signed waiver of an R-43 finding is listed in the gate's `waived` entries (rule,
+ finding, the status it covers, the authorization tag) and named by `--summary`, and is counted neither as passed nor
+ as blocking. See [Release software and containers](docs/guides/release.md).
+- **Self-reporting** (STW-054): `steward issue "…"` and `steward issue --from-last-error` file a toolkit defect in the
+ exchange outbox, screened against the project's term lists and local user paths, with no network call. A toolkit
+ fault prints a hint and keeps one local diagnostic, `.steward/last-error.json` (error type, toolkit frames,
+ fingerprint, version, command, flag names, exit code); nothing is filed unless you run `steward issue`.
+ `steward issues inbox [--format json]` (`steward.issues_inbox/0.1`) groups received reports by fingerprint. See
+ [Report a toolkit defect](docs/guides/report-a-defect.md).
+- **`steward task dispatch TASK --to codex|antigravity [--implement] [--inline] [--model …]`** (STW-046): runs a task's
+ brief with another agent, headless, the way each needs: Codex with `--skip-git-repo-check` and a read-only (or, with
+ `--implement`, writable) sandbox; Antigravity with `--sandbox` and a session-only allow-list of read-only commands,
+ never `--dangerously-skip-permissions`. A review runs in a clean, detached checkout of the current commit, removed
+ afterwards; a file the reviewer changed is reported; an empty report is refused. `--inline` puts the documents the
+ task names (its `git diff` ranges and files) in the prompt and asks for an answer in text only, for an agent whose
+ tools are refused. See [dispatching](docs/guides/dispatch.md).
+- **Machine-readable explain, digest, init plan and skills** (STW-047 C3, C5, C7, C8; schemas in `schemas/`):
+ `steward explain R-xx --format json` and `steward explain --all` (`steward.explain/0.1`);
+ `steward check --digest-only --against REPORT --format json` (`steward.digest/0.1`), which recomputes a saved
+ report's inputs digest without evaluating a rule and says whether the report is current;
+ `steward init --dry-run --format json` (`steward.init_plan/0.1`); `steward skills list [--format json]`
+ (`steward.skills/0.1`), which shares R-60's code for the state of each copy. See [CI](docs/ci.md).
+- **Each result names its `area`, and a report names its `scope`** (`verdict.scope`: a full run, the areas, or the
+ rule of `check --rule`). A report also lists its inputs (`verdict.inputs`) and a digest of the repository's file
+ list (`verdict.tree_digest`), for `--digest-only`. All four fields are optional in `steward.report/0.1`, so earlier
+ reports still validate.
+- **A location contract for result details** (C4): `path`, `line`, `column`, `end_line`, documented in
+ [CI](docs/ci.md). R-07 and R-09 details gained `column`; R-57's `duplicate_id`, `unknown_status` and
+ `not_on_board` gained `line`.
+- **`steward next`** (STW-048 C10; `steward.next/0.1`): where you left off (the handoff's next steps and open
+ decisions), the nearest milestone with its blockers, what waits on you (signatures, decisions, exchange items with
+ no decision, sprint tasks waiting for an order, failed, or done and not merged), what waits on agents, and the tidy
+ counts; each item with its source record and one command. `--brief` is a short text for an agent starting a
+ session; `--now TIME` evaluates at another time, as does `steward timeline --now`.
+- **`steward tidy`** (STW-048 C12; `steward.tidy/0.1`): stale open tasks, board statuses a sprint ledger
+ contradicts, own exchange items open after their response, a stale handoff or index, exchange items not delivered
+ or not received, merged sprint branches and their worktrees, and memory entries in the folders of `[tidy] memory`.
+ Read-only; `steward tidy --archive ID…` moves the named task files to `[tidy] archive`, only when run. Thresholds
+ in the new `[tidy]` table. **R-88** (`tidy.stale`, advisory, area `tidy`) reports the counts in `steward check`
+ when `[tidy]` is declared. The `task-lifecycle` and `progress-audit` skills tell agents to name the stale items for
+ each project and ask before archiving or deleting.
+- **`steward notifications`** (C21; `steward.notifications/0.1`): one feed of a newer CLI named by a release notice,
+ new exchange items, sprint tasks finished, failed or waiting for an order, approvals waiting, a gate turned not
+ eligible since an earlier report (`--against REPORT`), and milestones at risk or late; each with an ID, a time, a
+ kind, a source and its next command. No network call. See
+ [Where you are, what is next, what is stale](docs/guides/next-and-tidy.md).
+- **`steward authorize sign NONCE --expect-sha256 HASH`** (STW-050, STW-057): signs only if the payload's bytes still
+ have the SHA-256 you were shown (the `payload_sha256` of `authorize pending --format json`); otherwise it refuses
+ and signs nothing. See [Sign ahead, or sign later](docs/guides/signing-ahead.md).
+- **Sprint adapters with task permissions** (STW-051): a task's `permissions` (`read-only`, `edit`,
+ `edit-and-run`; default `edit`), `allow` and `deny` lists are mapped to each agent's own flags. Claude Code gets
+ `--permission-mode`, `--allowedTools` and `--disallowedTools`; Codex gets its sandbox (`-s read-only` or
+ `-s workspace-write`), and the sprint commits its work after it exits, since its sandbox cannot write `.git` (S4);
+ the new `antigravity` adapter gets `--sandbox` and a session-only settings file with allow and deny lists. A
+ default deny list (push, merge, rebase, reset, tag, `steward authorize|release|spend|unseal|sprint`, publishing)
+ applies to every agent task, and a task's `allow` cannot name an entry on it. `requires = ["display", "network"]`
+ declares what a run needs; a sprint file that asks an adapter for something it cannot offer (Codex has no display)
+ is not valid. `steward sprint check` prints the permissions of each task and warns about a read-only agent task.
+ The ledger's `running` record names the agent, model and permissions (S5). See [the sprint guide](docs/guides/sprint.md).
+- **Task logs and a live status** (STW-052): each task's output goes to `.steward/sprints/<id>/<task>.log`
+ (git-ignored), and the agent adapters ask for their JSON event stream. `steward sprint status --format json`
+ (`steward.sprint_status/0.1`) adds the window's state and, per task, its agent, permissions, start and end times,
+ run ID, run log and task log (S7), the commits and changed files on its branch, the last commit's subject, the last
+ tool step (tool and command on one line, never file contents) and the uncommitted paths. `steward sprint watch ID`
+ prints one line per new event (states, orders, commits, tool steps) and ends when nothing runs and nothing ordered
+ waits. No model is called.
+- **`steward sprint recheck ID TASK`** (S2): runs a failed task's done commands on its branch's current head and
+ records `done` (with its checks and commit) or `failed`, by the human.
+- **`steward sprint add ID TASK`** (S6): a task written into the sprint file after the sprint opened is `proposed`
+ until it is added; the `added` record keeps R-71 satisfied.
+- **`steward check --fail-on fail|incomplete`** (S10): for scripts, a non-zero exit when any result is FAIL (or not
+ passing), also outside every gate.
+- **`[sprint] base` and `[sprint] worktree_root`** (S8, S9): the branch the work starts from, and where worktrees go
+ (shorter paths for tools with path limits). Done commands and task commands get `STEWARD_SPRINT_ID`,
+ `STEWARD_SPRINT_TASK`, `STEWARD_SPRINT_BRANCH` and `STEWARD_SPRINT_BASE`.
+- **`steward run --run-id ID`**: the sprint dispatcher passes it to link a task to its run.
+
+### Changed
+- **The sprint dispatcher reads the sprint file before each dispatch** (S1): a change is printed and recorded (a
+ `reloaded` record); an invalid file is not used. Each `running` record carries the task definition's hash.
+- **`steward sprint start --watch` stays** after a failure while the window is open and a task can still become ready
+ (a retry, a recheck or an order); it ends when every task is finished, at `sprint stop` or when the window ends (S3).
+- **"Uncommitted changes in its worktree" names the paths** from `git status --porcelain` (S14).
+- **`steward sprint status`** names a window that is not open (S11) and the log of a running task.
+- **`steward sprint report`** reads the merge state from git (S13): a merged branch is no longer listed as waiting,
+ and the report's table has a `Merged` column naming the merged commit.
+- **`sign-pending` shows what you sign** (STW-057): each payload's control and invisible characters (terminal
+ escapes, carriage returns, bidirectional and zero-width characters, bytes that are not UTF-8) are printed as
+ escapes such as `\x1b`, `\r`, `\u202e`, with a warning that counts them, and a backslash is printed as `\\`. The
+ payload's SHA-256 and its action are printed before each prompt and named in it. The payload is checked again
+ from the bytes just read: one that changed since it was listed is skipped. `authorize pending` prints a summary's
+ control characters the same way.
+- **No `steward.toml` exits 78, not 64** (STW-047 C6). A command that needs a project prints the same message on
+ stderr and, with `--format json`, a `steward.error/0.1` document on stdout. `steward interface` lists exit 78 and
+ the error schema.
+- **A linked exchange folder at `steward exchange init`** is refused with exit 65, as in the other exchange commands,
+ instead of an internal error.
+
+### Fixed (independent review)
+Findings of the independent review of 0.21.0 (STW-059), fixed before the tag:
+- F1: `authorize sign` refuses a payload whose `repo_id` is not this repository's, and `authorize pending` lists it as `foreign`, never as waiting.
+- F2: the signing tag is made with `--cleanup=verbatim`, so a repository's `core.commentChar` cannot change the signed bytes.
+- F3: an oversized or non-UTF-8 pending payload is refused, Ctrl-D at the `sign-pending` prompt answers no, and a multi-line summary stays on its row.
+- F4: `upgrade --to` and `channel use --yes` run the installer from an empty temporary folder, with `python -P` and `uv --no-config`.
+- F5: `upgrade --check` counts only release notices that were received and still match their receipt; the exit-78 wording of the upgrade guide is corrected.
+- F6: a fault in `authorize` or `stranger-test` records its subcommand in `.steward/last-error.json`.
+- F7: a running sprint task keeps the definition it started with; an edit of the sprint file made while a task runs is recorded and used only after `steward sprint reload`, and never for the running task.
+- F8: sprint `allow` entries are compared in a normal form (spaces, program paths, wrappers such as `env` and `sh -c`, `git -C`), an entry that covers a denied command or runs any command is refused, Antigravity's edit-and-run list has no `env`, `python` or `uv`, and a review dispatch has its own read-only list.
+- F9: the Codex commit step runs git without hooks or repository-selected programs, task worktrees and logs are never made through a linked folder, and `sprint check` says that Codex's deny list is not enforced and what its network setting allows.
+- Dispatch: a read-only review runs in a local clone with its own `.git`, so `git log`, `git diff` and the tests work inside the reviewer's sandbox while the source repository is not written.
+- F10: `pins status --format json` no longer fails on a retire-eligible pin (its `object` is a string in the schema).
+- F11: `steward interface` names `shards plan`, and the schemas it lists for `paper manifest` and `shards plan` are now in `schemas/`.
+- F12: `timeline --now` and `next --now` use that time when they read pending signatures for a milestone.
+- F13: a malformed `notifications --against` report exits 65 with a `steward.error/0.1` document, upgrade notices in `notifications` use the `upgrade --check` version test, and `tidy --archive` refuses a repeated ID or colliding file names before it moves anything.
+
+Findings of the second review, of the fix pass (STW-060), fixed before the tag:
+- N1: a sprint `allow` entry may no longer start with a shell, a wrapper, a launcher (`env`, `sudo`, `bash`, `uvx`, `npx`, …) or an interpreter of any version (only `python -m pytest` / `python3 -m pytest`), program names are compared in lower case, and git, gh, npm, uv, cargo, twine and steward need their subcommand named with no option before it; Antigravity's edit-and-run list and an implementation dispatch's list follow the same rule.
+- N2: `authorize sign` refuses, and `authorize pending` lists every payload as `foreign`, when the repo_id pinned for this checkout differs from the one in `steward.toml`.
+- N3a: a reload order while the sprint file cannot be read is recorded as not valid, and an order clears an edit that was held and then reverted.
+- N3b: `task dispatch` exits 64, not 70, when the dispatch folder is a link.
+
+Found by the Linux test run before the tag:
+- `exchange init` and a one-way `exchange new` released the directory descriptor they held for a rollback only when the process ended (four per `exchange init`, one per one-way item), so a long-lived process such as the MCP server could run out of descriptors.
+- An exchange rollback recognised the file it created by its device and inode alone. Linux reuses a freed inode number at once, so a different file swapped in under the item's name could be taken for it and removed; the identity now includes the file's size and modification time.
+
+### Upgrade notes (from 0.20.7)
+- **Exit 78.** A script that tests for exit 64 to detect "not a steward repository" (no `steward.toml`) must test for
+ 78. Exit 64 remains a usage error or an invalid `steward.toml`. With the legacy `--json` flag, stdout stays empty on
+ exit 78; with `--format json` it holds a `steward.error/0.1` document.
+- Existing `--json` outputs are unchanged. To read the new fields, switch to `--format json` and check its `schema`
+ tag; `steward interface --format json` lists each command's schema.
+- A gate that requires R-43 no longer blocks on a finding covered by a signed waiver; the waiver is listed under the
+ gate's `waived` entries.
+- A toolkit fault now writes `.steward/last-error.json` (no argument values or file contents). Keep `.steward/`
+ git-ignored; nothing leaves the project unless you run `steward issue --from-last-error` and commit the item.
+- `steward check` now lists every file of the repository by name (not contents, `.git` excluded) for the report's
+ file-list digest.
+- A report has one more result, R-88 (NOT_APPLICABLE until `[tidy]` is declared), and one more area, `tidy`.
+- Sprint agent tasks now run with permissions (`edit` by default) instead of the agent's headless defaults, and the
+ default deny list always applies. Set `permissions = "edit-and-run"` for a task whose agent must run commands.
+- A task added to a sprint file after the sprint opened is not dispatched until `steward sprint add`. An ended
+ sprint's saved report gains the `Merged` column, so R-72 reports it stale until `steward sprint report` runs again.
+- An edit of a sprint file made while a task runs takes effect only after `steward sprint reload ID`. A sprint `allow`
+ entry such as `git`, `env`, `python` or `/usr/bin/git push` now makes the file invalid; name the exact prefix.
 
 ## 0.20.7 (2026-11-26): Bio-STEWARD for VS Code
 Per Muiz, 2026-11-26: "go with the next release from main". This release carries the official VS Code extension in

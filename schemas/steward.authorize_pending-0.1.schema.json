@@ -1,0 +1,171 @@
+{
+  "$defs": {
+    "PendingAuthorization": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "baseline": {
+          "title": "Baseline",
+          "type": "string"
+        },
+        "budget": {
+          "title": "Budget",
+          "type": "string"
+        },
+        "expires": {
+          "title": "Expires",
+          "type": "string"
+        },
+        "nonce": {
+          "title": "Nonce",
+          "type": "string"
+        },
+        "object": {
+          "title": "Object",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "payload_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Payload Sha256",
+          "type": "string"
+        },
+        "peer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Peer"
+        },
+        "project": {
+          "title": "Project",
+          "type": "string"
+        },
+        "repo_id": {
+          "title": "Repo Id",
+          "type": "string"
+        },
+        "requester": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Requester"
+        },
+        "scope": {
+          "title": "Scope",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "waiting",
+            "signed",
+            "expired",
+            "foreign"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "tag": {
+          "title": "Tag",
+          "type": "string"
+        }
+      },
+      "required": [
+        "nonce",
+        "payload_sha256",
+        "repo_id",
+        "project",
+        "peer",
+        "requester",
+        "action",
+        "object",
+        "scope",
+        "budget",
+        "expires",
+        "baseline",
+        "state",
+        "tag",
+        "path"
+      ],
+      "title": "PendingAuthorization",
+      "type": "object"
+    },
+    "SkippedPeer": {
+      "additionalProperties": false,
+      "properties": {
+        "peer": {
+          "title": "Peer",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "no_local_checkout",
+            "not_steward_project"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "peer",
+        "reason"
+      ],
+      "title": "SkippedPeer",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "items": {
+        "$ref": "#/$defs/PendingAuthorization"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.authorize_pending/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "skipped": {
+      "items": {
+        "$ref": "#/$defs/SkippedPeer"
+      },
+      "title": "Skipped",
+      "type": "array"
+    },
+    "waiting": {
+      "title": "Waiting",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema",
+    "items",
+    "waiting",
+    "skipped"
+  ],
+  "title": "AuthorizePending",
+  "type": "object"
+}

@@ -1,0 +1,132 @@
+{
+  "$defs": {
+    "CodeFix": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "fix": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Fix"
+        }
+      },
+      "required": [
+        "code",
+        "fix"
+      ],
+      "title": "CodeFix",
+      "type": "object"
+    },
+    "RuleExplained": {
+      "additionalProperties": false,
+      "properties": {
+        "area": {
+          "title": "Area",
+          "type": "string"
+        },
+        "areas": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Areas",
+          "type": "array"
+        },
+        "checks": {
+          "title": "Checks",
+          "type": "string"
+        },
+        "codes": {
+          "items": {
+            "$ref": "#/$defs/CodeFix"
+          },
+          "title": "Codes",
+          "type": "array"
+        },
+        "fix": {
+          "title": "Fix",
+          "type": "string"
+        },
+        "governance": {
+          "title": "Governance",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "pass_does_not_mean": {
+          "title": "Pass Does Not Mean",
+          "type": "string"
+        },
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        },
+        "run": {
+          "title": "Run",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        },
+        "why": {
+          "title": "Why",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule",
+        "name",
+        "version",
+        "area",
+        "areas",
+        "governance",
+        "checks",
+        "why",
+        "pass_does_not_mean",
+        "fix",
+        "codes",
+        "run"
+      ],
+      "title": "RuleExplained",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "rules": {
+      "items": {
+        "$ref": "#/$defs/RuleExplained"
+      },
+      "title": "Rules",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.explain/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "tool_version",
+    "rules"
+  ],
+  "title": "Explain",
+  "type": "object"
+}

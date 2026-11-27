@@ -1,0 +1,22 @@
+{
+  "command": "check",
+  "error_type": "RuntimeError",
+  "exit_code": 70,
+  "fingerprint": "01c6f6b60f734b039b30decc2043a956e828897704a7880129a1fc4573191f61",
+  "flags": [
+    "--repo",
+    "--summary"
+  ],
+  "frames": [
+    {
+      "file": "steward/cli.py",
+      "line": 1
+    },
+    {
+      "file": "steward/cli.py",
+      "line": 2
+    }
+  ],
+  "schema": "steward.last_error/0.1",
+  "tool_version": "VERSION"
+}

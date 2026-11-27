@@ -1,0 +1,340 @@
+{
+  "$defs": {
+    "Blocker": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "title": "Command",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "rule",
+            "task",
+            "exchange",
+            "signature"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "command"
+      ],
+      "title": "Blocker",
+      "type": "object"
+    },
+    "NextEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "title": "Command",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "signature",
+            "decision",
+            "exchange",
+            "task_waiting",
+            "task_failed",
+            "task_done",
+            "task_running",
+            "task_ordered"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Time"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "title",
+        "source",
+        "command",
+        "time"
+      ],
+      "title": "NextEntry",
+      "type": "object"
+    },
+    "NextMilestone": {
+      "additionalProperties": false,
+      "properties": {
+        "blockers": {
+          "items": {
+            "$ref": "#/$defs/Blocker"
+          },
+          "title": "Blockers",
+          "type": "array"
+        },
+        "command": {
+          "title": "Command",
+          "type": "string"
+        },
+        "days_left": {
+          "title": "Days Left",
+          "type": "number"
+        },
+        "due": {
+          "title": "Due",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "open_work": {
+          "title": "Open Work",
+          "type": "integer"
+        },
+        "state": {
+          "title": "State",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "kind",
+        "due",
+        "days_left",
+        "state",
+        "open_work",
+        "blockers",
+        "command"
+      ],
+      "title": "NextMilestone",
+      "type": "object"
+    },
+    "NextTidy": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "title": "Command",
+          "type": "string"
+        },
+        "counts": {
+          "$ref": "#/$defs/TidyCounts"
+        },
+        "total": {
+          "title": "Total",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "counts",
+        "total",
+        "command"
+      ],
+      "title": "NextTidy",
+      "type": "object"
+    },
+    "Resume": {
+      "additionalProperties": false,
+      "properties": {
+        "age_days": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Age Days"
+        },
+        "command": {
+          "title": "Command",
+          "type": "string"
+        },
+        "committed": {
+          "title": "Committed",
+          "type": "boolean"
+        },
+        "next": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Next",
+          "type": "array"
+        },
+        "open_decisions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Open Decisions",
+          "type": "array"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "age_days",
+        "committed",
+        "next",
+        "open_decisions",
+        "command"
+      ],
+      "title": "Resume",
+      "type": "object"
+    },
+    "TidyCounts": {
+      "additionalProperties": false,
+      "properties": {
+        "contradiction": {
+          "title": "Contradiction",
+          "type": "integer"
+        },
+        "exchange": {
+          "title": "Exchange",
+          "type": "integer"
+        },
+        "leftover": {
+          "title": "Leftover",
+          "type": "integer"
+        },
+        "memory": {
+          "title": "Memory",
+          "type": "integer"
+        },
+        "stale_page": {
+          "title": "Stale Page",
+          "type": "integer"
+        },
+        "stale_task": {
+          "title": "Stale Task",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "stale_task",
+        "contradiction",
+        "stale_page",
+        "exchange",
+        "leftover",
+        "memory"
+      ],
+      "title": "TidyCounts",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "milestone": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NextMilestone"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
+    "now": {
+      "title": "Now",
+      "type": "string"
+    },
+    "project": {
+      "title": "Project",
+      "type": "string"
+    },
+    "resume": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Resume"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "schema": {
+      "const": "steward.next/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tidy": {
+      "$ref": "#/$defs/NextTidy"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    },
+    "waiting_on_agents": {
+      "items": {
+        "$ref": "#/$defs/NextEntry"
+      },
+      "title": "Waiting On Agents",
+      "type": "array"
+    },
+    "waiting_on_human": {
+      "items": {
+        "$ref": "#/$defs/NextEntry"
+      },
+      "title": "Waiting On Human",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "tool_version",
+    "now",
+    "project",
+    "resume",
+    "milestone",
+    "waiting_on_human",
+    "waiting_on_agents",
+    "tidy",
+    "notes"
+  ],
+  "title": "Next",
+  "type": "object"
+}

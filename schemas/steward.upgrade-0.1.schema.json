@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "channel": {
+      "anyOf": [
+        {
+          "enum": [
+            "dev",
+            "stable"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Channel"
+    },
+    "command": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Command"
+    },
+    "install_method": {
+      "enum": [
+        "uv-tool",
+        "pipx",
+        "pip",
+        "channel",
+        "unknown"
+      ],
+      "title": "Install Method",
+      "type": "string"
+    },
+    "installed_version": {
+      "title": "Installed Version",
+      "type": "string"
+    },
+    "latest_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Latest Version"
+    },
+    "note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Note"
+    },
+    "schema": {
+      "const": "steward.upgrade/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "source": {
+      "anyOf": [
+        {
+          "enum": [
+            "exchange",
+            "pypi"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Source"
+    },
+    "upgrade_available": {
+      "title": "Upgrade Available",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema",
+    "installed_version",
+    "latest_version",
+    "source",
+    "install_method",
+    "channel",
+    "upgrade_available",
+    "command",
+    "note"
+  ],
+  "title": "Upgrade",
+  "type": "object"
+}

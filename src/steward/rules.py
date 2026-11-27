@@ -106,6 +106,7 @@ RULES: dict[str, tuple[str, int]] = {
     "R-84": ("compare.shadow", 1),
     "R-87": ("release.stranger_test", 1),
     "R-86": ("model.records", 1),
+    "R-88": ("tidy.stale", 1),
 }
 
 AREAS: dict[str, tuple[str, ...]] = {
@@ -147,7 +148,15 @@ AREAS: dict[str, tuple[str, ...]] = {
     "data": ("R-83",),
     "compare": ("R-84",),
     "models": ("R-86",),
+    "tidy": ("R-88",),
 }
+
+
+def rule_area(rule: str) -> str:
+    """The area a rule belongs to: the first area that lists it (0.21.0, STW-047). A rule that several areas share
+    (R-02 and R-03 in contract and benchmark, R-85 in paper and studies) is named by its first area, as `explain`
+    and the using-steward catalogue name it."""
+    return next((a for a, rs in AREAS.items() if rule in rs), "unassigned")
 
 
 @dataclass
@@ -531,7 +540,8 @@ def r07(ctx: Ctx) -> list[Result]:
         hits += found
     out_hits = []
     for h in hits:
-        where = {"path": h["path"], **({"page": h["page"]} if h.get("page") else {"line": h["line"]})}
+        where = {"path": h["path"], **({"page": h["page"]} if h.get("page") else
+                                       {"line": h["line"], **({"column": h["column"]} if "column" in h else {})})}
         if h["kind"] == "local_path":
             out_hits.append({"code": "R-07.local_path", **where, "message": "an absolute home path with a user name"})
         elif h["term"].public:
@@ -659,12 +669,17 @@ def r09(ctx: Ctx) -> list[Result]:
                     continue
             is_tex = rel.endswith((".tex", ".bib", ".cls", ".sty"))
             for lineno, line in enumerate(text.splitlines(), start=1):
+                raw_line = line
                 if mode == "draft":
                     line = _TEX_COMMENT.sub("", line) if is_tex else _HTML_COMMENT.sub("", line)
                 for k, pat in enumerate(patterns, start=1):
-                    if pat.search(line):
+                    hit = pat.search(line)
+                    if hit:
                         causes.append(Status.FAIL if mode == "final" else Status.INCOMPLETE)
-                        details.append({"code": "R-09.marker", "path": rel, "line": lineno, "value": f"pattern #{k}"})
+                        # C4: the column only where removing comments left the line unchanged up to the marker
+                        col = {"column": hit.start() + 1} if raw_line[:hit.end()] == line[:hit.end()] else {}
+                        details.append({"code": "R-09.marker", "path": rel, "line": lineno, **col,
+                                        "value": f"pattern #{k}"})
         status = combine(causes)
         n = sum(1 for d in details if d["code"] == "R-09.marker")
         reason = {Status.FAIL: f"{n} placeholder marker(s) in final mode",
@@ -2774,6 +2789,7 @@ def r43(ctx: Ctx) -> list[Result]:
         return [result("R-43", ".", Status.NOT_APPLICABLE, "[release] is not configured", rec)]
     rel = rc.findings
     ff, causes, details = None, [], []
+    waivers: list[tuple[str, str]] = []
     if (ctx.root / rel).is_file():
         data, errors = _load_toml(ctx, rel)
         try:
@@ -2783,7 +2799,7 @@ def r43(ctx: Ctx) -> list[Result]:
         if ff is None:
             causes, details = [Status.FAIL], [{"code": "R-43.invalid", "message": "findings register is invalid"}] + errors
         else:
-            names, details = rv.evaluate(ctx.root, ctx.config, ff)
+            names, details = rv.evaluate(ctx.root, ctx.config, ff, waivers=waivers)
             causes = [Status(n) for n in names]
     else:
         causes, details = [Status.INCOMPLETE], [{"code": "R-43.no_register", "path": rel}]
@@ -2792,10 +2808,12 @@ def r43(ctx: Ctx) -> list[Result]:
         state = "no open blockers" if status is Status.PASS else f"review state: {status.value.lower()}"
         return [result("R-43", rel, Status.NOT_APPLICABLE, f"release review is optional here ({state})",
                        rec + details)]
-    return [result("R-43", rel, status, {Status.FAIL: "open, unwaived or non-independent review findings block the release",
+    review_result = result("R-43", rel, status, {Status.FAIL: "open, unwaived or non-independent review findings block the release",
                    Status.INCOMPLETE: "the release review is missing, stale, or awaiting re-verification",
                    Status.UNKNOWN: "review coverage cannot be determined (git unavailable)"}.get(
-                   status, "an independent review covers this release; blocking findings are verified or waived"), details, ctx.evidence(rel))]
+                   status, "an independent review covers this release; blocking findings are verified or waived"), details, ctx.evidence(rel))
+    review_result.waivers = tuple(sorted(set(waivers)))
+    return [review_result]
 
 
 # ---------------------------------------------------------------- runtime fingerprint (0.6.2): R-44
@@ -3397,6 +3415,7 @@ RULE_FUNCS: dict[str, Callable[[Ctx], list[Result]]] = {
     "R-85": lambda c: _process("r85", c), "R-63": lambda c: _process("r63", c),
     "R-84": r84,
     "R-87": lambda c: __import__("steward.stranger", fromlist=["r87"]).r87(c),
+    "R-88": lambda c: __import__("steward.cockpit", fromlist=["r88"]).r88(c),
     "R-86": r86,
     "R-66": lambda c: _process("r66", c), "R-64": lambda c: _process("r64", c), "R-65": lambda c: _process("r65", c), "R-67": lambda c: _process("r67", c),
 }

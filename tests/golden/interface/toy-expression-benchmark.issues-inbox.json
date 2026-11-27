@@ -1,0 +1,20 @@
+{
+  "groups": [
+    {
+      "count": 2,
+      "fingerprint": "3c56e2afc0e5b36d6982254f0ecd4593b875e4c94ec42232cf342aa0823a55ec",
+      "items": [
+        "ABC-DEF-001",
+        "XYZ-DEF-001"
+      ],
+      "projects": [
+        "ABC",
+        "XYZ"
+      ],
+      "versions": [
+        "VERSION"
+      ]
+    }
+  ],
+  "schema": "steward.issues_inbox/0.1"
+}

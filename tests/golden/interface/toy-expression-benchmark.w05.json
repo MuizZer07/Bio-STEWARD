@@ -1,0 +1,482 @@
+{
+  "authorize keys": {
+    "exit": 0,
+    "stdout": {
+      "baseline": "cccccccccccccccccccccccccccccccccccccccc",
+      "keys": [
+        {
+          "hardware": "yes",
+          "principal": "demo",
+          "type": "sk-ssh-ed25519@openssh.com"
+        }
+      ],
+      "schema": "steward.authorize_keys/0.1"
+    }
+  },
+  "authorize list": {
+    "exit": 0,
+    "stdout": {
+      "items": [],
+      "schema": "steward.authorize_list/0.1"
+    }
+  },
+  "authorize pending": {
+    "exit": 0,
+    "stdout": {
+      "items": [
+        {
+          "action": "spend",
+          "baseline": "cccccccccccccccccccccccccccccccccccccccc",
+          "budget": "2 USD",
+          "expires": "2099-12-31T00:00:00Z",
+          "nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "object": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "path": ".steward/pending/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.txt",
+          "payload_sha256": "003716588fcb097c085d7559a6865bd97da5ab466dbaf35d3b3825090f2a0338",
+          "peer": null,
+          "project": "DEMO",
+          "repo_id": "78b19ff4-f1a8-4bb0-9d52-ab2fb34311c0",
+          "requester": null,
+          "scope": "task=DEMO-001",
+          "state": "waiting",
+          "summary": "Example spending request.",
+          "tag": "steward/auth/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "schema": "steward.authorize_pending/0.1",
+      "skipped": [
+        {
+          "peer": "PEER",
+          "reason": "no_local_checkout"
+        }
+      ],
+      "waiting": 1
+    }
+  },
+  "channel status": {
+    "exit": 0,
+    "stdout": {
+      "channels": [
+        {
+          "channel": "dev",
+          "name": "fixture-tool",
+          "tag": "v0.1.0",
+          "time": "2026-11-27T00:00:00Z"
+        },
+        {
+          "channel": null,
+          "name": "other-tool",
+          "tag": null,
+          "time": null
+        }
+      ],
+      "schema": "steward.channel_status/0.1"
+    }
+  },
+  "integrity status": {
+    "exit": 0,
+    "stdout": {
+      "datasets": [
+        {
+          "name": "example",
+          "role": "sealed"
+        }
+      ],
+      "frozen": [
+        {
+          "amendment_proposed": true,
+          "confirmatory": false,
+          "name": "fixture",
+          "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ],
+      "schema": "steward.integrity_status/0.1"
+    }
+  },
+  "paper citations": {
+    "exit": 0,
+    "stdout": {
+      "mismatched": [],
+      "paper": "main",
+      "path": "paper/citations.toml",
+      "problems": [],
+      "schema": "steward.paper_citations/0.1",
+      "unverified": [],
+      "verified": 0
+    }
+  },
+  "paper displays": {
+    "exit": 0,
+    "stdout": {
+      "displays": [
+        {
+          "id": "donors_figure",
+          "kind": "figure",
+          "label": "fig:donors",
+          "missing": [],
+          "output": "paper/figures/donors.tex"
+        },
+        {
+          "id": "splits_table",
+          "kind": "table",
+          "label": "tab:splits",
+          "missing": [],
+          "output": "paper/tables/splits.tex"
+        }
+      ],
+      "paper": "main",
+      "path": "paper/displays.toml",
+      "schema": "steward.paper_displays/0.1"
+    }
+  },
+  "paper values": {
+    "exit": 0,
+    "stdout": {
+      "errors": {},
+      "paper": "main",
+      "path": "paper/values.toml",
+      "schema": "steward.paper_values/0.1",
+      "values": {
+        "alpha": "0.05",
+        "min_gain": "0.05",
+        "n_donors": "40",
+        "n_samples": "120",
+        "n_test_donors": "8",
+        "n_test_samples": "24",
+        "n_train_donors": "24",
+        "n_train_samples": "72",
+        "n_val_donors": "8",
+        "n_val_samples": "24",
+        "resamples": "2000",
+        "samples_per_donor": "3"
+      }
+    }
+  },
+  "release status": {
+    "exit": 0,
+    "stdout": {
+      "last_public": null,
+      "last_public_pushed": null,
+      "mode": "mirror",
+      "remote": "https://example.invalid/public.git",
+      "schema": "steward.release_status/0.1",
+      "staging": null,
+      "unpublished": [
+        "v0.2.0"
+      ]
+    }
+  },
+  "session start": {
+    "exit": 0,
+    "stdout": {
+      "constitution": "2",
+      "handoff": {
+        "commit": null,
+        "commit_date": null,
+        "path": "development/W05-HANDOFF.md",
+        "text": "# Handoff\n\nResume from the example records.\n"
+      },
+      "schema": "steward.session_start/0.1"
+    }
+  },
+  "spend status": {
+    "exit": 0,
+    "stdout": {
+      "actual": 1.0,
+      "calls": 1,
+      "cap": 5.0,
+      "committed": 1.0,
+      "currency": "USD",
+      "schema": "steward.spend_status/0.1",
+      "unknown_cost_calls": 0
+    }
+  },
+  "sprint status": {
+    "exit": 0,
+    "stdout": {
+      "dispatch": "order",
+      "id": "fixture",
+      "path": "development/sprints/fixture.toml",
+      "schema": "steward.sprint_status/0.1",
+      "tasks": [
+        {
+          "after": [],
+          "agent": "shell",
+          "branch": "sprint/fixture/T1",
+          "changed_files": [],
+          "checks": [
+            {
+              "command": "true",
+              "exit": 0
+            }
+          ],
+          "commit": "cccccccccccccccccccccccccccccccccccccccc",
+          "commits": [],
+          "ended": "2026-11-27T01:00:00Z",
+          "held": false,
+          "id": "T1",
+          "last_commit_subject": null,
+          "last_step": null,
+          "limits": {
+            "idle_minutes": null,
+            "wall_minutes": 60.0
+          },
+          "log": null,
+          "model": null,
+          "note": null,
+          "ordered": false,
+          "permissions": null,
+          "run": null,
+          "run_log": null,
+          "started": null,
+          "state": "done",
+          "title": "Check the example",
+          "uncommitted": []
+        },
+        {
+          "after": [
+            "T1"
+          ],
+          "agent": "shell",
+          "branch": null,
+          "changed_files": [],
+          "checks": [],
+          "commit": null,
+          "commits": [],
+          "ended": null,
+          "held": false,
+          "id": "T2",
+          "last_commit_subject": null,
+          "last_step": null,
+          "limits": {
+            "idle_minutes": null,
+            "wall_minutes": 60.0
+          },
+          "log": null,
+          "model": null,
+          "note": null,
+          "ordered": true,
+          "permissions": null,
+          "run": null,
+          "run_log": null,
+          "started": null,
+          "state": "ready",
+          "title": "Review the example",
+          "uncommitted": []
+        }
+      ],
+      "window": {
+        "end": "2026-11-27T08:00:00Z",
+        "start": "2026-11-27T00:00:00Z"
+      },
+      "window_state": "ended"
+    }
+  },
+  "study show": {
+    "exit": 0,
+    "stdout": {
+      "check": "INCOMPLETE",
+      "path": "development/studies/example-study.toml",
+      "schema": "steward.study_show/0.1",
+      "study": {
+        "depends_on": [],
+        "id": "example-study",
+        "inputs": [],
+        "kind": "study",
+        "notes": null,
+        "papers": [],
+        "plan": null,
+        "plan_sha256": null,
+        "references": {
+          "annotation": null,
+          "chromosome_naming": null,
+          "coordinate_base": null,
+          "databases": {},
+          "genome": null,
+          "id_namespace": null,
+          "mapping": null,
+          "organism": null,
+          "taxon": null
+        },
+        "results": [],
+        "samples": null,
+        "schema": "steward.study/1",
+        "status": "active",
+        "title": "Example study",
+        "tools": []
+      }
+    }
+  },
+  "talk plan": {
+    "exit": 0,
+    "stdout": {
+      "audience": "technical",
+      "feedback": "targeted",
+      "missing": [],
+      "path": "talks/progress-update/talk.toml",
+      "purpose": "progress-update",
+      "schema": "steward.talk_plan/0.1",
+      "stage": "development",
+      "stage_source": "confirmed",
+      "suggestion": {
+        "claim_ceiling": "preliminary",
+        "density": "balanced",
+        "max_slides": 10,
+        "max_slides_source": "auto",
+        "pattern": "progress",
+        "preferences": {},
+        "roles": [
+          "motivation",
+          "architecture",
+          "implemented",
+          "preliminary-results",
+          "challenges",
+          "decisions-needed",
+          "next-steps"
+        ]
+      },
+      "talk": "progress-update"
+    }
+  },
+  "talk prefs": {
+    "exit": 0,
+    "stdout": {
+      "preferences": {
+        "accessibility.alt_text": {
+          "layer": "default",
+          "value": true
+        },
+        "accessibility.min_contrast": {
+          "layer": "default",
+          "value": 4.5
+        },
+        "motion.transitions": {
+          "layer": "default",
+          "value": "minimal"
+        },
+        "notes.mode": {
+          "layer": "default",
+          "value": "bullets"
+        },
+        "palette.background": {
+          "layer": "default",
+          "value": "#ffffff"
+        },
+        "palette.text": {
+          "layer": "default",
+          "value": "#1a1a1a"
+        },
+        "style.aspect": {
+          "layer": "default",
+          "value": "16:9"
+        },
+        "style.density": {
+          "layer": "default",
+          "value": "balanced"
+        },
+        "typography.min_font_pt": {
+          "layer": "default",
+          "value": 14.0
+        }
+      },
+      "schema": "steward.talk_prefs/0.1",
+      "talk": "progress-update"
+    }
+  },
+  "task board": {
+    "exit": 0,
+    "stdout": {
+      "board": "development/TASKS.md",
+      "schema": "steward.task_board/0.1",
+      "tasks": [
+        {
+          "archived": true,
+          "closed": true,
+          "id": "DEMO-002",
+          "path": "development/archive/DEMO-002.md",
+          "status": "done"
+        },
+        {
+          "archived": false,
+          "closed": false,
+          "id": "DEMO-001",
+          "path": "development/tasks/DEMO-001.md",
+          "status": "in progress"
+        }
+      ]
+    }
+  },
+  "tokens report": {
+    "exit": 0,
+    "stdout": {
+      "currency": "USD",
+      "issues": [],
+      "schema": "steward.tokens_report/0.1",
+      "sources": {
+        "claude": {
+          "files": [
+            {
+              "issues": [],
+              "path": "claude log 1",
+              "status": "available"
+            }
+          ],
+          "status": "available"
+        },
+        "codex": {
+          "files": [],
+          "status": "unavailable"
+        },
+        "gemini": {
+          "files": [],
+          "status": "unavailable"
+        }
+      },
+      "tasks": [
+        {
+          "agents": [
+            {
+              "agent": "claude",
+              "tokens": 80
+            }
+          ],
+          "cost": null,
+          "files_read": [
+            {
+              "path": "src/example.py",
+              "reads": 1
+            }
+          ],
+          "issues": [],
+          "models": [
+            {
+              "agent": "claude",
+              "cache_read": 20,
+              "cache_write": 10,
+              "cost": null,
+              "input": 60,
+              "model": "claude-test",
+              "output": 20,
+              "tokens": 80
+            }
+          ],
+          "status": "available",
+          "task": "all activity",
+          "tokens": 80,
+          "tool_outputs": [
+            {
+              "agent": "claude",
+              "bytes": 38,
+              "log_path": "claude log 1",
+              "paths": [
+                "src/example.py"
+              ],
+              "session": "session-306e5f52",
+              "time_ms": 1795608060000
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

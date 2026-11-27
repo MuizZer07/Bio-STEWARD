@@ -1,0 +1,90 @@
+{
+  "$defs": {
+    "CleanupCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "cls": {
+          "title": "Cls",
+          "type": "string"
+        },
+        "entries": {
+          "title": "Entries",
+          "type": "integer"
+        },
+        "external": {
+          "title": "External",
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "dir",
+            "file"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "refusals": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Refusals",
+          "type": "array"
+        },
+        "size": {
+          "title": "Size",
+          "type": "integer"
+        },
+        "users": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Users",
+          "type": "array"
+        },
+        "volume": {
+          "title": "Volume",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cls",
+        "path",
+        "kind",
+        "size",
+        "volume",
+        "external",
+        "users",
+        "refusals",
+        "entries"
+      ],
+      "title": "CleanupCandidate",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/CleanupCandidate"
+      },
+      "title": "Candidates",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.storage_scan/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "candidates"
+  ],
+  "title": "StorageScan",
+  "type": "object"
+}

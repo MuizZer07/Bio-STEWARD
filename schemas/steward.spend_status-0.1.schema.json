@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actual": {
+      "title": "Actual",
+      "type": "number"
+    },
+    "calls": {
+      "title": "Calls",
+      "type": "integer"
+    },
+    "cap": {
+      "title": "Cap",
+      "type": "number"
+    },
+    "committed": {
+      "title": "Committed",
+      "type": "number"
+    },
+    "currency": {
+      "title": "Currency",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.spend_status/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "unknown_cost_calls": {
+      "title": "Unknown Cost Calls",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema",
+    "calls",
+    "committed",
+    "actual",
+    "unknown_cost_calls",
+    "cap",
+    "currency"
+  ],
+  "title": "SpendStatus",
+  "type": "object"
+}

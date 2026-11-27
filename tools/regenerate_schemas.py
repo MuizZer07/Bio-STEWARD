@@ -43,6 +43,10 @@ SCHEMAS = {
     "steward.milestones-0.1.schema.json": MilestonesFile,
     "steward.sprint-0.1.schema.json": SprintFile,
 }
+# 0.21.0 (W01): the tagged `--format json` documents and the interface, kept in their own registry.
+from steward.interface_schemas import SCHEMAS as INTERFACE_SCHEMAS  # noqa: E402
+
+SCHEMAS.update(INTERFACE_SCHEMAS)
 
 
 def render(model) -> str:

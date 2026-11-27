@@ -29,6 +29,19 @@
     "SprintMeta": {
       "additionalProperties": false,
       "properties": {
+        "base": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base"
+        },
         "dispatch": {
           "default": "order",
           "enum": [
@@ -64,6 +77,18 @@
         },
         "window": {
           "$ref": "#/$defs/Window"
+        },
+        "worktree_root": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Worktree Root"
         }
       },
       "required": [
@@ -88,10 +113,18 @@
           "enum": [
             "claude-code",
             "codex",
+            "antigravity",
             "shell"
           ],
           "title": "Agent",
           "type": "string"
+        },
+        "allow": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allow",
+          "type": "array"
         },
         "command": {
           "anyOf": [
@@ -104,6 +137,13 @@
           ],
           "default": null,
           "title": "Command"
+        },
+        "deny": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Deny",
+          "type": "array"
         },
         "done": {
           "items": {
@@ -139,6 +179,16 @@
           "title": "Needs",
           "type": "array"
         },
+        "permissions": {
+          "default": "edit",
+          "enum": [
+            "read-only",
+            "edit",
+            "edit-and-run"
+          ],
+          "title": "Permissions",
+          "type": "string"
+        },
         "prompt": {
           "anyOf": [
             {
@@ -162,6 +212,17 @@
           ],
           "default": null,
           "title": "Ref"
+        },
+        "requires": {
+          "items": {
+            "enum": [
+              "display",
+              "network"
+            ],
+            "type": "string"
+          },
+          "title": "Requires",
+          "type": "array"
         },
         "title": {
           "title": "Title",

@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "CitationProblem": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "CitationProblem",
+      "type": "object"
+    },
+    "MismatchedCitation": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "id",
+        "title"
+      ],
+      "title": "MismatchedCitation",
+      "type": "object"
+    },
+    "UnverifiedCitation": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "id"
+      ],
+      "title": "UnverifiedCitation",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "mismatched": {
+      "items": {
+        "$ref": "#/$defs/MismatchedCitation"
+      },
+      "title": "Mismatched",
+      "type": "array"
+    },
+    "paper": {
+      "title": "Paper",
+      "type": "string"
+    },
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "problems": {
+      "items": {
+        "$ref": "#/$defs/CitationProblem"
+      },
+      "title": "Problems",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.paper_citations/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "unverified": {
+      "items": {
+        "$ref": "#/$defs/UnverifiedCitation"
+      },
+      "title": "Unverified",
+      "type": "array"
+    },
+    "verified": {
+      "title": "Verified",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema",
+    "paper",
+    "path",
+    "verified",
+    "mismatched",
+    "unverified",
+    "problems"
+  ],
+  "title": "PaperCitations",
+  "type": "object"
+}

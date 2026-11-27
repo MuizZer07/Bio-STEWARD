@@ -109,7 +109,7 @@ def test_path_peers_still_work_in_local_checkout_commands(cli, tmp_path, monkeyp
     assert cleanup._peers(receiver) == [peer]
     checked = []
 
-    def pending(project):
+    def pending(project, **kw):  # W12 F1: called with the project's own repo_id
         checked.append(project)
         return []
 

@@ -246,6 +246,15 @@ RULE_DOCS: dict[str, dict[str, str]] = {
               why="Whether a newcomer can get value from a release is found by trying it, from the outside, before "
                   "the release; the project's own developers cannot see it any more.",
               **{"not": "That the project is useful: the record says what one stranger met."}, scope="project"),
+    "R-88": D(checks="Advisory: with [tidy] declared, the counts of steward tidy from the repository's records: open "
+                     "board tasks untouched for stale_days, board statuses a sprint ledger contradicts, own exchange "
+                     "items still open after their response, a handoff older than handoff_days or a state page naming "
+                     "no version as recent as the latest tag, received items not acknowledged in time, merged sprint "
+                     "branches and worktrees.",
+              why="Stale tasks and pages cost attention, and for agents tokens, at every session; naming them lets the "
+                  "owner archive, delete or keep each one.",
+              **{"not": "That a listed item should go: nothing is archived or deleted unless the owner asks. Memory "
+                        "folders and the peers' checkouts are outside the repository: steward tidy lists them."}, scope="project"),
 }
 
 
@@ -262,4 +271,5 @@ DYNAMIC_CODES: dict[str, list[str]] = {
     "R-42": ["R-42.terms_unavailable", "R-42.excluded", "R-42.private_term_in_name", "R-42.policy_term_in_name",
              "R-42.local_path", "R-42.private_term", "R-42.policy_term", "R-42.forbidden_member",
              "R-42.missing_member", "R-42.missing_artifact", "R-42.version_mismatch"],
+    "R-88": ["R-88.stale_task", "R-88.contradiction", "R-88.stale_page", "R-88.exchange", "R-88.leftover"],
 }

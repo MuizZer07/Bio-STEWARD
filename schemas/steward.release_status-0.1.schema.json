@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "last_public": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Last Public"
+    },
+    "last_public_pushed": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Last Public Pushed"
+    },
+    "mode": {
+      "enum": [
+        "mirror",
+        "open"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "remote": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Remote"
+    },
+    "schema": {
+      "const": "steward.release_status/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "staging": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Staging"
+    },
+    "unpublished": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Unpublished",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "mode",
+    "remote",
+    "last_public",
+    "last_public_pushed",
+    "unpublished",
+    "staging"
+  ],
+  "title": "ReleaseStatus",
+  "type": "object"
+}

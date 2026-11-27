@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "Handoff": {
+      "additionalProperties": false,
+      "properties": {
+        "commit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Commit"
+        },
+        "commit_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Commit Date"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Text"
+        }
+      },
+      "required": [
+        "path",
+        "text",
+        "commit",
+        "commit_date"
+      ],
+      "title": "Handoff",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "constitution": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Constitution"
+    },
+    "handoff": {
+      "$ref": "#/$defs/Handoff"
+    },
+    "schema": {
+      "const": "steward.session_start/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "constitution",
+    "handoff"
+  ],
+  "title": "SessionStart",
+  "type": "object"
+}

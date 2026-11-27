@@ -637,8 +637,27 @@ def open_plan(root: Path, cfg: Any) -> dict[str, Any]:
 def channel_command(ch: Channel, which: str, tag: str | None) -> list[str]:
     src = ch.stable if which == "stable" else ch.dev
     spec = f"{ch.name} @ {src}" + (f"@{tag}" if tag else "")
-    return {"uv-tool": ["uv", "tool", "install", "--force", spec], "pipx": ["pipx", "install", "--force", spec],
-            "pip": ["python", "-m", "pip", "install", "--force-reinstall", spec]}[ch.installer]
+    return installer_command(ch.installer, spec)
+
+
+def installer_command(installer: str, spec: str, *, python: str = "python") -> list[str]:
+    """The install command for `spec`. W12 F4: a repository's files never steer it. `uv --no-config` reads no
+    uv.toml or pyproject.toml [tool.uv] (index, find-links, overrides); `python -P` does not put the working
+    directory on sys.path, so a planted pip.py is not imported. `-P` rather than `-I`: `-I` also drops the user
+    site-packages, which changes where pip installs for a `pip install --user` setup. Run it with `run_installer`."""
+    return {"uv-tool": ["uv", "tool", "install", "--no-config", "--force", spec],
+            "pipx": ["pipx", "install", "--force", spec],
+            "pip": [python, "-P", "-m", "pip", "install", "--force-reinstall", spec]}[installer]
+
+
+def run_installer(argv: list[str], run: Any = None) -> subprocess.CompletedProcess:
+    """Run an installer in the foreground with its working directory in a fresh, empty temporary directory, outside
+    every repository (W12 F4): no file of the project the command was started from is found as configuration or as a
+    module. Raises OSError when the installer cannot start."""
+    import tempfile
+
+    with tempfile.TemporaryDirectory(prefix="steward-install-") as empty:
+        return (run or subprocess.run)(argv, cwd=empty)
 
 
 STATE = ".steward/channels.json"

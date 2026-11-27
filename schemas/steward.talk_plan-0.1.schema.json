@@ -1,0 +1,156 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "Preference": {
+      "additionalProperties": false,
+      "properties": {
+        "layer": {
+          "title": "Layer",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/JsonValue"
+        }
+      },
+      "required": [
+        "value",
+        "layer"
+      ],
+      "title": "Preference",
+      "type": "object"
+    },
+    "TalkSuggestion": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_ceiling": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Claim Ceiling"
+        },
+        "density": {
+          "title": "Density",
+          "type": "string"
+        },
+        "max_slides": {
+          "title": "Max Slides",
+          "type": "integer"
+        },
+        "max_slides_source": {
+          "enum": [
+            "set",
+            "auto"
+          ],
+          "title": "Max Slides Source",
+          "type": "string"
+        },
+        "pattern": {
+          "title": "Pattern",
+          "type": "string"
+        },
+        "preferences": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Preference"
+          },
+          "title": "Preferences",
+          "type": "object"
+        },
+        "roles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim_ceiling",
+        "pattern",
+        "roles",
+        "max_slides",
+        "max_slides_source",
+        "density",
+        "preferences"
+      ],
+      "title": "TalkSuggestion",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "audience": {
+      "title": "Audience",
+      "type": "string"
+    },
+    "feedback": {
+      "title": "Feedback",
+      "type": "string"
+    },
+    "missing": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing",
+      "type": "array"
+    },
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "purpose": {
+      "title": "Purpose",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.talk_plan/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "stage": {
+      "title": "Stage",
+      "type": "string"
+    },
+    "stage_source": {
+      "enum": [
+        "confirmed",
+        "proposed"
+      ],
+      "title": "Stage Source",
+      "type": "string"
+    },
+    "suggestion": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TalkSuggestion"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "talk": {
+      "title": "Talk",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "talk",
+    "path",
+    "stage",
+    "stage_source",
+    "purpose",
+    "feedback",
+    "audience",
+    "missing",
+    "suggestion"
+  ],
+  "title": "TalkPlanStatus",
+  "type": "object"
+}

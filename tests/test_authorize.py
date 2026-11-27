@@ -174,10 +174,10 @@ def test_prepare_uses_r33_object_and_one_signature_is_enough(cli, repo, capsys, 
 
     sign = az.sign
 
-    def sign_after_notice(root, signing_nonce, data=None):
+    def sign_after_notice(root, signing_nonce, data=None, **kw):
         notice = capsys.readouterr().out
         assert "matches R-33" in notice and expected in notice
-        return sign(root, signing_nonce, data)
+        return sign(root, signing_nonce, data, **kw)
 
     monkeypatch.setattr(az, "sign", sign_after_notice)
     code, _, err = cli("authorize", "sign", nonce)
@@ -204,7 +204,7 @@ def test_sign_reports_stale_policy_object_before_signing(cli, repo, capsys, monk
     _, rep = cli.check(repo, "policy")
     expected = next(d["value"] for d in one(rep, "R-33")["details"] if d["code"] == "R-33.object")
 
-    def sign_after_notice(root, signing_nonce, data=None):
+    def sign_after_notice(root, signing_nonce, data=None, **kw):
         notice = capsys.readouterr().out
         assert "does not match R-33" in notice and expected in notice and original in notice
         assert data == az.read_pending(root, signing_nonce)
@@ -593,3 +593,43 @@ def test_policy_change_counts_a_new_policy_file_without_a_key_error(monkeypatch,
     calls = iter([("sha256:new", {"steward.toml": "a", "development/new.md": "b"}), ("sha256:old", {"steward.toml": "a"})])
     monkeypatch.setattr(az, "policy_bundle", lambda root, cfg, frm=None: next(calls))
     assert az.policy_change(tmp_path, None, "base") == ("sha256:new", ["development/new.md"])
+
+
+def test_STW055_signed_waiver_is_reported_and_does_not_hide_other_findings(cli, repo):
+    from conftest import gate
+    from test_review import register
+
+    with (repo / "steward.toml").open("a") as config:
+        config.write('\n[release]\nrequired = []\nreview_required = true\n'
+                     '[gates.waiver]\nrequire = ["R-01", "R-43"]\n')
+    _, report = cli.check(repo)
+    policy = next(d["value"] for d in one(report, "R-33")["details"] if d["code"] == "R-33.object")
+    approve(cli, repo, action="policy.change", obj=policy)
+    code, out, err = cli("authorize", "prepare", "waive", "--object", "approve.txt",
+                         "--scope", "finding=A1", "--expires", expires())
+    assert code == 0, err
+    nonce = out.split("authorize sign ")[1].strip()
+    tag = f"steward/auth/{nonce}"
+    register(repo, "accepted", f'waiver = "{tag}"')
+
+    code, report = cli.check(repo, gate="waiver")
+    assert code == 1
+    assert gate(report, "waiver")["waived"] == []
+    assert gate(report, "waiver")["blocking"][0]["rule"] == "R-43"
+
+    assert cli("authorize", "sign", nonce)[0] == 0
+    code, report = cli.check(repo, gate="waiver")
+    row = gate(report, "waiver")
+    assert code == 0 and row["eligible"] and row["blocking"] == []
+    assert row["waived"] == [{"rule": "R-43", "subject": "A1", "status": "FAIL", "authorization": tag}]
+    assert row["pass_count"] + len(row["waived"]) == row["required_count"]
+    assert f"waived: R-43 A1 ({tag})" in cli("check", "--summary", "--gate", "waiver")[1]
+
+    register_file = repo / "development/assessment/findings.toml"
+    with register_file.open("a") as findings:
+        findings.write('\n[[findings]]\nid = "A2"\nreview = "r1"\nseverity = "high"\n'
+                       f'title = "different finding"\nstatus = "accepted"\nwaiver = "{tag}"\n')
+    code, report = cli.check(repo, gate="waiver")
+    row_with_blocker = gate(report, "waiver")
+    assert code == 1 and row_with_blocker["blocking"][0]["rule"] == "R-43"
+    assert row_with_blocker["waived"] == row["waived"]

@@ -1,16 +1,18 @@
 """Command line: `steward init | check | report` (RELEASE_v0.1_SPEC §6).
 
-No command opens a network connection. `check` writes nothing except an explicit --output file.
+`check` can write an explicit --output file and replaces the local diagnostic on a toolkit fault.
 """
 
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import os
 import re
 import subprocess
 import sys
+from contextvars import ContextVar
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -19,6 +21,8 @@ from . import __version__
 from .engine import UnknownGate, run_check
 from .fsutil import canonical_json, find_root, glob_match, inside
 from .init import apply, plan
+from .interface import (ERROR_SCHEMA, EXIT_NOT_CONFIGURED, add_json_format, add_json_options, describe, wants_json,
+                        write_document, write_json)
 from .report import Report, render_markdown, render_summary, render_text, select_results, summary_line
 from .rules import AREAS, RULES
 from . import models as _models
@@ -26,6 +30,39 @@ from .status import (EXIT_CANTCREAT, EXIT_DATAERR, EXIT_OK, EXIT_SOFTWARE, EXIT_
                      exit_code_for, gate_exit_code)
 
 NOT_A_REPO = "not a steward repository (no steward.toml); run `steward init`"
+# 0.21.0 (STW-047 C6): no steward.toml exits EXIT_NOT_CONFIGURED (78, sysexits EX_CONFIG); it was 64 before.
+
+
+# Defined in status.py, not here: under `python -m steward.cli` this file is loaded twice (as __main__ and as
+# steward.cli, when another module imports from it), and two classes would let the dispatcher miss the exception.
+from .status import NotConfigured  # noqa: E402  (C6: `_dispatch` turns it into exit 78)
+
+
+def _require_root(args: argparse.Namespace) -> Path:
+    """The project root, or NotConfigured."""
+    root = args.repo.resolve() if args.repo else find_root(Path.cwd())
+    if root is None or not (root / "steward.toml").is_file():
+        raise NotConfigured(NOT_A_REPO)
+    return root
+
+
+def error_document(code: str, message: str, exit_code: int, hint: str | None = None) -> dict[str, Any]:
+    from . import __version__
+
+    return {"schema": ERROR_SCHEMA, "tool_version": __version__, "code": code, "message": message,
+            "exit": exit_code, "hint": hint}
+
+
+def _not_configured(args: argparse.Namespace, e: NotConfigured) -> int:
+    print(f"steward: {e}", file=sys.stderr)
+    if getattr(args, "format", None) == "json":  # the legacy --json flag keeps its empty stdout
+        sys.stdout.write(canonical_json(error_document(
+            "not_configured", "not a steward repository (no steward.toml)", EXIT_NOT_CONFIGURED,
+            "steward init --for benchmark|reanalysis|paper|agents|licence")))
+    return EXIT_NOT_CONFIGURED
+
+
+_used_options: ContextVar[set[str] | None] = ContextVar("used_options", default=None)
 
 
 class _Parser(argparse.ArgumentParser):
@@ -34,22 +71,35 @@ class _Parser(argparse.ArgumentParser):
         print(f"steward: error: {message}", file=sys.stderr)
         raise SystemExit(EXIT_USAGE)
 
+    def _get_values(self, action, arg_strings):
+        used = _used_options.get()
+        if used is not None and action.option_strings:
+            used.add(max(action.option_strings, key=len))
+        return super()._get_values(action, arg_strings)
+
 
 QUIET_BREAKERS = {"R-53.undelivered", "R-53.upgrade_available"}  # AF19: advice that --quiet must never hide
 
 HELP_GROUPS = """Commands by what you do:
-  Start            init · example · check · explain · report
+  Start            init · example · check · explain · report · interface · skills · next
   Plan             benchmark · study · research · timeline · sprint
   Run              run · diff · compare · shards · stage · tokens
-  Data and records data · freeze · amend · seal · unseal · integrity · frozen · storage · pins · licence
+  Data and records data · freeze · amend · seal · unseal · integrity · frozen · storage · pins · licence · decisions
   Papers and talks paper · talk · docs
   Approvals        authorize · spend
-  Agents and tasks task · agents · session · audit
-  Projects         exchange · constitution · channel
-  Releases         release · stranger-test · repro · hooks · ledger · mcp
+  Agents and tasks task (template · brief · dispatch) · agents · session · audit · tidy · notifications
+  Projects         exchange · issue · issues · constitution · channel
+  Releases         release · upgrade · stranger-test · repro · hooks · ledger · mcp
 
 New here? `steward init --for reanalysis` (or benchmark, paper, agents, licence), then `steward check --summary`.
 """
+
+# The subcommand destinations that are not `<command>_command` (W12 F6: the fault hint names the subcommand too).
+SUBCOMMAND_DESTS = {"authorize": "auth_command", "stranger-test": "stranger_command"}
+
+
+def subcommand_dest(command: str) -> str:
+    return SUBCOMMAND_DESTS.get(command, f"{command.replace('-', '_')}_command")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -65,6 +115,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", action="version", version=f"steward {__version__}")
     sub = p.add_subparsers(dest="command", required=True, parser_class=_Parser)
 
+    pintr = sub.add_parser("interface", help="describe JSON commands, schemas and exit codes")
+    pintr.add_argument("--format", choices=["json"], default="json", help="print the versioned interface as JSON")
+
+    pug = sub.add_parser("upgrade", parents=[common], help="check for a CLI release or install an exact version")
+    upgrade_mode = pug.add_mutually_exclusive_group(required=True)
+    upgrade_mode.add_argument("--check", action="store_true", help="show the installed and newest known versions")
+    upgrade_mode.add_argument("--to", metavar="VERSION", help="install this version after terminal confirmation")
+    pug.add_argument("--online", action="store_true", help="with --check, look up the latest release on PyPI")
+    pug.add_argument("--format", choices=["text", "json"], default="text",
+                     help="with --check, print text or versioned JSON")
+    pug.add_argument("--allow-downgrade", action="store_true", help="with --to, permit an older version")
+
     pi = sub.add_parser("init", parents=[common], help="scaffold this repository (never overwrites)")
     pi.add_argument("--profile", choices=["exploratory", "confirmatory"], default="exploratory")
     pi.add_argument("--for", dest="goals", action="append", choices=sorted(GOALS), metavar="GOAL",
@@ -76,6 +138,8 @@ def build_parser() -> argparse.ArgumentParser:
     pi.add_argument("--kits", metavar="LIST", help="skill bundles to copy with --skills: core, paper, talk "
                     "(default: core, plus paper with --paper)")
     pi.add_argument("--dry-run", action="store_true", help="print the plan; write nothing")
+    pi.add_argument("--format", choices=["text", "json"], default="text",
+                    help="with --dry-run: print the plan as versioned JSON (0.21.0)")
     pi.add_argument("--paper", nargs="?", const="main", metavar="NAME",
                     help="also scaffold a LaTeX paper (paper/ for 'main', papers/NAME/ otherwise)")
 
@@ -84,7 +148,8 @@ def build_parser() -> argparse.ArgumentParser:
     pi.add_argument("--templates", metavar="LIST", help="templates to add regardless of profile: contract, prior-work")
 
     pc = sub.add_parser("check", parents=[common], help="evaluate the rules; read-only",
-                        epilog="The project is never changed. Since 0.13.0 a check lists this checkout in the machine's "
+                        epilog="A toolkit fault can replace the local .steward/last-error.json diagnostic. A check lists "
+                               "this checkout in the machine's "
                                "project registry (in the user's config folder), so storage cleanup knows who shares a "
                                "folder. For a read-only run (a reviewer's sandbox, CI), set STEWARD_NO_REGISTRY=1; to "
                                "opt the project out for good, set registry = false under [storage.clean] in "
@@ -96,28 +161,47 @@ def build_parser() -> argparse.ArgumentParser:
     pc.add_argument("--output", type=Path, metavar="FILE", help="also write the full JSON report to FILE")
     pc.add_argument("--final", action="store_true", help="final (submission) mode for every paper: stricter R-09 and R-12")
     pc.add_argument("--quiet", action="store_true",
-                    help="one line when every gate is eligible and nothing needs attention; otherwise the summary")
+                    help="one line when every gate is eligible and nothing needs attention; otherwise the summary. "
+                    "The exit code is the gate's: a FAIL outside every gate exits 0 (use --fail-on fail)")
+    pc.add_argument("--fail-on", choices=["fail", "incomplete"],
+                    help="for scripts: exit non-zero when any result is FAIL (fail), or FAIL, INCOMPLETE or UNKNOWN "
+                    "(incomplete), whatever the gate says (0.21.0)")
     pc.add_argument("--summary", action="store_true",
                     help="compact text: counts, gates and every non-PASS result; the full evidence stays in --output")
     pc.add_argument("--rule", metavar="R-xx", help="check only the areas of this rule and show its results with every "
                     "detail (0.20.1)")
     pc.add_argument("--all", action="store_true", dest="all_lines",
                     help="with --summary: one line per not-applicable rule (default: one folded line naming them)")
+    pc.add_argument("--digest-only", action="store_true",
+                    help="evaluate no rule: recompute the inputs digest of the report given with --against (0.21.0)")
+    pc.add_argument("--against", metavar="FILE", help="with --digest-only: a report written by `steward check` "
+                    "(--output FILE or --format json), or - for stdin")
     pex_ = sub.add_parser("explain", parents=[common], help="what a rule checks, why, its result codes and fixes")
-    pex_.add_argument("rule", help="a rule ID, e.g. R-42")
+    pex_.add_argument("rule", nargs="?", help="a rule ID, e.g. R-42")
+    pex_.add_argument("--all", action="store_true", dest="all_rules", help="every rule, in catalogue order (0.21.0)")
+    pex_.add_argument("--format", choices=["text", "json"], default="text", help="print text or versioned JSON")
+
+    psk = sub.add_parser("skills", parents=[common], help="the bundled skills, their bundles and this project's copies")
+    psksub = psk.add_subparsers(dest="skills_command", required=True, parser_class=_Parser)
+    pskl = psksub.add_parser("list", parents=[common], help="list skills by bundle; with [skills], the state of each "
+                             "copy (R-60)")
+    pskl.add_argument("--format", choices=["text", "json"], default="text", help="print text or versioned JSON")
 
     pp = sub.add_parser("paper", parents=[common], help="PaperKit helpers")
     psub = pp.add_subparsers(dest="paper_command", required=True, parser_class=_Parser)
     pv = psub.add_parser("values", parents=[common], help="compute the values registry; --write regenerates the file the text uses")
     pv.add_argument("name", nargs="?", help="paper name (default: the only paper, or 'main')")
+    add_json_format(pv, "paper values", write_option="--write")
     pv.add_argument("--write", action="store_true", help="write the generated values file (values.tex, _variables.yml or values.json)")
 
     pd = psub.add_parser("displays", parents=[common], help="list displays; --record writes displays.lock after a build")
     pd.add_argument("name", nargs="?", help="paper name (default: the only paper, or 'main')")
+    add_json_format(pd, "paper displays", write_option="--record")
     pd.add_argument("--record", action="store_true", help="record script, input and output hashes in displays.lock")
 
     pci = psub.add_parser("citations", parents=[common], help="the citation verification record (optional; R-77)")
     pci.add_argument("name", nargs="?", help="paper name (default: the only paper, or 'main')")
+    add_json_format(pci, "paper citations", write_option="--fetch")
     pci.add_argument("--fetch", action="store_true", help="resolve unrecorded DOIs (Crossref) and PMIDs (PubMed) online")
 
     pm = psub.add_parser("manifest", parents=[common], help="submission manifest: files, sizes, SHA-256, commit")
@@ -140,6 +224,8 @@ def build_parser() -> argparse.ArgumentParser:
     pu.add_argument("--param", action="append", default=[], metavar="K=V")
     pu.add_argument("--seed")
     pu.add_argument("--label")
+    pu.add_argument("--run-id", metavar="ID", help="the run's id (default: a new one); the sprint dispatcher passes it "
+                    "to link a task to its run (0.21.0)")
     pu.add_argument("--contract", metavar="ID", help="the benchmark contract this run serves (R-39 timing check)")
     pu.add_argument("--metrics", metavar="FILE", help="small JSON metrics file recorded by value (<= 64 KiB) for steward diff run")
     pu.add_argument("--recover", action="store_true", help="mark started runs whose supervisor is gone as interrupted")
@@ -152,14 +238,14 @@ def build_parser() -> argparse.ArgumentParser:
     dr.add_argument("b")
     dr.add_argument("--tol", action="append", default=[], metavar="POINTER=abs:X|rel:X")
     dr.add_argument("--default-tol", metavar="abs:X|rel:X")
-    dr.add_argument("--json", action="store_true")
+    add_json_options(dr, "diff run")
     dns = dsub.add_parser("runs", parents=[common], help="recorded runs side by side; --svg draws them")
     dns.add_argument("--label", metavar="GLOB", help="only runs whose label matches")
     dns.add_argument("--svg", type=Path, metavar="FILE", help="also write a bar chart (SVG)")
     dns.add_argument("--metric", choices=["duration", "memory"], default="duration")
-    dns.add_argument("--json", action="store_true")
+    add_json_options(dns, "diff runs")
     di = dsub.add_parser("impact", parents=[common], help="results made stale by changed inputs or code")
-    di.add_argument("--json", action="store_true")
+    add_json_options(di, "diff impact")
 
     prl = sub.add_parser("release", parents=[common], help="release manifest and distribution audit")
     rsub = prl.add_subparsers(dest="release_command", required=True, parser_class=_Parser)
@@ -167,7 +253,8 @@ def build_parser() -> argparse.ArgumentParser:
     rpb.add_argument("tag")
     rpb.add_argument("--push", action="store_true", help="push the public commit and tag after the summary")
     rpb.add_argument("--dry-run", action="store_true", help="export and scan only")
-    rsub.add_parser("status", parents=[common], help="the last public release and what is not yet published")
+    rls = rsub.add_parser("status", parents=[common], help="the last public release and what is not yet published")
+    add_json_format(rls, "release status")
     rgp = rsub.add_parser("go-public", parents=[common],
                           help="go public with a release mirror: readiness, the plan, and with --apply the steps (0.20.3)")
     rgp.add_argument("--owner", required=True, help="the GitHub owner (user or organisation)")
@@ -253,7 +340,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     pss = sub.add_parser("session", parents=[common], help="session sign-off and resumption (constitution Article VIII.2)")
     ssub2 = pss.add_subparsers(dest="session_command", required=True, parser_class=_Parser)
-    ssub2.add_parser("start", parents=[common], help="print the constitution version and the handoff, nothing else")
+    sss = ssub2.add_parser("start", parents=[common], help="print the constitution version and the handoff, nothing else")
+    add_json_format(sss, "session start")
     sc_ = ssub2.add_parser("close", parents=[common], help="check the records and write one bounded handoff")
     sc_.add_argument("--decisions-logged", action="store_true",
                      help="you confirm that every owner decision of this session is in the decisions log")
@@ -281,7 +369,7 @@ def build_parser() -> argparse.ArgumentParser:
     bsub = pbm.add_subparsers(dest="benchmark_command", required=True, parser_class=_Parser)
     bsp = bsub.add_parser("splits", parents=[common], help="per-split counts, ID and group overlaps, checks run")
     bsp.add_argument("contract", help="the contract file (repository-relative)")
-    bsp.add_argument("--json", action="store_true")
+    add_json_options(bsp, "benchmark splits")
     bpw = bsub.add_parser("power", parents=[common], help="power from development effects (resampled, seeded)")
     bpw.add_argument("contract")
     bpw.add_argument("--effects", required=True, help="JSON list (or one value per line) of per-unit development effects")
@@ -293,7 +381,7 @@ def build_parser() -> argparse.ArgumentParser:
     bpw.add_argument("--seed", type=int, default=20261123)
     bre = bsub.add_parser("results", parents=[common], help="the results matrix: missing cells and thresholds")
     bre.add_argument("contract")
-    bre.add_argument("--json", action="store_true")
+    add_json_options(bre, "benchmark results")
 
     psp = sub.add_parser("sprint", parents=[common],
                          help="a supervised sequence of agent tasks for a window of time (0.13.0)")
@@ -308,9 +396,12 @@ def build_parser() -> argparse.ArgumentParser:
                       ("report", "write and print the sprint's report"), ("signatures", "the signatures the tasks need")):
         x = spsub.add_parser(name, parents=[common], help=hlp)
         x.add_argument("id")
+        if name == "status":
+            add_json_format(x, "sprint status")
     sst = spsub.add_parser("start", parents=[common], help="dispatch tasks as their orders come, through steward run")
     sst.add_argument("id")
-    sst.add_argument("--watch", action="store_true", help="keep waiting for orders until the window ends or `sprint stop`")
+    sst.add_argument("--watch", action="store_true", help="keep waiting for orders, retries and rechecks until the "
+                     "window ends, every task is finished, or `sprint stop`")
     for name, hlp in (("go", "order a task to start (or --retry a failed one)"), ("hold", "hold a task"),
                       ("skip", "skip a task, with a reason")):
         x = spsub.add_parser(name, parents=[common], help=hlp)
@@ -320,9 +411,24 @@ def build_parser() -> argparse.ArgumentParser:
             x.add_argument("--retry", action="store_true")
         if name == "skip":
             x.add_argument("--reason", required=True)
+    srl = spsub.add_parser("reload", parents=[common],
+                           help="order the dispatcher to read the sprint file again, also while a task runs (0.21.0)")
+    srl.add_argument("id")
     sstop = spsub.add_parser("stop", parents=[common], help="stop dispatching; --now also stops running tasks")
     sstop.add_argument("id")
     sstop.add_argument("--now", action="store_true")
+    sre = spsub.add_parser("recheck", parents=[common],
+                           help="run a failed task's done commands on its branch's head and record done or failed (0.21.0)")
+    sre.add_argument("id")
+    sre.add_argument("task")
+    sad = spsub.add_parser("add", parents=[common],
+                           help="add a task written into the sprint file after the sprint opened (0.21.0)")
+    sad.add_argument("id")
+    sad.add_argument("task")
+    swa = spsub.add_parser("watch", parents=[common],
+                           help="one line per new event (states, commits, tool steps) until nothing runs (0.21.0)")
+    swa.add_argument("id")
+    swa.add_argument("--poll", type=float, default=2.0, metavar="S", help="seconds between looks (default 2)")
 
     pch = sub.add_parser("channel", parents=[common], help="switch a tool between its stable and dev source (0.19.0)")
     chsub = pch.add_subparsers(dest="channel_command", required=True, parser_class=_Parser)
@@ -331,11 +437,12 @@ def build_parser() -> argparse.ArgumentParser:
     chu.add_argument("which", choices=["stable", "dev"])
     chu.add_argument("--tag", help="a release tag of that source")
     chu.add_argument("--yes", action="store_true", help="run the install command (otherwise it is printed)")
-    chsub.add_parser("status", parents=[common], help="which source each [[channel]] tool was last installed from")
+    chs = chsub.add_parser("status", parents=[common], help="which source each [[channel]] tool was last installed from")
+    add_json_format(chs, "channel status")
     plc = sub.add_parser("licence", parents=[common], help="licence governance: inventory and third-party notices (0.19.0)")
     lcsub = plc.add_subparsers(dest="licence_command", required=True, parser_class=_Parser)
     lci = lcsub.add_parser("inventory", parents=[common], help="every dependency with its licence and the policy's verdict")
-    lci.add_argument("--json", action="store_true")
+    add_json_options(lci, "licence inventory")
     lcn = lcsub.add_parser("notices", parents=[common], help="third-party notices (Markdown) or an SBOM (CycloneDX JSON)")
     lcn.add_argument("--format", choices=["md", "cyclonedx"], default="md")
     lcn.add_argument("--write", action="store_true", help="write the notices file declared in [licence] notices")
@@ -346,9 +453,10 @@ def build_parser() -> argparse.ArgumentParser:
     stn.add_argument("--title", required=True)
     stn.add_argument("--kind", default="study", help="reanalysis, experiment, claim, benchmark, …")
     stl = stsub.add_parser("list", parents=[common], help="every study with its check")
-    stl.add_argument("--json", action="store_true")
+    add_json_options(stl, "study list")
     stw = stsub.add_parser("show", parents=[common], help="a study card")
     stw.add_argument("id")
+    add_json_format(stw, "study show")
     sta = stsub.add_parser("add-input", parents=[common], help="record a data source in a study (and fingerprint its files)")
     sta.add_argument("id")
     sta.add_argument("--source", required=True, help="GEO, SRA, ENA, ArrayExpress, Zenodo, a URL host, local, …")
@@ -391,7 +499,7 @@ def build_parser() -> argparse.ArgumentParser:
     rsn.add_argument("id")
     rsn.add_argument("--title", required=True)
     rsl = rssub.add_parser("list", parents=[common], help="every record, newest first, with what needs attention")
-    rsl.add_argument("--json", action="store_true")
+    add_json_options(rsl, "research list")
     cmp = sub.add_parser("compare", parents=[common], help="compare two recorded pipeline runs")
     cmpsub = cmp.add_subparsers(dest="compare_command", required=True, parser_class=_Parser)
     cmpr = cmpsub.add_parser("record", parents=[common], help="record agreement and disagreements by key")
@@ -404,10 +512,23 @@ def build_parser() -> argparse.ArgumentParser:
     cmpr.add_argument("--output-b", metavar="PATH", help="select a recorded CSV or TSV output from run B")
     ptk = sub.add_parser("task", parents=[common], help="prepare briefs and mark task windows")
     tksub = ptk.add_subparsers(dest="task_command", required=True, parser_class=_Parser)
+    tkboard = tksub.add_parser("board", parents=[common], help="list tasks from the project's task records")
+    add_json_format(tkboard, "task board")
     tkb = tksub.add_parser("brief", parents=[common], help="turn a task file into a self-contained prompt for an agent")
     tkb.add_argument("task", type=Path)
     tkb.add_argument("--for", dest="agent", choices=["codex", "gemini", "claude", "generic"], default="generic")
     tkb.add_argument("--output", type=Path, metavar="FILE")
+    tkx = tksub.add_parser("dispatch", parents=[common],
+                           help="run a task's brief with Codex or Antigravity, headless, and keep the report (0.20.4)")
+    tkx.add_argument("task", type=Path)
+    tkx.add_argument("--to", dest="agent", required=True, choices=["codex", "antigravity"])
+    tkx.add_argument("--implement", action="store_true",
+                     help="let it change files (in a checkout of its own; nothing is committed); default: a review")
+    tkx.add_argument("--inline", action="store_true",
+                     help="put the task's documents in the prompt and ask for text only (when tools are refused)")
+    tkx.add_argument("--model", help="the agent's model (Antigravity default: gemini-4-neon-high)")
+    tkx.add_argument("--output", type=Path, metavar="FILE", help="where the report goes (default .steward/dispatch/)")
+    tkx.add_argument("--dry-run", action="store_true", help="print what would run; run nothing")
     tkt = tksub.add_parser("template", parents=[common], help="print a brief template (review, literature-review, …)")
     tkt.add_argument("name", nargs="?")
     tkt.add_argument("--output", type=Path, metavar="FILE", help="write it there (folders are made)")
@@ -426,7 +547,7 @@ def build_parser() -> argparse.ArgumentParser:
     tor = tosub.add_parser("report", parents=[common], help="show task totals and the largest tool outputs")
     tor.add_argument("--since", help="count events from this date (YYYY-MM-DD, UTC)")
     toformat = tor.add_mutually_exclusive_group()
-    toformat.add_argument("--json", action="store_true", help="print totals and tool metrics as JSON")
+    add_json_options(tor, "tokens report", exclusive=toformat)
     toformat.add_argument("--svg", action="store_true", help="print the chart alone to stdout")
     for action in (toe, tor):
         action.add_argument("--task", metavar="ID")
@@ -436,7 +557,7 @@ def build_parser() -> argparse.ArgumentParser:
     ppn = sub.add_parser("pins", parents=[common], help="pinned dependencies: deprecate, retire (keep the artifact), restore (0.17.0)")
     pnsub = ppn.add_subparsers(dest="pins_command", required=True, parser_class=_Parser)
     pns = pnsub.add_parser("status", parents=[common], help="each pin's state and why, and the object a retirement approval signs")
-    pns.add_argument("--json", action="store_true")
+    add_json_options(pns, "pins status")
     pnr = pnsub.add_parser("retire", parents=[common], help="keep the artifact, drop the install (needs a signed pin.retire approval)")
     pnr.add_argument("name")
     pnr.add_argument("--authorization", metavar="TAG", help="the signed steward/auth/… tag for this pin's plan")
@@ -448,11 +569,34 @@ def build_parser() -> argparse.ArgumentParser:
     ausub = pau.add_subparsers(dest="audit_command", required=True, parser_class=_Parser)
     aup = ausub.add_parser("progress", parents=[common],
                            help="the Progress Audit's evidence: where we are, use by other projects, pending work, reach")
-    aup.add_argument("--json", action="store_true")
+    add_json_options(aup, "audit progress")
 
     ptl = sub.add_parser("timeline", parents=[common],
-                         help="milestones soonest first: days left, progress from the records, at risk or late (0.13.0)")
-    ptl.add_argument("--json", action="store_true")
+                         help="milestone deadlines and progress, with plan drift in versioned JSON")
+    add_json_options(ptl, "timeline")
+    ptl.add_argument("--now", metavar="TIME", help="evaluate at this time (ISO 8601 with its zone), to reproduce a state")
+    pde = sub.add_parser("decisions", parents=[common], help="recorded decisions and open questions with their options")
+    pde.add_argument("--format", choices=["text", "json"], default="text", help="print text or versioned JSON")
+
+    # 0.21.0 (W03; STW-048 C10, C12; C21): where the project stands, what is stale, and one feed of what changed
+    pnx = sub.add_parser("next", parents=[common],
+                         help="where you left off, the next milestone, what waits on you and on agents, what to tidy")
+    pnx.add_argument("--format", choices=["text", "json"], default="text", help="print text or versioned JSON")
+    pnx.add_argument("--now", metavar="TIME", help="evaluate at this time (ISO 8601 with its zone)")
+    pnx.add_argument("--brief", action="store_true", help="a short text for an agent starting a session")
+    pty = sub.add_parser("tidy", parents=[common],
+                         help="stale tasks, pages, exchange items, leftovers and memory (read-only; --archive moves tasks)")
+    pty.add_argument("--format", choices=["text", "json"], default="text", help="print text or versioned JSON")
+    pty.add_argument("--now", metavar="TIME", help="evaluate at this time (ISO 8601 with its zone)")
+    pty.add_argument("--archive", nargs="+", metavar="ID", help="move these task files to [tidy] archive (the owner's step)")
+    pnt = sub.add_parser("notifications", parents=[common],
+                         help="one feed: CLI releases, exchange items, sprint tasks, approvals, gates, milestones")
+    pnt.add_argument("--format", choices=["text", "json"], default="text", help="print text or versioned JSON")
+    pnt.add_argument("--now", metavar="TIME", help="evaluate at this time (ISO 8601 with its zone)")
+    pnt.add_argument("--days", type=int, default=14, metavar="N",
+                     help="finished and failed sprint tasks of the last N days (default 14)")
+    pnt.add_argument("--against", type=Path, metavar="REPORT",
+                     help="an earlier check report: name each gate that has turned not eligible since (runs a check)")
 
     pst = sub.add_parser("storage", parents=[common], help="large artifacts by hash; resource audit (v0.8)")
     ssub = pst.add_subparsers(dest="storage_command", required=True, parser_class=_Parser)
@@ -461,13 +605,13 @@ def build_parser() -> argparse.ArgumentParser:
     sr.add_argument("--retrieval", required=True, help='how to get it back, e.g. "dvc pull PATH" or a URL')
     sr.add_argument("--tool", choices=["dvc", "datalad", "manual"], default="manual")
     sv = ssub.add_parser("verify", parents=[common], help="compare registered artifacts with what is present")
-    sv.add_argument("--json", action="store_true")
+    add_json_options(sv, "storage verify")
     sa = ssub.add_parser("audit", parents=[common], help="directory sizes against [storage.caps]; largest untracked files (read-only)")
-    sa.add_argument("--json", action="store_true")
+    add_json_options(sa, "storage audit")
     sa.add_argument("--top", type=int, default=10)
     ssc = ssub.add_parser("scan", parents=[common],
                           help="read-only: this project's temporary storage on every disk, its size and who else uses it")
-    ssc.add_argument("--json", action="store_true")
+    add_json_options(ssc, "storage scan")
     scl = ssub.add_parser("clean", parents=[common], help="plan a cleanup (--plan), then apply it (--apply PLAN), asking per location")
     scg = scl.add_mutually_exclusive_group(required=True)
     scg.add_argument("--plan", action="store_true", help="write a plan of the cleanable candidates; deletes nothing")
@@ -511,10 +655,18 @@ def build_parser() -> argparse.ArgumentParser:
     xan.add_argument("--breaking", action="store_true", help="the release has breaking changes")
     xan.add_argument("--changelog", default="CHANGELOG.md")
     xst = xsub.add_parser("status", parents=[common], help="every item with its place and state")
-    xst.add_argument("--json", action="store_true")
+    add_json_options(xst, "exchange status")
     xst.add_argument("--fetch", action="store_true", help="also fetch peers declared by a git URL (network)")
     xe = xsub.add_parser("export", parents=[common], help="a plain copy of a one-way item, to paste into another tracker")
     xe.add_argument("id")
+    issue = sub.add_parser("issue", parents=[common], help="file a toolkit defect in the exchange outbox")
+    source = issue.add_mutually_exclusive_group(required=True)
+    source.add_argument("description", nargs="?", help="a toolkit problem described in generic terms")
+    source.add_argument("--from-last-error", action="store_true", help="report the last local toolkit fault")
+    issues = sub.add_parser("issues", parents=[common], help="read toolkit defect reports received through exchange")
+    inbox = issues.add_subparsers(dest="issues_command", required=True, parser_class=_Parser)
+    add_json_format(inbox.add_parser("inbox", parents=[common], help="group received reports by fingerprint"),
+                    "issues inbox")
     pco = sub.add_parser("constitution", parents=[common], help="print the Bio-STEWARD constitution (C-1)")
     pco.add_argument("--version", action="store_true", dest="const_version", help="print its version only")
     pco.add_argument("--changes", action="store_true", help="print its version history")
@@ -554,18 +706,24 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--summary", default="", help="what is being approved, in words")
     asg = asub.add_parser("sign", parents=[common], help="sign a prepared payload with git tag -s (the key prompt is the human step)")
     asg.add_argument("nonce")
+    asg.add_argument("--expect-sha256", metavar="HASH",
+                     help="sign only if the payload's bytes still have this SHA-256 (the payload_sha256 that "
+                          "`authorize pending --format json` reports); otherwise refuse and sign nothing")
     av = asub.add_parser("verify", parents=[common], help="verify a signed authorization tag")
     av.add_argument("tag")
     av.add_argument("--action")
     av.add_argument("--object", help="recompute and require this object (file or sha256:)")
-    asub.add_parser("list", parents=[common], help="list authorization and anchor tags with their status")
+    als = asub.add_parser("list", parents=[common], help="list authorization and anchor tags with their status")
+    add_json_format(als, "authorize list")
     apd = asub.add_parser("pending", parents=[common], help="list prepared payloads waiting for a signature (deferred signing)")
+    add_json_format(apd, "authorize pending")
     apd.add_argument("--all-projects", action="store_true", help="also the peers declared in [exchange] peers (read-only)")
     asp = asub.add_parser("sign-pending", parents=[common],
                           help="show and sign each waiting payload in one sitting (the key prompt is the human step)")
     asp.add_argument("--all-projects", action="store_true", help="also the peers declared in [exchange] peers")
     asp.add_argument("--yes", action="store_true", help="do not ask before each signature (the key may still prompt)")
-    asub.add_parser("keys", parents=[common], help="signers at the baseline and their key types")
+    aks = asub.add_parser("keys", parents=[common], help="signers at the baseline and their key types")
+    add_json_format(aks, "authorize keys")
     aa = asub.add_parser("anchor", parents=[common], help="prepare an anchor payload for a ledger head")
     aa.add_argument("ledger", choices=["runs", "authorizations", "spend", "integrity"])
     apn = asub.add_parser("pin", parents=[common], help="pin this repository's trust root in your per-user trust.toml")
@@ -585,7 +743,8 @@ def build_parser() -> argparse.ArgumentParser:
     sr.add_argument("tokens_in", type=int)
     sr.add_argument("tokens_out", type=int)
     sr.add_argument("--request-id")
-    ssub.add_parser("status", parents=[common], help="totals against the cap")
+    sps = ssub.add_parser("status", parents=[common], help="totals against the cap")
+    add_json_format(sps, "spend status")
 
     pf = sub.add_parser("freeze", parents=[common], help="freeze protocol files, cohorts and parameters (signed if confirmatory)")
     pf.add_argument("name")
@@ -613,7 +772,8 @@ def build_parser() -> argparse.ArgumentParser:
     pun.add_argument("--decision", required=True)
     pin = sub.add_parser("integrity", parents=[common], help="integrity status")
     insub = pin.add_subparsers(dest="integrity_command", required=True, parser_class=_Parser)
-    insub.add_parser("status", parents=[common])
+    ins = insub.add_parser("status", parents=[common])
+    add_json_format(ins, "integrity status")
     iac = insub.add_parser("access", parents=[common], help="may a consumer use a dataset for develop, confirm or metadata?")
     iac.add_argument("dataset")
     iac.add_argument("--consumer", required=True, help="the study or paper ID")
@@ -623,6 +783,7 @@ def build_parser() -> argparse.ArgumentParser:
     tsub = pt.add_subparsers(dest="talk_command", required=True, parser_class=_Parser)
     tp = tsub.add_parser("plan", parents=[common], help="missing fields, suggested pattern and outline, stage ceiling")
     tp.add_argument("name", nargs="?")
+    add_json_format(tp, "talk plan", write_option="--write-outline")
     tp.add_argument("--write-outline", action="store_true", help="append the suggested [[outline]] if the plan has none")
     tv = tsub.add_parser("values", parents=[common], help="Quarto: write _variables.yml from the linked paper's registry")
     tv.add_argument("name", nargs="?")
@@ -632,6 +793,7 @@ def build_parser() -> argparse.ArgumentParser:
     tf = tsub.add_parser("prefs", parents=[common], help="show resolved preferences, or set one (explicit write)")
     tf.add_argument("name", nargs="?")
     tf.add_argument("--compact", action="store_true", help="only keys that differ from the defaults")
+    add_json_format(tf, "talk prefs", write_option="--set")
     tf.add_argument("--set", nargs=2, metavar=("KEY", "VALUE"), help="write a style key (e.g. style.density sparse)")
     tf.add_argument("--layer", default="project", help="global | project | context:NAME (with --set)")
 
@@ -645,10 +807,23 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    used: set[str] = set()
+    token = _used_options.set(used)
     try:
-        args = build_parser().parse_args(argv)
+        parser = build_parser()
+        args = parser.parse_args(argv)
+        write_option = getattr(args, "json_write_option", None)
+        if write_option and args.format == "json" and getattr(args, write_option[2:].replace("-", "_")):
+            parser.error(f"--format json cannot be used with {write_option}")
     except SystemExit as e:  # usage errors (64), --help and --version (0)
         return e.code if isinstance(e.code, int) else EXIT_USAGE
+    finally:
+        _used_options.reset(token)
+    from .issues import FaultHint
+
+    subcommand = getattr(args, subcommand_dest(args.command), None)
+    name = f"{args.command} {subcommand}" if subcommand else args.command
+    args.fault_hint = FaultHint(getattr(args, "repo", None), name, sorted(used))
     overlay = getattr(args, "config_overlay", None)
     if overlay is None:
         return _dispatch(args)
@@ -665,12 +840,21 @@ def main(argv: list[str] | None = None) -> int:
 
 def _dispatch(args: argparse.Namespace) -> int:
     try:
+        if args.command == "interface":
+            write_document(describe())
+            return EXIT_OK
+        if args.command == "upgrade":
+            from .upgrade import command
+
+            return command(args)
         if args.command == "init":
             return cmd_init(args)
         if args.command == "check":
             return cmd_check(args)
         if args.command == "explain":
             return cmd_explain(args)
+        if args.command == "skills":
+            return cmd_skills(args)
         if args.command in ("freeze", "amend", "seal", "unseal", "integrity"):
             return cmd_integrity(args)
         if args.command == "spend":
@@ -707,6 +891,10 @@ def _dispatch(args: argparse.Namespace) -> int:
             return cmd_storage(args)
         if args.command == "timeline":
             return cmd_timeline(args)
+        if args.command == "decisions":
+            return cmd_decisions(args)
+        if args.command in ("next", "tidy", "notifications"):
+            return cmd_cockpit(args)
         if args.command == "sprint":
             return cmd_sprint(args)
         if args.command == "audit":
@@ -736,6 +924,8 @@ def _dispatch(args: argparse.Namespace) -> int:
             return command(args)
         if args.command == "exchange":
             return cmd_exchange(args)
+        if args.command in ("issue", "issues"):
+            return cmd_issues(args)
         if args.command == "constitution":
             from .resources import CONSTITUTION_VERSION, constitution_text
 
@@ -750,11 +940,7 @@ def _dispatch(args: argparse.Namespace) -> int:
         if args.command == "mcp":
             from . import mcp
 
-            root = args.repo.resolve() if args.repo else find_root(Path.cwd())
-            if root is None or not (root / "steward.toml").is_file():
-                print(f"steward: {NOT_A_REPO}", file=sys.stderr)
-                return EXIT_USAGE
-            return mcp.main(root)
+            return mcp.main(_require_root(args))
         if args.command == "diff":
             return cmd_diff(args)
         if args.command == "ledger":
@@ -768,14 +954,20 @@ def _dispatch(args: argparse.Namespace) -> int:
             return {"values": cmd_paper_values, "displays": cmd_paper_displays, "citations": cmd_paper_citations,
                     "manifest": cmd_paper_manifest}[args.paper_command](args)
         return cmd_report(args)
+    except NotConfigured as e:
+        return _not_configured(args, e)
     except KeyboardInterrupt:
         return 130
     except Exception as e:  # a crash of the tool itself (per-rule errors are already UNKNOWN results)
-        print(f"steward: internal error: {e!r}", file=sys.stderr)
+        print(f"steward: internal error ({type(e).__name__})", file=sys.stderr)
+        args.fault_hint(EXIT_SOFTWARE, e)
         return EXIT_SOFTWARE
 
 
 def cmd_init(args: argparse.Namespace) -> int:
+    if args.format == "json" and not args.dry_run:
+        print("steward: --format json prints a plan; use it with --dry-run", file=sys.stderr)
+        return EXIT_USAGE
     root = (args.repo or Path.cwd()).resolve()
     if not root.is_dir():
         print(f"steward: {root} is not a directory", file=sys.stderr)
@@ -817,6 +1009,16 @@ def cmd_init(args: argparse.Namespace) -> int:
         return EXIT_USAGE
     acts = plan(root, args.profile, args.agents_md, skills, paper=args.paper, kits=kits, talk=args.talk,
                 project=args.project, templates=templates)
+    if args.format == "json":  # C7: the plan only; the paths are the repository's, never the toolkit's own
+        write_document({
+            "schema": "steward.init_plan/0.1", "tool_version": __version__, "dry_run": True,
+            "profile": args.profile, "kits": kits, "goals": goals, "templates": templates,
+            "actions": [{"verb": a.verb, "path": a.path, "note": a.note,
+                         **({"content": a.content} if a.verb == "print" else {})} for a in acts],
+            "tables": _planned_tables(root, acts, goals, args.paper),
+            "next": _init_next(goals),
+        })
+        return EXIT_OK
     for a in acts:
         print(a.line(args.dry_run))
         if a.verb == "print":
@@ -843,12 +1045,30 @@ def cmd_init(args: argparse.Namespace) -> int:
         added += _paper_table(root, args.paper)
     for t in added:
         print(f"append         steward.toml  [{t}]")
+    print("Next:\n" + "\n".join(f"  {i}. {st}" for i, st in enumerate(_init_next(goals), start=1)))
+    return EXIT_OK
+
+
+def _planned_tables(root: Path, acts: list[Any], goals: list[str], paper: str | None) -> list[str]:
+    """The steward.toml tables a real run would append after its plan (C7): computed, never written."""
+    from .records import RecordRefused, read_rel
+
+    made = next((a.content for a in acts if a.verb == "create" and a.path == "steward.toml"), None)
+    if made is None:
+        try:
+            made = read_rel(root, "steward.toml").decode("utf-8")
+        except (RecordRefused, ValueError, OSError):
+            return []
+    tables = _goal_tables(root, goals, planned=made)
+    return tables + (_paper_table(root, paper, planned=made) if paper is not None else [])
+
+
+def _init_next(goals: list[str]) -> list[str]:
     steps = [st for g in goals for st in GOALS[g]["next"]] or [
         "steward init --for benchmark|reanalysis|paper|agents|licence   (pick what you do; repeatable)",
         "steward check --summary",
         "ask your coding agent: \"Run the using-steward skill.\""]
-    print("Next:\n" + "\n".join(f"  {i}. {st}" for i, st in enumerate(dict.fromkeys(steps), start=1)))
-    return EXIT_OK
+    return list(dict.fromkeys(steps))
 
 
 GOALS: dict[str, dict[str, Any]] = {  # 0.19.0 (STW-006): what a goal needs, and the first commands to run
@@ -874,15 +1094,16 @@ GOALS: dict[str, dict[str, Any]] = {  # 0.19.0 (STW-006): what a goal needs, and
 }
 
 
-def _goal_tables(root: Path, goals: list[str]) -> list[str]:
-    """Append the tables the goals need to steward.toml, never one that is already there."""
+def _goal_tables(root: Path, goals: list[str], planned: str | None = None) -> list[str]:
+    """Append the tables the goals need to steward.toml, never one that is already there. With `planned` (the
+    steward.toml text a dry run would leave), only name the tables that would be appended (C7)."""
     import tomllib
 
     from .fsutil import safe_write
     from .records import RecordRefused, read_rel
 
     try:  # AF18: read and written inside the repository, never through a link
-        current = read_rel(root, "steward.toml").decode("utf-8")
+        current = planned if planned is not None else read_rel(root, "steward.toml").decode("utf-8")
         have = set(tomllib.loads(current))
     except (RecordRefused, ValueError) as e:
         print(f"steward: steward.toml cannot be extended ({e}); nothing appended", file=sys.stderr)
@@ -903,17 +1124,18 @@ def _goal_tables(root: Path, goals: list[str]) -> list[str]:
                     except RecordRefused:
                         continue
                 if lic is None:
-                    print("note: no identifiable LICENSE: add [licence] declared = \"SPDX-ID\" to steward.toml yourself")
+                    print("note: no identifiable LICENSE: add [licence] declared = \"SPDX-ID\" to steward.toml yourself",
+                          file=sys.stderr if planned is not None else sys.stdout)
                     continue
                 body = f'[licence]\ndeclared = "{lic}"\ndistribution = "internal"\n'
             text += "\n" + body
             added.append(name)
-    if text:
+    if text and planned is None:
         safe_write(root, "steward.toml", (current + text).encode("utf-8"))
     return added
 
 
-def _paper_table(root: Path, name: str) -> list[str]:
+def _paper_table(root: Path, name: str, planned: str | None = None) -> list[str]:
     import tomllib
 
     from .fsutil import safe_write
@@ -921,17 +1143,19 @@ def _paper_table(root: Path, name: str) -> list[str]:
     from .records import RecordRefused, read_rel
 
     try:
-        current = read_rel(root, "steward.toml").decode("utf-8")
+        current = planned if planned is not None else read_rel(root, "steward.toml").decode("utf-8")
         papers = tomllib.loads(current).get("paper") or {}
     except (RecordRefused, ValueError) as e:
         print(f"steward: steward.toml cannot be extended ({e}); add [paper.{name}] yourself", file=sys.stderr)
         return []
     if name in papers:
         return []
-    safe_write(root, "steward.toml", (current.rstrip("\n") + "\n" + paper_block(name)).encode("utf-8"))
+    if planned is None:
+        safe_write(root, "steward.toml", (current.rstrip("\n") + "\n" + paper_block(name)).encode("utf-8"))
     return [f"paper.{name}"]
 
 
+@functools.lru_cache(maxsize=1)
 def _toolkit_source() -> str:
     import pkgutil
 
@@ -990,30 +1214,135 @@ def rule_codes(rule: str) -> list[str]:
     return list(code_fixes(rule))
 
 
-def cmd_explain(args: argparse.Namespace) -> int:
+def explain_entry(rule: str) -> dict[str, Any]:
+    """What `steward explain` says about one rule, as data (C3; one source for the text and the JSON)."""
     from .report import NEXT
     from .rule_docs import RULE_DOCS
-    from .rules import AREAS, RULES
+    from .rules import rule_area
 
-    rule = args.rule.upper()
-    if rule not in RULES:
-        print(f"steward: no rule {args.rule}; rules are {min(RULES)} … {max(RULES)} (steward check --summary --all lists them)",
-              file=sys.stderr)
-        return EXIT_USAGE
     name, version = RULES[rule]
     d = RULE_DOCS[rule]
-    area = next((a for a, rs in AREAS.items() if rule in rs), "?")
-    fixes = code_fixes(rule)
-    out = [f"{rule} {name} (version {version}; area: {area}; {d['scope']} governance)", "",
-           f"Checks: {d['checks']}", f"Why: {d['why']}", f"A PASS does not mean: {d['not']}", f"Fix: {NEXT.get(rule, '-')}"]
-    if fixes:  # S9: each code with its own remedy where the source gives one
-        out += ["", "Result codes:"] + [f"  {c}" + (f": {f}" if f else "") for c, f in fixes.items()]
-    out += ["", f"Run it: steward check {area} --summary   (details: steward report FILE --rule {rule})"]
+    area = rule_area(rule)
+    return {
+        "rule": rule, "name": name, "version": version, "area": area,
+        "areas": [a for a, rs in AREAS.items() if rule in rs], "governance": d["scope"],
+        "checks": d["checks"], "why": d["why"], "pass_does_not_mean": d["not"], "fix": NEXT.get(rule, "-"),
+        "codes": [{"code": c, "fix": f or None} for c, f in code_fixes(rule).items()],
+        "run": f"steward check {area} --summary",
+    }
+
+
+def _explain_text(e: dict[str, Any]) -> str:
+    out = [f"{e['rule']} {e['name']} (version {e['version']}; area: {e['area']}; {e['governance']} governance)", "",
+           f"Checks: {e['checks']}", f"Why: {e['why']}", f"A PASS does not mean: {e['pass_does_not_mean']}",
+           f"Fix: {e['fix']}"]
+    if e["codes"]:  # S9: each code with its own remedy where the source gives one
+        out += ["", "Result codes:"] + [f"  {c['code']}" + (f": {c['fix']}" if c["fix"] else "") for c in e["codes"]]
+    out += ["", f"Run it: {e['run']}   (details: steward report FILE --rule {e['rule']})"]
+    return "\n".join(out)
+
+
+def cmd_explain(args: argparse.Namespace) -> int:
+    if args.all_rules == (args.rule is not None):
+        print("steward: name one rule (e.g. steward explain R-42), or --all for every rule", file=sys.stderr)
+        return EXIT_USAGE
+    rules = sorted(RULES)
+    if not args.all_rules:
+        rule = args.rule.upper()
+        if rule not in RULES:
+            print(f"steward: no rule {args.rule}; rules are {min(RULES)} … {max(RULES)} (steward explain --all lists "
+                  "them)", file=sys.stderr)
+            return EXIT_USAGE
+        rules = [rule]
+    entries = [explain_entry(r) for r in rules]
+    if args.format == "json":
+        from . import __version__
+
+        write_document({"schema": "steward.explain/0.1", "tool_version": __version__, "rules": entries})
+    else:
+        print("\n\n".join(_explain_text(e) for e in entries))
+    return EXIT_OK
+
+
+def _skill_description(path: Path) -> str:
+    """The `description:` of a SKILL.md front matter."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    if not text.startswith("---\n"):
+        return ""
+    for line in text[4:].split("\n---", 1)[0].splitlines():
+        if line.startswith("description:"):
+            return line.split(":", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+
+def skills_document(root: Path | None) -> dict[str, Any]:
+    """C8 (0.21.0): the bundled skills by bundle and, in a project with [skills], the canonical directory and the
+    state of each copy, from the code R-60 uses."""
+    import tomllib
+
+    from .process import skills_copies
+    from .resources import skills_dir
+
+    meta = tomllib.loads((skills_dir() / "BUNDLES.toml").read_text(encoding="utf-8"))
+    bundles = [{"name": n, "budget_words": b.get("budget_words"), "skills": list(b["skills"])} for n, b in meta.items()]
+    member: dict[str, list[str]] = {}
+    for b in bundles:
+        for sk in b["skills"]:
+            member.setdefault(sk, []).append(b["name"])
+    names = sorted(p.parent.name for p in skills_dir().glob("*/SKILL.md"))
+    skills = [{"name": n, "bundles": member.get(n, []), "description": _skill_description(skills_dir() / n / "SKILL.md")}
+              for n in names]
+    project = None
+    if root is not None:
+        sc = _models.load_config(root).skills
+        if sc is None:
+            project = {"configured": False, "canonical": None, "canonical_usable": None, "installed": [], "copies": []}
+        else:
+            usable, copies = skills_copies(root, sc)
+            installed = sorted(p.parent.name for p in (root / sc.canonical).glob("*/SKILL.md")) if usable else []
+            project = {"configured": True, "canonical": sc.canonical, "canonical_usable": usable, "installed": installed,
+                       "copies": [{**d, "failed": failed} for failed, d in copies]}
+    return {"schema": "steward.skills/0.1", "tool_version": __version__, "bundles": bundles, "skills": skills,
+            "project": project}
+
+
+def cmd_skills(args: argparse.Namespace) -> int:
+    root = args.repo.resolve() if args.repo else find_root(Path.cwd())
+    if root is not None and not (root / "steward.toml").is_file():
+        root = None  # the bundled skills are listed outside a project too
+    try:
+        doc = skills_document(root)
+    except (ValidationError, ValueError, RecursionError, OSError):
+        print("steward: steward.toml is not valid; run `steward check config`", file=sys.stderr)
+        return EXIT_USAGE
+    if args.format == "json":
+        write_document(doc)
+        return EXIT_OK
+    out = [f"{b['name']} ({len(b['skills'])} skill(s)): " + ", ".join(b["skills"]) for b in doc["bundles"]]
+    loose = [sk["name"] for sk in doc["skills"] if not sk["bundles"]]
+    if loose:
+        out.append("in no bundle: " + ", ".join(loose))
+    pj = doc["project"]
+    if pj is None:
+        out.append("No steward.toml here: bundled skills only.")
+    elif not pj["configured"]:
+        out.append("[skills] is not configured: `steward init --skills DIR` copies them.")
+    else:
+        out.append(f"canonical: {pj['canonical']}" + (f"; {len(pj['installed'])} skill(s) installed"
+                                                       if pj["canonical_usable"] else " (missing or a link)"))
+        for c in pj["copies"]:
+            out.append(f"  {'FAIL' if c['failed'] else 'ok  '} {c['path']}  {c['code']}"
+                       + (f": {c['message']}" if c.get("message") else ""))
     print("\n".join(out))
     return EXIT_OK
 
 
 def cmd_check(args: argparse.Namespace) -> int:
+    if args.digest_only or args.against is not None:
+        return cmd_check_digest(args)
     if args.summary and args.format == "json":
         print("steward: --summary is a text format; use --output FILE to keep the full JSON", file=sys.stderr)
         return EXIT_USAGE
@@ -1028,12 +1357,14 @@ def cmd_check(args: argparse.Namespace) -> int:
             return EXIT_USAGE
         # AO1: the rule's own areas are always checked (with any named ones)
         args.areas = sorted(set(args.areas) | {a for a, rs in AREAS.items() if rule in rs})
-    root = (args.repo.resolve() if args.repo else find_root(Path.cwd()))
-    if root is None or not (root / "steward.toml").is_file():
-        print(f"steward: {NOT_A_REPO}", file=sys.stderr)
-        return EXIT_USAGE
+    root = _require_root(args)
     try:
-        report = run_check(root, areas=args.areas or None, gate=args.gate, final=args.final)
+        exclude = ()
+        if args.output is not None and args.output.resolve().is_relative_to(root.resolve()):
+            exclude = (args.output.resolve().relative_to(root.resolve()).as_posix(),)
+        faults: list[Exception | str] = []
+        report = run_check(root, areas=args.areas or None, gate=args.gate, final=args.final, rule=rule,
+                           exclude=exclude, on_fault=faults.append)
         try:  # SC2 (0.13.0): this checkout in the machine registry, for the storage cleanup's shared-use check
             from . import cleanup as _cu
             from .models import load_config as _lc
@@ -1045,6 +1376,8 @@ def cmd_check(args: argparse.Namespace) -> int:
         print(f"steward: unknown gate '{e}'", file=sys.stderr)
         return EXIT_USAGE
     gate_name = report.pop("_gate")
+    if args.format == "json" or args.output is not None:
+        Report.model_validate(report, strict=True)
     if args.output is not None:
         out = args.output.resolve()
         rel = out.relative_to(root).as_posix() if inside(root, str(out)) and out.is_relative_to(root) else None
@@ -1080,11 +1413,114 @@ def cmd_check(args: argparse.Namespace) -> int:
         own = [Status(r["status"]) for r in verdict["results"]
                if r["rule"] == rule and r["status"] != "NOT_APPLICABLE"]  # AP1: combine() has no NOT_APPLICABLE
         worst = combine(own) if own else Status.PASS
-        return EXIT_OK if worst == Status.PASS else exit_code_for(worst)
-    if args.areas:
-        return exit_code_for(Status(verdict["summary"]["worst"])) if verdict["summary"]["worst"] != "PASS" else EXIT_OK
-    gate = next(g for g in verdict["gates"] if g["name"] == gate_name)
-    return gate_exit_code(gate)
+        code = EXIT_OK if worst == Status.PASS else exit_code_for(worst)
+    elif args.areas:
+        code = exit_code_for(Status(verdict["summary"]["worst"])) if verdict["summary"]["worst"] != "PASS" else EXIT_OK
+    else:
+        code = gate_exit_code(next(g for g in verdict["gates"] if g["name"] == gate_name))
+    code = _fail_on(args, verdict, code)
+    for fault in faults:
+        args.fault_hint(code, fault)
+    return code
+
+
+def _fail_on(args: argparse.Namespace, verdict: dict, code: int) -> int:
+    """S10 (0.21.0): `--fail-on` makes a FAIL (or anything not passing) exit non-zero, also outside every gate."""
+    if code != EXIT_OK or not getattr(args, "fail_on", None):
+        return code
+    hit = {"fail": ("FAIL",), "incomplete": ("FAIL", "INCOMPLETE", "UNKNOWN")}[args.fail_on]
+    found = [Status(r["status"]) for r in verdict["results"] if r["status"] in hit]
+    if not found:
+        return code
+    from .status import combine
+
+    return exit_code_for(combine(found))
+
+
+def cmd_check_digest(args: argparse.Namespace) -> int:
+    """C5 (0.21.0): the present digest of a report's inputs, without evaluating a rule. The report lists the files
+    its check read and a digest of the repository's file list; both are recomputed here by the functions the check
+    uses, so "current" means the same files hold the same bytes and no file was added or removed."""
+    from .engine import inputs_digest, tree_digest
+    from .fsutil import sha256_file
+    from .models import overlay_label, overlay_path
+
+    if not args.digest_only or args.against is None:
+        print("steward: --digest-only needs --against FILE (a report from `steward check`), and --against needs "
+              "--digest-only", file=sys.stderr)
+        return EXIT_USAGE
+    other = [flag for flag, on in (("AREA", bool(args.areas)), ("--rule", bool(args.rule)), ("--output", args.output),
+                                   ("--summary", args.summary), ("--quiet", args.quiet), ("--final", args.final),
+                                   ("--all", args.all_lines), ("--fail-on", args.fail_on)) if on]
+    if other:
+        print(f"steward: --digest-only evaluates no rule; {', '.join(other)} cannot be combined with it", file=sys.stderr)
+        return EXIT_USAGE
+    root = _require_root(args)
+    try:
+        raw = sys.stdin.read() if args.against == "-" else Path(args.against).read_text(encoding="utf-8")
+        report = json.loads(raw)
+        Report.model_validate(report)
+    except FileNotFoundError:
+        print(f"steward: no such report file: {args.against}", file=sys.stderr)
+        return EXIT_USAGE
+    except (json.JSONDecodeError, UnicodeDecodeError, ValidationError) as e:
+        print(f"steward: invalid report (not a steward.report/0.1 document): {str(e).splitlines()[0]}", file=sys.stderr)
+        return EXIT_DATAERR
+    verdict = report["verdict"]
+    if verdict.get("inputs") is None or verdict.get("tree_digest") is None:
+        print("steward: this report lists no inputs (written before 0.21.0); run `steward check` again", file=sys.stderr)
+        return EXIT_DATAERR
+    exclude = ()
+    if args.against != "-" and Path(args.against).resolve().is_relative_to(root.resolve()):
+        exclude = (Path(args.against).resolve().relative_to(root.resolve()).as_posix(),)
+    present: dict[str, str] = {}
+    changed, unreadable = [], []
+    overlay = overlay_path(root)
+    label = overlay_label(root, overlay) if overlay is not None else None
+    for item in verdict["inputs"]:
+        rel = item["path"]
+        path = overlay if rel == label else (root / rel if inside(root, rel) else None)
+        try:
+            if path is None:  # a label of an overlay that is gone, or a path outside the repository: never read
+                raise OSError
+            digest = sha256_file(path)
+        except OSError:
+            unreadable.append(rel)
+            continue
+        present[rel] = digest
+        if digest != item["sha256"]:
+            changed.append(rel)
+    if label is not None and label not in present and label not in unreadable:
+        changed.append(label)  # an overlay the earlier check did not read
+    now_tree = tree_digest(root, exclude)
+    now = inputs_digest(present) if not unreadable else None
+    files_changed = now_tree != verdict["tree_digest"]
+    from . import __version__
+
+    tool_changed = report["envelope"]["tool_version"] != __version__
+    current = now == verdict["inputs_digest"] and not files_changed and not tool_changed and not changed
+    reasons = ([f"{len(changed)} input(s) changed"] if changed else []) + \
+        ([f"{len(unreadable)} input(s) cannot be read"] if unreadable else []) + \
+        (["files were added or removed"] if files_changed else []) + \
+        ([f"the report was written by steward {report['envelope']['tool_version']}"] if tool_changed else [])
+    doc = {
+        "schema": "steward.digest/0.1",
+        "tool_version": __version__,
+        "inputs_digest": now,
+        "tree_digest": now_tree,
+        "report": {"inputs_digest": verdict["inputs_digest"], "tree_digest": verdict["tree_digest"],
+                   "tool_version": report["envelope"]["tool_version"]},
+        "current": current,
+        "changed": sorted(set(changed) | set(unreadable)),
+        "reason": "; ".join(reasons) if reasons else "the report's inputs and file list are unchanged",
+    }
+    if args.format == "json":
+        write_document(doc)
+    else:
+        print(("current: " if current else "stale: ") + doc["reason"])
+        for rel in doc["changed"]:
+            print(f"  {rel}")
+    return EXIT_OK
 
 
 def _checked_by_privacy(root: Path, report: dict, rel: str) -> bool:
@@ -1107,10 +1543,7 @@ def _paper_ctx(args: argparse.Namespace):
 
     from .models import StewardConfig
 
-    root = (args.repo.resolve() if args.repo else find_root(Path.cwd()))
-    if root is None or not (root / "steward.toml").is_file():
-        print(f"steward: {NOT_A_REPO}", file=sys.stderr)
-        return None
+    root = _require_root(args)
     try:
         cfg = _models.load_config(root)
     except (ValidationError, ValueError, RecursionError, ValueError, OSError):
@@ -1131,10 +1564,7 @@ def _config(args: argparse.Namespace):
 
     from .models import StewardConfig
 
-    root = (args.repo.resolve() if args.repo else find_root(Path.cwd()))
-    if root is None or not (root / "steward.toml").is_file():
-        print(f"steward: {NOT_A_REPO}", file=sys.stderr)
-        return None, None
+    root = _require_root(args)
     try:
         return root, _models.load_config(root)
     except (ValidationError, ValueError, RecursionError, ValueError, OSError):
@@ -1168,6 +1598,19 @@ def cmd_run(args: argparse.Namespace) -> int:
     if not cmd:
         print("steward: give the command after --, e.g. steward run --wall 600 -- python train.py", file=sys.stderr)
         return EXIT_USAGE
+    if args.run_id is not None:  # 0.21.0 (S7): an id in the form steward makes, never one the ledger already has
+        if not re.fullmatch(r"\d{8}T\d{6}Z-[0-9a-f]{8}", args.run_id):
+            print("steward: --run-id looks like 20261127T120000Z-1a2b3c4d (UTC time and 8 hex digits)", file=sys.stderr)
+            return EXIT_USAGE
+        try:
+            from .ledger import verify as _verify
+
+            used = led.path.is_file() and any(e.get("run") == args.run_id for e in _verify(led.path).entries)
+        except (OSError, ValueError):
+            used = False
+        if used:
+            print(f"steward: run {args.run_id} is already in the run ledger", file=sys.stderr)
+            return EXIT_USAGE
     params = {}
     for kv in args.param:
         k, sep, v = kv.partition("=")
@@ -1217,7 +1660,7 @@ def _run_held(args, root, cfg, rc, led, cmd, params, limits, job_env, slot, stop
     from . import runner
     from .ledger import LedgerError
 
-    run_id = runner.new_run_id()
+    run_id = args.run_id or runner.new_run_id()
     from .fsutil import owner_lock, release_owner_lock
 
     run_lock = owner_lock(root, f"run-{run_id}")  # K1: `session close --end` stops a run only while it holds this
@@ -1247,6 +1690,7 @@ def _run_held(args, root, cfg, rc, led, cmd, params, limits, job_env, slot, stop
             except FileNotFoundError as e:
                 outcome = runner.Outcome("failed", None, 0.0, 0.0, None, {"error": str(e)})
             except Exception as e:  # noqa: BLE001 - R20 (0.12.0): a supervision error still records an outcome
+                args.fault_hint(1, e)
                 outcome = runner.Outcome("failed", None, 0.0, 0.0, f"supervision error: {type(e).__name__}",
                                          {"error": type(e).__name__, "cleanup": "incomplete"})
         metrics, metrics_text = None, None
@@ -1311,7 +1755,11 @@ def cmd_authorize(args: argparse.Namespace) -> int:
             print(f"\nRead the payload above. To approve it, run in your own terminal:  steward authorize sign {nonce}")
         elif args.auth_command == "sign":
             data = az.read_pending(root, args.nonce)
-            payload = az.parse(data.decode("utf-8"))
+            az.check_digest(data, args.expect_sha256)  # before anything else is reported about these bytes
+            if args.expect_sha256 is not None:
+                print(f"Payload sha256 {az.payload_sha256(data)} matches the expected hash.", flush=True)
+            payload = az.parse(az.decode(data))
+            az.check_repo_id(payload, cfg.steward.repo_id, root)  # W12 F1, W12c N2: before any notice about another repository's bytes
             if payload["action"] == "policy.change":
                 obj = payload["object"]
                 try:
@@ -1323,19 +1771,29 @@ def cmd_authorize(args: argparse.Namespace) -> int:
                         print(f"Policy object {obj} matches R-33.", flush=True)
                     else:
                         print(f"Policy object {obj} does not match R-33. Expected {expected}.", flush=True)
-            print(f"signed {az.sign(root, args.nonce, data)}")
+            print(f"signed {az.sign(root, args.nonce, data, repo_id=cfg.steward.repo_id)}")  # `data` passed check_digest above
         elif args.auth_command == "verify":
             exp = az.object_hash(root, args.object) if args.object else None
             v = az.verify(root, cfg, args.tag, action=args.action, expected_object=exp)
             print(f"VERIFIED {v.tag}: {v.payload['action']} {v.payload['object']} by {v.principal}, expires {v.payload['expires']}"
                   + ("" if v.trust_source != "working-tree" else "  [trust root UNPINNED: steward authorize pin]"))
         elif args.auth_command == "list":
+            items = []
             for tag in az.list_tags(root) + az.list_tags(root, "steward/anchor/"):
                 try:
                     v = az.verify(root, cfg, tag)
-                    print(f"{tag}  verified  {v.payload['action']}  by {v.principal}")
+                    if wants_json(args):
+                        items.append({"tag": tag, "verified": True, "action": v.payload["action"],
+                                      "principal": v.principal, "trust_source": v.trust_source})
+                    else:
+                        print(f"{tag}  verified  {v.payload['action']}  by {v.principal}")
                 except az.AuthError as e:
-                    print(f"{tag}  NOT VERIFIED  ({e.step}: {e.message})")
+                    if wants_json(args):
+                        items.append({"tag": tag, "verified": False, "step": e.step, "message": e.message})
+                    else:
+                        print(f"{tag}  NOT VERIFIED  ({e.step}: {e.message})")
+            if wants_json(args):
+                write_json(args, {"items": items})
         elif args.auth_command == "pin":
             tf, ref, signers = az.pin(root, cfg, args.baseline)
             print(f"pinned {cfg.steward.repo_id}: baseline {ref}, signers:")
@@ -1345,8 +1803,12 @@ def cmd_authorize(args: argparse.Namespace) -> int:
         elif args.auth_command == "keys":
             base = az.resolve_baseline(root, cfg.policy.baseline)
             text = (az.baseline_file(root, base, cfg.policy.allowed_signers) or b"").decode()
-            for k in az.signer_keys(text) or [{"principal": "(none)", "type": "-", "hardware": "-"}]:
-                print(f"{k['principal']}  {k['type']}  hardware-backed: {k['hardware']}")
+            keys = az.signer_keys(text)
+            if wants_json(args):
+                write_json(args, {"baseline": base, "keys": keys})
+            else:
+                for k in keys or [{"principal": "(none)", "type": "-", "hardware": "-"}]:
+                    print(f"{k['principal']}  {k['type']}  hardware-backed: {k['hardware']}")
         elif args.auth_command == "anchor":
             paths = {"runs": (cfg.run.ledger if cfg.run else "development/runs.jsonl"),
                      "authorizations": cfg.policy.ledger, "spend": getattr(getattr(cfg, "spend", None), "ledger", "development/spend.jsonl"),
@@ -1374,6 +1836,8 @@ def _pending(root: Path, cfg: Any, args: argparse.Namespace) -> int:
     from . import authorize as az
     from .exchange import local_peer_path
 
+    json_output = args.auth_command == "pending" and wants_json(args)
+    items, skipped = [], []
     projects = [(cfg.exchange.code if cfg.exchange else ".", root)]
     if args.all_projects and cfg.exchange is not None:
         for code, source in sorted(cfg.exchange.peers.items()):
@@ -1382,22 +1846,34 @@ def _pending(root: Path, cfg: Any, args: argparse.Namespace) -> int:
             except (OSError, RuntimeError):
                 path = None
             if path is None:
-                print(f"{code}: no local checkout for signing; skipped")
+                if json_output:
+                    skipped.append({"peer": code, "reason": "no_local_checkout"})
+                else:
+                    print(f"{code}: no local checkout for signing; skipped")
             else:
                 projects.append((code, path))
     waiting = 0
-    for code, proj in projects:
+    for i, (code, proj) in enumerate(projects):
         if not (proj / "steward.toml").is_file():
-            print(f"{code}: {proj.name}: not a steward project here; skipped")
+            if json_output:
+                skipped.append({"peer": code, "reason": "not_steward_project"})
+            else:
+                print(f"{code}: {proj.name}: not a steward project here; skipped")
             continue
-        try:
-            from .models import load_config as _lc
-
-            proj_id = _lc(proj).steward.repo_id
-        except Exception:  # noqa: BLE001 - a project whose configuration cannot be read is never signed for
+        try:  # W12 F1: each project's own repo_id; a payload carrying another one is listed as foreign, never waiting
+            proj_id = cfg.steward.repo_id if not i else az.this_repo_id(proj)
+        except az.AuthError:  # a project whose configuration cannot be read is never signed for
             proj_id = None
-        for q in az.pending(proj):
-            line = f"{code}  {q['nonce'][:12]}  {q['state']:<8} {q['action']:<14} expires {q['expires']}  {q.get('summary', '')[:60]}"
+        if json_output:
+            for q in az.pending(proj, include_digest=True, repo_id=proj_id):
+                items.append({**q, "project": code, "peer": code if i else None, "requester": None})
+                waiting += q["state"] == "waiting"
+            continue
+        for q in az.pending(proj, repo_id=proj_id):  # None: read again there, and unreadable means all foreign
+            # STW-057: a summary's control characters (terminal escapes, carriage returns) are shown, never obeyed;
+            # W12 F3: a line feed too, so a multi-line summary cannot add rows to this one-line-per-payload table
+            line = az.visible(f"{code}  {q['nonce'][:12]}  {q['state']:<8} {q['action']:<14} expires {q['expires']}  "
+                              f"{q.get('summary', '')[:60]}")[0].replace("\n", "\\n")
             if args.auth_command == "pending" or q["state"] != "waiting":
                 print(line)
                 waiting += q["state"] == "waiting"
@@ -1407,21 +1883,41 @@ def _pending(root: Path, cfg: Any, args: argparse.Namespace) -> int:
                 continue
             try:
                 data = az.read_pending(proj, q["nonce"])  # U3: read once; these bytes are shown and signed
+                shown_payload = az.parse(az.decode(data))
             except az.AuthError as e:
                 print(f"{line}  (skipped: {e.message})")
                 continue
-            print("\n" + data.decode("utf-8", errors="replace"))
+            # The checks and the prompt use the bytes just read, not the earlier listing: the file may have changed.
+            if shown_payload.get("nonce") != q["nonce"] or shown_payload.get("repo_id") != proj_id:
+                print(f"{line}  (skipped: it changed since it was listed)")
+                continue
+            digest = az.payload_sha256(data)
+            text, hidden = az.visible(data)
+            print("\n" + text)
+            if hidden:
+                print(f"WARNING: this payload holds {hidden} control or invisible character(s), shown above as "
+                      "escapes (\\x.., \\u....). Do not sign it unless you know why they are there.")
+            action = az.visible(shown_payload["action"])[0]
+            print(f"payload sha256 {digest}  action {action}")
             if not args.yes:
                 if not sys.stdin.isatty():
                     print("steward: sign-pending asks before each signature; run it in a terminal, or pass --yes",
                           file=sys.stderr)
                     return EXIT_USAGE
-                if input(f"Sign {code} {q['nonce'][:12]} ({q['action']})? [y/N] ").strip().lower() not in ("y", "yes"):
+                prompt = f"Sign {code} {q['nonce'][:12]}: action {action}, payload sha256 {digest}? [y/N] "
+                try:
+                    answer = input(prompt)
+                except EOFError:  # W12 F3: a closed input (Ctrl-D) is a no, never an internal error
+                    answer = ""
+                    print()
+                if answer.strip().lower() not in ("y", "yes"):
                     print("skipped")
                     waiting += 1
                     continue
-            print(f"signed {az.sign(proj, q['nonce'], data)}")
-    if args.auth_command == "pending":
+            print(f"signed {az.sign(proj, q['nonce'], data, repo_id=proj_id)}")  # the bytes shown, whose digest was shown
+    if json_output:
+        write_json(args, {"items": items, "waiting": waiting, "skipped": skipped})
+    elif args.auth_command == "pending":
         print(f"{waiting} waiting" + ("" if not waiting else "; sign them with: steward authorize sign-pending"
                                       + (" --all-projects" if args.all_projects else "")))
     return EXIT_OK
@@ -1546,6 +2042,14 @@ def cmd_integrity(args: argparse.Namespace) -> int:
                                       "decision": args.decision})
                 print(f"unsealed '{args.dataset}' (now spent); set role = \"spent\" in {cfg.integrity.datasets}")
         else:
+            if wants_json(args):
+                write_json(args, {
+                    "frozen": [{"name": name, "sha256": e["snapshot"]["hash"],
+                                "confirmatory": bool(e.get("confirmatory")), "amendment_proposed": name in st.proposals}
+                               for name, e in sorted(st.frozen.items())],
+                    "datasets": [{"name": name, "role": role} for name, (role, _) in sorted(st.roles.items())],
+                })
+                return EXIT_OK
             for name, e in sorted(st.frozen.items()):
                 print(f"frozen {name}: {e['snapshot']['hash']} ({'confirmatory' if e.get('confirmatory') else 'exploratory'})"
                       + ("  [amendment proposed]" if name in st.proposals else ""))
@@ -1581,6 +2085,9 @@ def cmd_spend(args: argparse.Namespace) -> int:
             if cfg.spend is None:
                 raise sp.SpendRefused("no [spend] table")
             t = sp.totals(root, cfg)
+            if wants_json(args):
+                write_json(args, {**t, "cap": cfg.spend.cap, "currency": cfg.spend.currency})
+                return EXIT_OK
             print(f"calls {t['calls']}; committed {t['committed']} / cap {cfg.spend.cap} {cfg.spend.currency}; "
                   f"actual {t['actual']}; unknown-cost calls {t['unknown_cost_calls']}")
     except sp.SpendRefused as e:
@@ -1609,8 +2116,8 @@ def cmd_diff(args: argparse.Namespace) -> int:
         return cmd_diff_runs(args, root, cfg)
     if args.diff_command == "impact":
         res = ev.impact(root, cfg)
-        if args.json:
-            sys.stdout.write(canonical_json(res))
+        if wants_json(args):
+            write_json(args, res)
         else:
             for it in res["outputs"]:
                 why = ", ".join(it["inputs_changed"] + it["code_changed"])
@@ -1640,8 +2147,8 @@ def cmd_diff(args: argparse.Namespace) -> int:
         print(f"steward: {e}", file=sys.stderr)
         return EXIT_USAGE
     res = ev.diff_runs(a, b, tols, default)
-    if args.json:
-        sys.stdout.write(canonical_json(res))
+    if wants_json(args):
+        write_json(args, res)
     else:
         for r in res["results"]:
             label = r.get("pointer") or r.get("output")
@@ -1968,6 +2475,25 @@ def cmd_session(args: argparse.Namespace) -> int:
     if cfg.session is None:
         cfg.session = sc
     if args.session_command == "start":
+        if wants_json(args):
+            from .records import RecordRefused, read_rel
+
+            try:
+                handoff = read_rel(root, sc.handoff).decode("utf-8")
+            except RecordRefused as e:
+                if e.reason != "missing":
+                    print(f"steward: {e}", file=sys.stderr)
+                    return EXIT_DATAERR
+                handoff = None
+            except UnicodeDecodeError:
+                print(f"steward: {sc.handoff} is not UTF-8", file=sys.stderr)
+                return EXIT_DATAERR
+            last_commit = ss.handoff_commit(root, sc.handoff) if handoff is not None else None
+            commit, _, date = (last_commit or "").partition(" ")
+            write_json(args, {"constitution": cfg.steward.constitution,
+                              "handoff": {"path": sc.handoff, "text": handoff,
+                                          "commit": commit or None, "commit_date": date or None}})
+            return EXIT_OK
         print(f"Constitution: {cfg.steward.constitution or 'not declared'} (steward constitution prints it)")
         p = root / sc.handoff
         if not p.is_file():
@@ -2178,9 +2704,11 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
         except (ValueError, RecursionError, AttributeError):
             exact = []
         r = bm.analyze_results(doc, c, exact)
-        if args.json:
-            sys.stdout.write(canonical_json({"cells": r["cells"], "missing": r["missing"], "thresholds": r["thresholds"],
-                                             "problems": [{"status": st, "code": code, **d} for st, code, d in r["problems"]]}))
+        if wants_json(args):
+            write_json(args, {
+                "cells": r["cells"], "missing": r["missing"], "thresholds": r["thresholds"],
+                "problems": [{"status": st, "code": code, **d} for st, code, d in r["problems"]],
+            })
         else:
             for cell, v in r["cells"].items():
                 print(f"{cell}: {v}")
@@ -2194,10 +2722,12 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
             print("thresholds are reported, not gating: accepting the result is the human's decision.")
         return EXIT_OK if not blocking(r["problems"]) else 1
     a = bm.analyze(root, c)
-    if args.json:
-        sys.stdout.write(canonical_json({"counts": a["counts"], "id_overlap": a["id_overlap"], "group_overlap": a["group_overlap"],
-                                         "time_range": a["time_range"], "checked": a["checked"],
-                                         "problems": [{"status": st, "code": code, **d} for st, code, d in a["problems"]]}))
+    if wants_json(args):
+        write_json(args, {
+            "counts": a["counts"], "id_overlap": a["id_overlap"], "group_overlap": a["group_overlap"],
+            "time_range": a["time_range"], "checked": a["checked"],
+            "problems": [{"status": st, "code": code, **d} for st, code, d in a["problems"]],
+        })
     else:
         for name, n in a["counts"].items():
             span = a["time_range"].get(name)
@@ -2269,9 +2799,23 @@ def cmd_sprint(args: argparse.Namespace) -> int:
               f"{sf.sprint.dispatch}; window {sf.sprint.window.start.isoformat()} – {sf.sprint.window.end.isoformat()}")
         if sf.sprint.window.end < _dt.datetime.now(_dt.timezone.utc):
             print("note: the window has ended")
+        tasks = {t.id: t for t in sf.task}
+        for tid in sp.order(sf):  # STW-051: the permissions each task runs with
+            print(f"permissions: {tid}: {sp.permission_summary(tasks[tid])}")
+        print("denied for every agent task: " + ", ".join(sp.DEFAULT_DENY))
+        for line in sp.warnings(sf):
+            print(f"warning: {line}")
         for line in sp.signing_advice(sf):
             print(f"signatures: {line}")
         return EXIT_OK
+    if c == "watch":
+        try:
+            return sp.watch(root, sf.sprint.id, poll=max(0.1, args.poll))
+        except ValueError as e:
+            print(f"steward: {e}", file=sys.stderr)
+            return EXIT_DATAERR
+        except KeyboardInterrupt:
+            return 130
     if c == "signatures":
         for line in sp.signing_advice(sf):
             print(line)
@@ -2280,7 +2824,7 @@ def cmd_sprint(args: argparse.Namespace) -> int:
         if c == "start":
             for line in sp.signing_advice(sf):
                 print(f"signatures: {line}")
-            return sp.dispatch(root, cfg, sf, watch=args.watch)
+            return sp.dispatch(root, cfg, sf, watch=args.watch, on_fault=lambda e: args.fault_hint(EXIT_OK, e))
         lg = sp.led(root, sf.sprint.id, cfg.steward.repo_id)
         if c in ("go", "hold", "skip"):
             if args.task not in {t.id for t in sf.task}:
@@ -2291,16 +2835,50 @@ def cmd_sprint(args: argparse.Namespace) -> int:
                                 **({"reason": args.reason} if c == "skip" else {})})
             print(f"{sf.sprint.id} {args.task}: {c}" + (" (retry)" if c == "go" and args.retry else ""))
             return EXIT_OK
+        if c in ("recheck", "add") and args.task not in {t.id for t in sf.task}:
+            print(f"steward: no task {args.task} in {p.relative_to(root).as_posix()}", file=sys.stderr)
+            return EXIT_USAGE
+        if c == "recheck":
+            code = sp.recheck(root, cfg, sf, args.task,
+                              out=lambda m: print(m, file=sys.stderr if m.startswith("steward:") else sys.stdout))
+            return code
+        if c == "add":
+            planned = sp.plan(sp.events(root, sf.sprint.id))
+            if planned is None:
+                print(f"steward: sprint {sf.sprint.id} has not opened; it opens with every task in its file",
+                      file=sys.stderr)
+                return EXIT_USAGE
+            if args.task in planned:
+                print(f"steward: {args.task} is already in sprint {sf.sprint.id}", file=sys.stderr)
+                return EXIT_USAGE
+            lg.append("added", {"task": args.task, "by": "human"})
+            print(f"{sf.sprint.id} {args.task}: added; it is planned like the others (order it with steward sprint go)")
+            return EXIT_OK
+        if c == "reload":  # W12b (F7): a change made while a task ran is used only on this order
+            lg.append("order", {"order": "reload", "by": "human"})
+            print(f"{sf.sprint.id}: reload ordered; the dispatcher reads {p.relative_to(root).as_posix()} again at its "
+                  "next look (a running task keeps the definition it started with)")
+            return EXIT_OK
         if c == "stop":
             lg.append("stop", {"now": bool(args.now), "by": "human"})
             print(f"{sf.sprint.id}: stop recorded" + (" (running tasks are stopped too)" if args.now else ""))
             return EXIT_OK
         st = sp.states(sf, sp.events(root, sf.sprint.id))
         if c == "status":
+            if wants_json(args):  # STW-052: per task its times, run and log, commits, files and last tool step
+                write_json(args, sp.status_doc(root, sf))
+                return EXIT_OK
             for tid in sp.order(sf):
                 s = st[tid]
                 extra = "; ordered" if s.get("go") else "; held" if s.get("hold") else ""
+                if s["state"] in ("running", "checking") and s.get("log"):
+                    extra += f"; log {s['log']}"  # S7: where its output is
                 print(f"{tid:<10} {s['state']:<9} {s.get('branch') or ''}{extra}" + (f"  ({s['note']})" if s.get("note") else ""))
+            ws = sp.window_state(sf)  # S11: a window that is not open is said
+            if ws == "not open":
+                print(f"window: opens at {sf.sprint.window.start.isoformat()}; nothing starts before it")
+            elif ws == "ended":
+                print(f"window: ended at {sf.sprint.window.end.isoformat()}; nothing more starts")
             return EXIT_OK
         if c == "report":
             text = sp.report(root, sf)
@@ -2336,8 +2914,8 @@ def cmd_pins(args: argparse.Namespace) -> int:
     try:
         if args.pins_command == "status":
             rows = pn.status(root, cfg)
-            if args.json:
-                sys.stdout.write(canonical_json({"pins": rows}))
+            if wants_json(args):
+                write_json(args, {"pins": rows})
                 return EXIT_OK
             for r in rows:
                 print(f"{r['state']:<16} {r['name']}: {r['package']} {r['version']}" +
@@ -2407,8 +2985,8 @@ def cmd_audit(args: argparse.Namespace) -> int:
     except Exception as e:  # noqa: BLE001 - W3: the cause is named, never its text (it can hold a path)
         print(f"steward: the audit could not be completed ({type(e).__name__})", file=sys.stderr)
         return EXIT_DATAERR
-    if args.json:
-        sys.stdout.write(canonical_json(doc))
+    if wants_json(args):
+        write_json(args, doc)
     else:
         print(au.render(doc))
     return EXIT_OK
@@ -2423,7 +3001,19 @@ def cmd_timeline(args: argparse.Namespace) -> int:
     if cfg is None:
         return EXIT_USAGE
     try:
-        rows = ms.timeline(root, cfg)
+        from .cockpit import parse_now
+
+        now = parse_now(args.now) if args.now else None
+    except ValueError as e:
+        print(f"steward: --now: {e}", file=sys.stderr)
+        return EXIT_USAGE
+    try:
+        rows = ms.timeline(root, cfg) if now is None else ms.timeline(root, cfg, now=now)
+        payload = {"milestones": rows}
+        if args.format == "json":
+            from . import drift
+
+            payload["drift"] = drift.document(root, cfg, rows)
     except _VE as e:
         err = e.errors()[0]
         print(f"steward: {ms.FILE} is not valid: {'.'.join(map(str, err['loc']))}: {err['msg']}", file=sys.stderr)
@@ -2431,10 +3021,104 @@ def cmd_timeline(args: argparse.Namespace) -> int:
     except ValueError as e:
         print(f"steward: {ms.FILE} is not valid: {str(e).splitlines()[0][:200]}", file=sys.stderr)
         return EXIT_DATAERR
-    if args.json:
-        sys.stdout.write(canonical_json({"milestones": rows}))
+    except OSError:
+        print("steward: a timeline record could not be read", file=sys.stderr)
+        return EXIT_DATAERR
+    if wants_json(args):
+        write_json(args, payload)
     else:
         print(ms.render(rows))
+    return EXIT_OK
+
+
+def cmd_decisions(args: argparse.Namespace) -> int:
+    from . import decisions
+    from .interface import OTHER_SCHEMAS
+
+    root, cfg = _config(args)
+    if cfg is None:
+        return EXIT_USAGE
+    try:
+        doc = decisions.document(root, cfg)
+    except OSError:
+        print("steward: a decision record could not be read", file=sys.stderr)
+        return EXIT_DATAERR
+    if args.format == "json":
+        write_document({"schema": OTHER_SCHEMAS["decisions"], **doc})
+    else:
+        print(decisions.render(doc))
+    return EXIT_OK
+
+
+def cmd_cockpit(args: argparse.Namespace) -> int:
+    """`steward next`, `steward tidy` and `steward notifications` (0.21.0, W03)."""
+    from pydantic import ValidationError as _VE
+
+    from . import cockpit as ck
+    from . import milestones as ms
+    from .interface import OTHER_SCHEMAS
+
+    if getattr(args, "brief", False) and args.format == "json":
+        print("steward: --brief is a text form; --format json already holds every field", file=sys.stderr)
+        return EXIT_USAGE
+    if getattr(args, "archive", None) and args.format == "json":
+        print("steward: --archive prints what it moved as text; run `steward tidy --format json` to list", file=sys.stderr)
+        return EXIT_USAGE
+    if args.command == "notifications" and args.days < 1:
+        print("steward: --days must be 1 or more", file=sys.stderr)
+        return EXIT_USAGE
+    try:
+        now = ck.parse_now(args.now)
+    except ValueError as e:
+        print(f"steward: --now: {e}", file=sys.stderr)
+        return EXIT_USAGE
+    root, cfg = _config(args)
+    if cfg is None:
+        return EXIT_USAGE
+    if args.command == "tidy" and args.archive:
+        try:
+            moves = ck.archive(root, cfg, args.archive)
+        except ck.ArchiveError as e:
+            print(f"steward: {e}", file=sys.stderr)
+            return EXIT_DATAERR
+        for src, dest in moves:
+            print(f"moved {src} -> {dest}")
+        print("Review the change, update the board if it lists these tasks, and commit it (history stays in git).")
+        return EXIT_OK
+    against = None
+    if args.command == "notifications" and args.against is not None:
+        try:
+            against = json.loads(args.against.read_text(encoding="utf-8"))
+            # W12 F13: the shape read below (verdict.gates, a list), checked here so a malformed report exits 65
+            verdict = against.get("verdict") if isinstance(against, dict) else None
+            if not isinstance(verdict, dict) or not isinstance(verdict.get("gates", []), list):
+                raise ValueError("not a report")
+        except (OSError, ValueError, RecursionError) as e:
+            message = f"--against: {args.against} is not a readable check report ({type(e).__name__})"
+            print(f"steward: {message}", file=sys.stderr)
+            if args.format == "json":
+                write_document(error_document("invalid_input", message, EXIT_DATAERR,
+                                              "pass a report written by `steward check --format json`"))
+            return EXIT_DATAERR
+    try:
+        if args.command == "next":
+            doc = ck.next_doc(root, cfg, now)
+        elif args.command == "tidy":
+            doc = ck.tidy(root, cfg, now)
+        else:
+            doc = ck.notifications(root, cfg, now, args.days, against, args.against.name if args.against else None)
+    except (_VE, ValueError) as e:
+        msg = e.errors()[0]["msg"] if isinstance(e, _VE) else str(e).splitlines()[0][:200]
+        print(f"steward: a record could not be read ({ms.FILE} or a ledger): {msg}", file=sys.stderr)
+        return EXIT_DATAERR
+    if args.format == "json":
+        write_document({"schema": OTHER_SCHEMAS[args.command], "tool_version": __version__, **doc})
+    elif args.command == "next":
+        print(ck.render_next(doc, brief=args.brief))
+    elif args.command == "tidy":
+        print(ck.render_tidy(doc))
+    else:
+        print(ck.render_notifications(doc))
     return EXIT_OK
 
 
@@ -2447,9 +3131,9 @@ def _storage_clean(args: argparse.Namespace, root: Path, cfg: Any) -> int:
 
     if args.storage_command == "scan" or args.plan:
         cands = cu.scan(root, cfg)
-        if args.storage_command == "scan" and args.json:
-            sys.stdout.write(canonical_json({"candidates": [{k: v for k, v in asdict(c).items() if k not in ("real", "ident")}
-                                                            for c in cands]}))
+        if args.storage_command == "scan" and wants_json(args):
+            rows = [{k: v for k, v in asdict(c).items() if k not in ("real", "ident")} for c in cands]
+            write_json(args, {"candidates": rows})
             return EXIT_OK
         if args.storage_command == "scan":
             by_vol: dict[str, int] = {}
@@ -2587,8 +3271,8 @@ def cmd_storage(args: argparse.Namespace) -> int:
         return EXIT_USAGE
     if args.storage_command == "audit":  # red-team K12: the audit does not need the registry
         a = stg.audit(root, cfg.storage.caps, args.top)
-        if args.json:
-            sys.stdout.write(canonical_json(a))
+        if wants_json(args):
+            write_json(args, a)
         else:
             for d in a["directories"]:
                 if d["state"] == "present":
@@ -2627,14 +3311,63 @@ def cmd_storage(args: argparse.Namespace) -> int:
         print(f"recorded {rel}: sha256 {sha}, {size} bytes, in {cfg.storage.artifacts}")
         return EXIT_OK
     a = stg.evaluate(root, reg, cfg.storage, False)
-    if args.json:
-        sys.stdout.write(canonical_json({"artifacts": a["artifacts"], "problems": [{"status": s_, "code": c_, **d} for s_, c_, d in a["problems"]]}))
+    if wants_json(args):
+        problems = [{"status": status, "code": code, **detail} for status, code, detail in a["problems"]]
+        write_json(args, {"artifacts": a["artifacts"], "problems": problems})
     else:
         for x in a["artifacts"]:
             print(f"{x['state']:8} {x['path']}")
         for s_, c_, d in a["problems"]:
             print(f"{s_} {c_}: {d.get('path') or ''} {d.get('message') or ''}".rstrip())
     return EXIT_OK if not any(s_ in ("FAIL",) for s_, _, _ in a["problems"]) else 1
+
+
+def cmd_issues(args: argparse.Namespace) -> int:
+    from . import issues
+    from .ledger import LedgerError
+
+    root, cfg = _config(args)
+    if cfg is None:
+        return EXIT_USAGE
+    if cfg.exchange is None:
+        print('steward: add an [exchange] table with code = "ABC" to steward.toml', file=sys.stderr)
+        return EXIT_USAGE
+    if args.command == "issues":
+        try:
+            groups = issues.inbox(root, cfg.exchange.code)
+        except (OSError, ValueError, LedgerError):
+            print("steward: could not read the exchange inbox; run steward check --rule R-53", file=sys.stderr)
+            return EXIT_DATAERR
+        if args.format == "json":
+            write_json(args, {"groups": groups})
+        else:
+            if not groups:
+                print("No toolkit issue reports received.")
+            for group in groups:
+                print(f"{group['fingerprint']} · {group['count']} report(s) · versions "
+                      f"{', '.join(group['versions'])} · projects {', '.join(group['projects'])} "
+                      f"({', '.join(group['items'])})")
+        return EXIT_OK
+
+    try:
+        last = issues.read_last_error(root) if args.from_last_error else None
+    except (OSError, ValueError):
+        print("steward: no readable last toolkit error; use steward issue with a description", file=sys.stderr)
+        return EXIT_DATAERR
+    try:
+        item_id, repeated = issues.file_issue(root, cfg, args.description, last)
+    except issues.IssueError as error:
+        print(f"steward: {error}", file=sys.stderr)
+        return EXIT_DATAERR
+    except (OSError, ValueError, LedgerError):
+        print("steward: could not file the report; check the exchange layout, ledger and peer ID records",
+              file=sys.stderr)
+        return EXIT_DATAERR
+    if repeated:
+        print(f"{item_id}: seen again (recorded in exchange/log.jsonl)")
+    else:
+        print(f"{item_id}: exchange/outbox/{item_id}.md (filed)")
+    return EXIT_OK
 
 
 def _removal_advice(root: Path, xc: Any, iid: str) -> None:
@@ -2706,7 +3439,12 @@ def cmd_exchange(args: argparse.Namespace) -> int:
         return EXIT_USAGE
     code = cfg.exchange.code
     if args.exchange_command == "init":
-        for m in xc.init(root, code) or ["(already present)"]:
+        try:
+            created = xc.init(root, code)
+        except xc.BoundaryError as error:
+            print(f"steward: refused: {error}", file=sys.stderr)
+            return EXIT_DATAERR
+        for m in created or ["(already present)"]:
             print(f"exchange: {m}")
         return EXIT_OK
     if args.exchange_command != "status" and not xc.folder(root).is_dir():
@@ -2772,19 +3510,13 @@ def cmd_exchange(args: argparse.Namespace) -> int:
                       "channel": args.channel, "sent": _dt.date.today() if args.oneway else None}
             body = "\n## Need\n\n## Proposed generic shape\n\n## Verify\n"
             text = xc.render(fields, body)
-            xc.Item.model_validate(xc.parse(text)[0])
-            xc.ledger_ok(root)
-            dest = xc.write_new(root, "oneway" if args.oneway else "outbox", f"{iid}.md", text.encode("utf-8"))
-            if not args.oneway:
-                before = xc.entries_of(root, iid)
-                try:
-                    xc.set_state(root, cfg.steward.repo_id, iid, "filed", None, code, False)
-                except Exception:
-                    if not xc.keep_if_appended(root, dest, iid, before, "filed"):  # the item and its state (N5, Q9, U5)
-                        xc.rollback(root, dest)
-                    raise
-                else:
-                    xc.forget(dest)
+            item = xc.Item.model_validate(xc.parse(text)[0])
+            if args.oneway:
+                xc.ledger_ok(root)
+                dest = xc.write_new(root, "oneway", f"{iid}.md", text.encode("utf-8"))
+                xc.forget(dest)  # a one-way item records no state: release the held directory now
+            else:
+                dest = xc.file_outbox(root, cfg.steward.repo_id, item, text.encode("utf-8"))
             print(f"{iid}: {dest.relative_to(root).as_posix()}" + ("" if args.oneway else " (filed)"))
             return EXIT_OK
         if args.exchange_command == "receive":
@@ -3034,7 +3766,7 @@ def cmd_exchange(args: argparse.Namespace) -> int:
                     rows.append({"id": iid, "place": "inbox", "kind": None, "title": "(file removed)",
                                  "state": xc.current(entries)})
             delivery = xc.delivery_status(root, cfg.exchange, network=getattr(args, "fetch", False))
-            if args.json:
+            if wants_json(args):
                 sent = {d.item.id: d for d in delivery.outgoing}
                 for row in rows:
                     if row["place"] in ("outbox", "responses") and (d := sent.get(row["id"])) is not None:
@@ -3046,7 +3778,7 @@ def cmd_exchange(args: argparse.Namespace) -> int:
                                      "delivery": {"peer": _exchange_name(root, cfg, d.item.from_), "state": d.state}})
                 for peer in sorted(delivery.unavailable):
                     print(f"steward: could not check peer {_exchange_name(root, cfg, peer)}", file=sys.stderr)
-                sys.stdout.write(canonical_json(rows))
+                write_json(args, rows)
             else:
                 for r in rows:
                     seen = f"  [{r['observed']['by']}: {r['observed']['state']} ({r['observed']['evidence']})" + (
@@ -3402,10 +4134,7 @@ def _talk_ctx(args: argparse.Namespace):
     from . import talk as tk
     from .models import StewardConfig
 
-    root = (args.repo.resolve() if args.repo else find_root(Path.cwd()))
-    if root is None or not (root / "steward.toml").is_file():
-        print(f"steward: {NOT_A_REPO}", file=sys.stderr)
-        return None
+    root = _require_root(args)
     try:
         cfg = _models.load_config(root)
     except (ValidationError, ValueError, RecursionError, ValueError, OSError):
@@ -3438,20 +4167,40 @@ def cmd_talk_plan(args: argparse.Namespace) -> int:
         return EXIT_USAGE
     root, name, tt, p = got
     missing = [f for f in ("stage", "purpose", "feedback", "audience", "duration_min") if getattr(p, f) in SENTINELS]
-    print(f"talk {name}: stage={p.stage} ({p.stage_source}), purpose={p.purpose}, feedback={p.feedback}, audience={p.audience}")
-    print("missing: " + (", ".join(missing) if missing else "none"))
-    if p.stage_source != "confirmed":
+    json_output = wants_json(args)
+    if json_output and missing:
+        write_json(args, {"talk": name, "path": tt.rel(tt.plan), "stage": p.stage, "stage_source": p.stage_source,
+                          "purpose": p.purpose, "feedback": p.feedback, "audience": p.audience,
+                          "missing": missing, "suggestion": None})
+        return 2
+    if not json_output:
+        print(f"talk {name}: stage={p.stage} ({p.stage_source}), purpose={p.purpose}, feedback={p.feedback}, audience={p.audience}")
+        print("missing: " + (", ".join(missing) if missing else "none"))
+    if not json_output and p.stage_source != "confirmed":
         print("stage: NOT CONFIRMED. Ask the presenter to confirm the research stage; never infer it.")
     if missing:
         return 2
-    print(f"claim ceiling for stage '{p.stage}': {tk.ceiling(p.stage) or 'unknown stage'}")
+    ceiling = tk.ceiling(p.stage)
+    if not json_output:
+        print(f"claim ceiling for stage '{p.stage}': {ceiling or 'unknown stage'}")
     pattern, roles = tk.select_pattern(p.stage, p.purpose, p.feedback, p.pattern)
-    print(f"pattern: {pattern}: " + " -> ".join(roles))
+    if not json_output:
+        print(f"pattern: {pattern}: " + " -> ".join(roles))
     prefs = tk.resolve(root, p.overrides, p.context_profile)
     density = prefs["style.density"][0]
     limit = p.max_slides if isinstance(p.max_slides, int) else tk.auto_max_slides(float(p.duration_min), density)
-    print(f"max slides: {limit} ({'set' if isinstance(p.max_slides, int) else f'auto, {density}'})")
     changed = {k: v for k, v in prefs.items() if v[1] != "default"}
+    if json_output:
+        write_json(args, {
+            "talk": name, "path": tt.rel(tt.plan), "stage": p.stage, "stage_source": p.stage_source,
+            "purpose": p.purpose, "feedback": p.feedback, "audience": p.audience, "missing": missing,
+            "suggestion": {"claim_ceiling": ceiling, "pattern": pattern, "roles": roles, "max_slides": limit,
+                           "max_slides_source": "set" if isinstance(p.max_slides, int) else "auto",
+                           "density": density, "preferences": {k: {"value": v, "layer": layer}
+                                                               for k, (v, layer) in changed.items()}},
+        })
+        return EXIT_OK
+    print(f"max slides: {limit} ({'set' if isinstance(p.max_slides, int) else f'auto, {density}'})")
     print("preferences (non-default): " + (", ".join(f"{k}={v[0]} [{v[1]}]" for k, v in changed.items()) or "none"))
     if args.write_outline:
         if p.outline:
@@ -3530,6 +4279,11 @@ def cmd_talk_prefs(args: argparse.Namespace) -> int:
         return EXIT_USAGE
     root, name, tt, p = got
     prefs = tk.resolve(root, p.overrides if p else None, p.context_profile if p else None)
+    if wants_json(args):
+        write_json(args, {"talk": name, "preferences": {k: {"value": v, "layer": layer}
+                                                        for k, (v, layer) in prefs.items()
+                                                        if not args.compact or layer != "default"}})
+        return EXIT_OK
     for k, (v, layer) in prefs.items():
         if args.compact and layer == "default":
             continue
@@ -3582,10 +4336,14 @@ def cmd_paper_displays(args: argparse.Namespace) -> int:
     except (ValidationError, ValueError, RecursionError) as e:
         print(f"steward: invalid display manifest: {str(e).splitlines()[0]}", file=sys.stderr)
         return EXIT_DATAERR
-    bad = 0
-    for dname, d in sorted(df.displays.items()):
-        missing = dsp.missing_files(root, d)
-        bad += bool(missing)
+    rows = [(dname, d, dsp.missing_files(root, d)) for dname, d in sorted(df.displays.items())]
+    bad = any(missing for _, _, missing in rows)
+    if wants_json(args):
+        write_json(args, {"paper": name, "path": pp.rel(pp.displays),
+                          "displays": [{"id": dname, "kind": d.kind, "label": d.label, "output": d.output,
+                                        "missing": missing} for dname, d, missing in rows]})
+        return 1 if bad else EXIT_OK
+    for dname, d, missing in rows:
         print(f"{dname} ({d.kind}, {d.label}) -> {d.output}" + (f"  MISSING: {', '.join(missing)}" if missing else ""))
     if args.record:
         if bad:
@@ -3616,6 +4374,11 @@ def cmd_paper_values(args: argparse.Namespace) -> int:
         print(f"steward: invalid values registry: {str(e).splitlines()[0]}", file=sys.stderr)
         return EXIT_DATAERR
     comp = v.compute(root, vf)
+    if wants_json(args):
+        write_json(args, {"paper": name, "path": pp.rel(pp.values), "values": comp.text,
+                          "errors": {key: {"code": code, "message": message}
+                                     for key, (code, message) in comp.errors.items()}})
+        return 1 if comp.errors else EXIT_OK
     for key in sorted(vf.values):
         if key in comp.text:
             print(f"{key} = {comp.text[key]}")
