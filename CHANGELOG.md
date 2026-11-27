@@ -2,6 +2,25 @@
 
 Pre-release. Not published on PyPI. Versions follow semantic versioning once released.
 
+## 0.21.1 (2026-11-27): the logo
+Per Muiz, 2026-11-27: "lets make a logo and use it everywhere"; "make the tick green … DNA helix a litte fade in the
+background.. make the Font colors single"; "cut 0.21.1". Branding and documentation only; no change to checks,
+formats or behaviour.
+
+### Added
+- **The Bio-STEWARD logo**: a shield with a rounded green check mark over a faint DNA double helix, on a
+ teal-to-indigo gradient, with the name in Poppins SemiBold (SIL Open Font License 1.1, as outlines). Files and
+ colours: `docs/assets/LOGO.md`. It heads the README and the PyPI description, and it is the documentation site's logo
+ and favicon. The VS Code extension uses the same mark as its icon, and a one-colour version in the activity bar.
+
+### Changed
+- README badges use colours that keep white text at a contrast of 5:1 or more, and the README states the current test
+ count and the Linux test runs.
+- The documentation site's colours follow the logo in light and dark mode.
+
+### Upgrade notes (from 0.21.0)
+- None.
+
 ## 0.21.0 (2026-11-27): the cockpit
 Per Muiz, 2026-11-27: "go for the cockpit cli release. we want this to be MVP before going to marketplace". Per
 development/design/RELEASE_v0.21.0_SPEC.md (sprint `2026-11-27-cli-0.21`, W01 – W12). The CLI

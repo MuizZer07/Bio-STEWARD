@@ -3,7 +3,7 @@ message: "If you use Bio-STEWARD in your work, please cite the software as below
 title: "Bio-STEWARD: Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and Development"
 abstract: "The engineering and integrity layer for agentic computational biology: deterministic checks for studies, data, benchmarks, papers and agent work, signed approvals and research records, with portable Agent Skills for Claude Code, Codex and Gemini."
 type: software
-version: 0.21.0
+version: 0.21.1
 date-released: 2026-11-27
 doi: 10.5281/zenodo.24548977
 identifiers:

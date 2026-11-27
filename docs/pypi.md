@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/MuizZer07/Bio-STEWARD/main/docs/assets/logo-wordmark.png" alt="Bio-STEWARD" width="420"></p>
+
 <p align="center"><img src="https://raw.githubusercontent.com/MuizZer07/Bio-STEWARD/main/docs/assets/hero.svg" alt="Your agents do the science; Bio-STEWARD keeps it checkable" width="100%"></p>
 
 # Bio-STEWARD

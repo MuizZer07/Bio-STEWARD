@@ -170,7 +170,8 @@ NEXT = {
     "R-46": "restore the dataset file, or update the contract's sha256 after a reviewed change",
     "R-47": "fill the results matrix for every metric, method and required split; `steward benchmark results CONTRACT`",
     "R-53": "fix the item or ledger entry named. Record states with `steward exchange state ID STATE --note ...`. "
-            "For a missing receipt, check the peer's ref and ask it to pull and commit its receipt",
+            "For a missing receipt, check the peer's ref and ask it to pull and commit its receipt. For an item edited "
+            "after the peer received it, restore the received bytes, or re-file the revision under a new ID",
     "R-52": "re-derive the outputs on this commit and run `steward repro check ID --work DIR`",
     "R-54": "restore an edited inbox item from version control (a correction is a new revision the sender files); decide acknowledged items with `steward exchange respond`",
     "R-55": "close the session again with `steward session close` and commit the handoff",

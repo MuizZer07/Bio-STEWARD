@@ -1,3 +1,5 @@
+<p align="center"><img src="icon.png" alt="Bio-STEWARD" width="96"></p>
+
 # Bio-STEWARD for VS Code
 
 **Bio-STEWARD** (Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and Development) checks a

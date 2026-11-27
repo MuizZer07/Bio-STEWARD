@@ -1,8 +1,6 @@
-<p align="center">
-  <img src="docs/assets/hero.svg" alt="Your agents do the science; Bio-STEWARD keeps it checkable" width="100%">
-</p>
-
-<h1 align="center">Bio-STEWARD</h1>
+<h1 align="center">
+  <img src="docs/assets/logo-wordmark.svg" alt="Bio-STEWARD" width="460">
+</h1>
 
 <p align="center">
   <b>Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and Development</b> <!-- lint: allow (the name) --><br>
@@ -10,12 +8,12 @@
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-0.21.0%20beta-4c4fd9">
-  <img alt="python" src="https://img.shields.io/badge/python-3.11%2B-127a8a">
+  <img alt="version" src="https://img.shields.io/badge/version-0.21.1%20beta-4b4fd8">
+  <img alt="python" src="https://img.shields.io/badge/python-3.11%2B-0b6f72">
   <a href="https://doi.org/10.5281/zenodo.24548977"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.24548977.svg"></a>
-  <img alt="licence" src="https://img.shields.io/badge/licence-MIT-2f9e66">
-  <img alt="tests" src="https://img.shields.io/badge/tests-1700%2B-2f9e66">
-  <img alt="agent skills" src="https://img.shields.io/badge/Agent%20Skills-24-e08a1e">
+  <img alt="licence" src="https://img.shields.io/badge/licence-MIT-1d7a4e">
+  <img alt="tests" src="https://img.shields.io/badge/tests-2000%2B-1d7a4e">
+  <img alt="agent skills" src="https://img.shields.io/badge/Agent%20Skills-24-a6550f">
   <img alt="rules" src="https://img.shields.io/badge/deterministic%20rules-82-1d2330">
 </p>
 
@@ -41,6 +39,10 @@
 > **Using Bio-STEWARD in your work? Please cite it:** [doi:10.5281/zenodo.24548977](https://doi.org/10.5281/zenodo.24548977)
 > (BibTeX and details under [Cite](#-cite)).
 
+<p align="center">
+  <img src="docs/assets/hero.svg" alt="Your agents do the science; Bio-STEWARD keeps it checkable" width="100%">
+</p>
+
 <p align="center"><img src="docs/assets/demo.svg" alt="steward check catching a leaked donor, a changed GEO input and contaminated LLM test cases" width="92%"></p>
 
 ## 🔎 What it catches
@@ -60,14 +62,14 @@ wherever required.
 
 ## 🚀 Quick start
 ```bash
-uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.21.0"     # or: pipx install "git+…@v0.21.0"
+uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.21.1"     # or: pipx install "git+…@v0.21.1"
 cd your-research-repo
 steward init --skills .agents/skills         # scaffold; never overwrites. Claude Code: --skills .claude/skills
 steward check --summary
 ```
 Then just ask your coding agent: **"Run the using-steward skill."** It runs the checks, reads the result and tells you
 what is ready. It is a development tool, never a runtime dependency. Pinning in a requirements file:
-`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.21.0` (not in package metadata: PyPI refuses
+`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.21.1` (not in package metadata: PyPI refuses
 direct references there).
 
 **Try it on real data** (0.20.0): a public GEO series, GSE7621 (Parkinson's disease substantia nigra, 25 samples),
@@ -294,7 +296,7 @@ python tools/measure_footprint.py --check
 tools/ci_local.sh                        # the same checks in Linux containers, on a clean export of HEAD
 ```
 
-> **Status: beta, latest release `v0.21.0`.** Usable and tested (1700+ tests on macOS; Linux in Docker), installed from
+> **Status: beta, latest release `v0.21.1`.** Usable and tested (2000+ tests on macOS, and on Linux with Python 3.11 and 3.13), installed from
 > GitHub, not yet on PyPI. Configuration and report formats may still change before 1.0. See the
 > [changelog](CHANGELOG.md).
 

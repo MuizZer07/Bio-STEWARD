@@ -535,10 +535,10 @@ Every rule `steward check` evaluates, by area. `steward explain R-xx` prints the
 
 *multi-project governance · rule version 1*
 
-- **Checks:** Exchange items pass their schema, are uniquely numbered, in their places, with legal state transitions, and what this project sends holds no public term. An outbox item without a receipt after the configured number of days is advisory. Check the peer's ref and ask it to pull and commit the receipt.
+- **Checks:** Exchange items pass their schema, are uniquely numbered, in their places, with legal state transitions, and what this project sends holds no public term. An outbox item without a receipt after the configured number of days is advisory. Check the peer's ref and ask it to pull and commit the receipt. An outbox item that differs from the bytes the peer's committed receipt records is INCOMPLETE at once. Untracked files that git ignores, and untracked OS metadata files (.DS_Store, Thumbs.db, desktop.ini, ._*), are left out.
 - **Why:** Requests between projects must not get lost, duplicated or decided twice.
 - **A PASS does not mean:** The other project agrees with the recorded state.
-- **Fix:** fix the item or ledger entry named. Record states with `steward exchange state ID STATE --note ...`. For a missing receipt, check the peer's ref and ask it to pull and commit its receipt
+- **Fix:** fix the item or ledger entry named. Record states with `steward exchange state ID STATE --note ...`. For a missing receipt, check the peer's ref and ask it to pull and commit its receipt. For an item edited after the peer received it, restore the received bytes, or re-file the revision under a new ID
 - **Result codes:**
   - `R-53.awaiting_reply`: one-way: the other project owes no reply
   - `R-53.bad_transition`
@@ -551,6 +551,7 @@ Every rule `steward check` evaluates, by area. `steward explain R-xx` prints the
   - `R-53.oneway_channel`: a one-way item names its channel
   - `R-53.orphan_response`
   - `R-53.public_term`: reword before it is sent
+  - `R-53.receipt_mismatch`
   - `R-53.removed_after_retirement`
   - `R-53.response_target_mismatch`
   - `R-53.symlink`

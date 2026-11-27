@@ -3197,13 +3197,23 @@ def r53(ctx: Ctx) -> list[Result]:
     def bad(code: str, status: Status = Status.FAIL, **kw: Any) -> None:
         causes.append(status)
         details.append({"code": f"R-53.{code}", **kw})
-    for p in sorted(f.iterdir()):  # the fixed layout (P6)
+    unknown: list[str] = []  # the fixed layout (P6)
+    metadata_md: list[str] = []  # a `._ID.md` AppleDouble file would otherwise be read as an item
+    for p in sorted(f.iterdir()):
         if p.is_dir() and p.name in xc.SUBDIRS:
             for q in sorted(p.iterdir()):
                 if q.name != ".keep" and (q.suffix != ".md" or not q.is_file()):
-                    bad("unknown_entry", path=q.relative_to(ctx.root).as_posix())
+                    unknown.append(q.relative_to(ctx.root).as_posix())
+                elif q.suffix == ".md" and xc.os_metadata(q.name):
+                    metadata_md.append(q.relative_to(ctx.root).as_posix())
         elif p.name not in xc.FILES:
-            bad("unknown_entry", path=p.relative_to(ctx.root).as_posix())
+            unknown.append(p.relative_to(ctx.root).as_posix())
+    # X01, ignored files (0.22.0): an untracked entry that git ignores, or an untracked OS metadata file
+    # (.DS_Store, Thumbs.db, desktop.ini, `._*`), is not part of the exchange; a tracked one is checked as before
+    skipped = xc.skippable(ctx.root, unknown + metadata_md)
+    for rel in unknown:
+        if rel not in skipped:
+            bad("unknown_entry", path=rel)
     parsed: dict[str, tuple[str, Any]] = {}
     rel_of: dict[str, str] = {}
     seen: dict[str, str] = {}
@@ -3223,6 +3233,8 @@ def r53(ctx: Ctx) -> list[Result]:
             and re.search(rf"(?<![\w-]){re.escape(new_id)}(?![\w-])", last.get("note") or "") is not None
     for place, entries in xc.items(ctx.root).items():
         for rel, text in entries:
+            if rel in skipped:
+                continue
             try:  # S5: the whole file must be UTF-8, the body too (the reader replaces bad bytes to list it at all)
                 (ctx.root / rel).read_bytes().decode("utf-8")
             except UnicodeDecodeError as e:
@@ -3340,6 +3352,8 @@ def r53(ctx: Ctx) -> list[Result]:
             if place == "inbox":
                 continue
             for rel, text in entries:
+                if rel in skipped:
+                    continue
                 hits, _ = pv.scan_text(text, publics, False)
                 labels = sorted({h["term"].label for h in hits if h["kind"] == "term"})
                 if labels:
@@ -3358,12 +3372,17 @@ def r53(ctx: Ctx) -> list[Result]:
             bad("unacknowledged", Status.INCOMPLETE, value=iid, message=f"received over {xcfg.ack_days} days ago")
         if place == "oneway" and st == "sent" and it.sent and (today - it.sent).days > xcfg.oneway_days:
             details.append({"code": "R-53.awaiting_reply", "value": iid, "message": "one-way: the other project owes no reply"})
-    for delivery in xc.delivery_status(ctx.root, xcfg, overdue_only=True).outgoing:
+    for delivery in xc.delivery_status(ctx.root, xcfg, overdue_only=True, any_age=True).outgoing:
         iid = delivery.item.id
         shown = "(withheld)" if pv.private_match(ctx.root, ctx.config, iid) else iid
         peer = delivery.item.to
         peer = "(withheld)" if pv.private_match(ctx.root, ctx.config, peer) else peer
-        message = xc.delivery_advice(delivery, xcfg.delivery_days, shown, peer)
+        # X01, edited received items (0.22.0): an own item edited after the peer received it is reported at once, not only once the
+        # peer's response arrives
+        changed = xc.receipt_mismatch_advice(delivery, shown, peer)
+        if changed:
+            bad("receipt_mismatch", Status.INCOMPLETE, value=shown, message=changed)
+        message = xc.delivery_advice(delivery, xcfg.delivery_days, shown, peer)  # overdue items only, as before
         if message:
             details.append({"code": "R-53.undelivered", "value": shown, "message": message})
     status = combine(causes)

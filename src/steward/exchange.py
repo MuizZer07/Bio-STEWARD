@@ -884,6 +884,8 @@ def discover_peers(root: Path, config: ExchangeSection,
 class Delivery:
     item: Item
     state: Literal["waiting", "received", "unchecked", "changed"]
+    sha256: str | None = None  # the sha256 of this project's file now (0.22.0, X01, edited received items)
+    receipt: dict[str, Any] | None = None  # the peer's recorded receipt: sha256, commit, path (0.22.0, X01, edited received items)
 
 
 @dataclass
@@ -896,16 +898,22 @@ class DeliveryStatus:
 def _delivery(item: Item, data: bytes, history: dict[str, list[dict[str, Any]]] | None) -> Delivery:
     if history is None:
         return Delivery(item, "unchecked")
-    receipt = recorded_receipt(history.get(item.id, []))
+    entries = history.get(item.id, [])
+    receipt = recorded_receipt(entries)
     if receipt is None:
         return Delivery(item, "waiting")
-    return Delivery(item, "received" if receipt in ("unhashed", hashlib.sha256(data).hexdigest()) else "changed")
+    sha = hashlib.sha256(data).hexdigest()
+    rec = entries[0].get("received")
+    return Delivery(item, "received" if receipt in ("unhashed", sha) else "changed", sha,
+                    rec if isinstance(rec, dict) else None)
 
 
 def delivery_status(root: Path, config: ExchangeSection, *, overdue_only: bool = False,
-                    network: bool = False) -> DeliveryStatus:
+                    network: bool = False, any_age: bool = False) -> DeliveryStatus:
     """Compare the items each project sends with the receiver's ledger. A peer declared by URL is fetched only with
-    `network` (exchange pull, exchange status --fetch); otherwise its items stay unchecked (AF6)."""
+    `network` (exchange pull, exchange status --fetch); otherwise its items stay unchecked (AF6). `overdue_only`
+    reads this project's outbox items only, and only those past `delivery_days` unless `any_age` (R-53 reports an
+    edited received item at once; 0.22.0, X01, edited received items)."""
     outgoing: dict[str, list[tuple[Item, bytes]]] = {}
     today = date.today()
     for sub in ("outbox",) if overdue_only else ("outbox", "responses"):
@@ -920,7 +928,7 @@ def delivery_status(root: Path, config: ExchangeSection, *, overdue_only: bool =
                 continue
             item = _delivery_item(path.name, data)
             if item and item.from_ == config.code and item.to != config.code:
-                if not overdue_only or (today - item.filed).days > config.delivery_days:
+                if not overdue_only or any_age or (today - item.filed).days > config.delivery_days:
                     outgoing.setdefault(item.to, []).append((item, data))
     status = DeliveryStatus()
     if overdue_only and not outgoing:
@@ -948,6 +956,55 @@ def delivery_status(root: Path, config: ExchangeSection, *, overdue_only: bool =
                 status.unavailable.add(name)
         status.outgoing.extend(_delivery(item, data, history) for item, data in outgoing.get(name, []))
     return status
+
+
+def receipt_mismatch_advice(delivery: Delivery, item_id: str, peer: str) -> str | None:
+    """X01, edited received items (0.22.0): this project's own outbox item differs from the bytes the peer's committed receipt
+    records. The advice names both hashes, the commit the peer received and the two ways out."""
+    if delivery.state != "changed":
+        return None
+    rec = delivery.receipt or {}
+    commit = rec.get("commit") if isinstance(rec.get("commit"), str) and rec.get("commit") else None
+    path = f"{FOLDER}/outbox/{item_id}.md" if item_id == delivery.item.id else "<the item's path>"  # a withheld ID
+    restore = f"git show {commit}:{path}" if commit else "the bytes of that hash"
+    received = rec.get("sha256")
+    return (f"{item_id} was received by {peer} as sha256 {received} (commit {commit or 'not recorded'}); this "
+            f"project's file is now sha256 {delivery.sha256}. Restore the received bytes ({restore}), or re-file the "
+            "revision under a new ID")
+
+
+# OS metadata files a file manager writes into any folder it shows (0.22.0, X01, ignored files)
+OS_METADATA = (".ds_store", "thumbs.db", "desktop.ini")
+
+
+def os_metadata(name: str) -> bool:
+    """`.DS_Store`, `Thumbs.db`, `desktop.ini` (any case) or an AppleDouble `._*` file."""
+    return name.casefold() in OS_METADATA or name.startswith("._")
+
+
+def skippable(root: Path, rels: list[str]) -> set[str]:
+    """The entries (repository-relative paths) R-53 leaves out: untracked ones that git ignores (one
+    `git check-ignore`, with the safe git settings) or that carry an OS metadata name. A tracked entry, or an entry
+    holding a tracked file, is never left out. Outside a git repository nothing is tracked or ignored, so only the OS
+    metadata names are left out."""
+    from .fsutil import git_run
+
+    if not rels:
+        return set()
+    untracked, ignored = list(rels), set()
+    try:
+        out = git_run(root, "ls-files", "-z", "--", FOLDER, timeout=30)
+        if out.returncode == 0:
+            tracked = {p.decode("utf-8", "replace") for p in out.stdout.split(b"\0") if p}
+            untracked = [r for r in rels if r not in tracked and not any(t.startswith(f"{r}/") for t in tracked)]
+            if untracked:
+                chk = git_run(root, "check-ignore", "-z", "--stdin", timeout=30,
+                              input=b"".join(r.encode("utf-8") + b"\0" for r in untracked))
+                if chk.returncode in (0, 1):  # 1: none of them is ignored
+                    ignored = {p.decode("utf-8", "replace") for p in chk.stdout.split(b"\0") if p}
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    return {r for r in untracked if r in ignored or os_metadata(Path(r).name)}
 
 
 def delivery_advice(delivery: Delivery, days: int, item_id: str, peer: str) -> str | None:

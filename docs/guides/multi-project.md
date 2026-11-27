@@ -59,6 +59,28 @@ a break, status marks the delivery as unchecked.
 R-53 reports an advisory when an outbox item is older than `delivery_days` and has no matching receipt. The
 default is 14 days. Check the receiver's ref and ask the receiver to pull and commit its receipt.
 
+**An item edited after the peer received it** (0.22.0): when one of your outbox items differs from the bytes the
+peer's committed receipt records, R-53 is INCOMPLETE at once with `R-53.receipt_mismatch`, whatever the item's age
+and before any response arrives. The message names both sha256 hashes and the commit the peer received. There are
+two ways out:
+
+- restore the received bytes (`git show <commit>:exchange/outbox/<ID>.md > exchange/outbox/<ID>.md`), which clears
+  it;
+- or restore them and file the revision as a new item with a new ID.
+
+## Files that are not part of the exchange
+
+R-53 checks the fixed layout of `exchange/`: an unknown entry is a FAIL (`R-53.unknown_entry`). Since 0.22.0 it
+leaves out an entry that is **untracked** and either
+
+- ignored by git (one `git check-ignore`, run with the same safe git settings as every other git call), or
+- an OS metadata file: `.DS_Store`, `Thumbs.db`, `desktop.ini` (any case) or an AppleDouble `._*` file.
+
+A file manager that writes `.DS_Store` into `exchange/` no longer blocks the gate or the pre-commit hook. A tracked
+unknown file, or an unknown file that is neither ignored nor an OS metadata file, still FAILs. A tracked `._ID.md`
+file is read as an item, as before. Outside a git repository nothing is tracked or ignored, so only the OS metadata
+names are left out.
+
 ## Report a toolkit defect
 
 `steward issue "…"` or `steward issue --from-last-error` files a screened defect item in `exchange/outbox/`,

@@ -99,5 +99,5 @@ upgrades only while that folder still exists and holds the new version. If it wa
 once from a stable source, and `steward upgrade` can then follow it:
 
 ```bash
-uv tool install --force "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.21.0"   # or, once it is on PyPI: bio-steward
+uv tool install --force "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.21.1"   # or, once it is on PyPI: bio-steward
 ```

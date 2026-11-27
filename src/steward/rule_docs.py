@@ -121,7 +121,9 @@ RULE_DOCS: dict[str, dict[str, str]] = {
               **{"not": "The reproduction ran on independent hardware."}, scope="project"),
     "R-53": D(checks="Exchange items pass their schema, are uniquely numbered, in their places, with legal state transitions, and "
               "what this project sends holds no public term. An outbox item without a receipt after the configured number "
-              "of days is advisory. Check the peer's ref and ask it to pull and commit the receipt.",
+              "of days is advisory. Check the peer's ref and ask it to pull and commit the receipt. An outbox item that "
+              "differs from the bytes the peer's committed receipt records is INCOMPLETE at once. Untracked files that "
+              "git ignores, and untracked OS metadata files (.DS_Store, Thumbs.db, desktop.ini, ._*), are left out.",
               why="Requests between projects must not get lost, duplicated or decided twice.",
               **{"not": "The other project agrees with the recorded state."}, scope="multi-project"),
     "R-54": D(checks="Received items are unchanged since they were received, and get a decision in time.",

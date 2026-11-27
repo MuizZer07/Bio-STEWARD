@@ -17,6 +17,8 @@ theme:
       primary: teal
       accent: indigo
       toggle: { icon: material/weather-sunny, name: Light mode }
+  logo: assets/logo.svg
+  favicon: assets/favicon.png
   icon:
     repo: fontawesome/brands/github
 extra_css: [assets/extra.css]

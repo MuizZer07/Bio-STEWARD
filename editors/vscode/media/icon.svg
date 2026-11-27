@@ -1,5 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-<rect width="128" height="128" rx="24" fill="#00796b"/>
-<g transform="translate(16 16) scale(4)" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round">
-<path d="M12 2.5 4.5 5.5v6c0 4.6 3.1 8.6 7.5 10 4.4-1.4 7.5-5.4 7.5-10v-6L12 2.5Z"/><path d="m8.5 12 2.5 2.5 4.5-5" stroke-linecap="round"/></g>
+<defs><linearGradient id="bsg" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#0f8a8c"/><stop offset="1" stop-color="#4b4fd8"/></linearGradient></defs>
+<path d="M64 5 L114 21 V58 C114 91 93 113 64 124 C35 113 14 91 14 58 V21 Z" fill="url(#bsg)"/>
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" opacity="0.32">
+    <path d="M46 22 C46 38 82 38 82 54 C82 70 46 70 46 86 C46 96 58 100 64 104" stroke-width="6"/>
+    <path d="M82 22 C82 38 46 38 46 54 C46 70 82 70 82 86 C82 96 70 100 64 104" stroke-width="6"/>
+    <path d="M51 30 H77 M51 54 H77 M51 78 H77" stroke-width="3.5"/>
+  </g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M38 66 C44 72 50 78 56 85 C66 70 78 58 92 47" stroke="#ffffff" stroke-width="17"/>
+    <path d="M38 66 C44 72 50 78 56 85 C66 70 78 58 92 47" stroke="#22c55e" stroke-width="10"/>
+  </g>
 </svg>
