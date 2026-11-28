@@ -550,12 +550,17 @@ def cmd_task(args: argparse.Namespace) -> int:
         return _dispatch(args)
 
     if args.task_command == "board":
-        from .cockpit import board_tasks
+        from .cockpit import parse_now, task_board
 
         root, cfg = _cfg(args)
         if cfg is None:
             return EXIT_USAGE
-        rows = board_tasks(root, cfg, use_default=True)
+        try:
+            now = parse_now(args.now)
+        except ValueError as e:
+            print(f"steward: {e}", file=sys.stderr)
+            return EXIT_USAGE
+        rows = task_board(root, cfg, now, use_default=True)
         if wants_json(args):
             write_json(args, {"board": cfg.tasks.board if cfg.tasks else None, "tasks": rows})
         elif rows:
@@ -564,8 +569,9 @@ def cmd_task(args: argparse.Namespace) -> int:
 
             changed = last_changed(root, [row["path"] for row in rows])  # X05: newest first, by its latest change
             for row in newest_first(rows, lambda r: changed.get(r["path"]), lambda r: r["id"]):
-                archived = " (archived)" if row["archived"] else ""
-                print(f"{row['id']:<16} {row['status']:<14} {row['path']}{archived}")
+                marks = [m for m, on in (("archived", row["archived"]), ("stale", row["stale"])) if on]
+                suffix = f" ({', '.join(marks)})" if marks else ""
+                print(f"{row['id']:<16} {row['status']:<14} {row['path']}{suffix}")
         else:
             print("no task records")
         return EXIT_OK

@@ -427,6 +427,13 @@
           ],
           "schema": "steward.pins_status/0.1"
         },
+        "plans": {
+          "argv": [
+            "--format",
+            "json"
+          ],
+          "schema": "steward.plans/0.1"
+        },
         "release status": {
           "argv": [
             "--format",
@@ -566,6 +573,14 @@
           ],
           "schema": "steward.timeline/0.1"
         },
+        "timeline --events": {
+          "argv": [
+            "--events",
+            "--format",
+            "json"
+          ],
+          "schema": "steward.timeline_events/0.1"
+        },
         "tokens check": {
           "argv": [
             "--claude-hook"
@@ -646,6 +661,7 @@
         "steward.paper_spec/0.1": "steward.paper_spec-0.1.schema.json",
         "steward.paper_values/0.1": "steward.paper_values-0.1.schema.json",
         "steward.pins_status/0.1": "steward.pins_status-0.1.schema.json",
+        "steward.plans/0.1": "steward.plans-0.1.schema.json",
         "steward.presentation_prefs/0.1": "steward.presentation_prefs-0.1.schema.json",
         "steward.prior_work/0.1": "steward.prior_work-0.1.schema.json",
         "steward.progress_audit/0.1": "steward.progress_audit-0.1.schema.json",
@@ -670,6 +686,7 @@
         "steward.task_board/0.1": "steward.task_board-0.1.schema.json",
         "steward.tidy/0.1": "steward.tidy-0.1.schema.json",
         "steward.timeline/0.1": "steward.timeline-0.1.schema.json",
+        "steward.timeline_events/0.1": "steward.timeline_events-0.1.schema.json",
         "steward.tokens_report/0.1": "steward.tokens_report-0.1.schema.json",
         "steward.toml/0.2": "steward.toml-0.2.schema.json",
         "steward.upgrade/0.1": "steward.upgrade-0.1.schema.json",

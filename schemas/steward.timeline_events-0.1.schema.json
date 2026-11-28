@@ -1,0 +1,252 @@
+{
+  "$defs": {
+    "TimelineEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "day": {
+          "title": "Day",
+          "type": "boolean"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "End"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "internal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Internal"
+        },
+        "kind": {
+          "enum": [
+            "milestone",
+            "milestone_moved",
+            "milestone_outcome",
+            "decision",
+            "release",
+            "paper",
+            "review",
+            "research",
+            "sprint",
+            "task"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "line": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Line"
+        },
+        "moved_from": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Moved From"
+        },
+        "moved_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Moved To"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Path"
+        },
+        "project": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Project"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ref"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "State"
+        },
+        "time": {
+          "title": "Time",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "project",
+        "time",
+        "day",
+        "end",
+        "internal",
+        "moved_from",
+        "moved_to",
+        "state",
+        "title",
+        "path",
+        "line",
+        "ref"
+      ],
+      "title": "TimelineEvent",
+      "type": "object"
+    },
+    "TimelineProject": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Code"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Note"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Path"
+        },
+        "reachable": {
+          "title": "Reachable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "path",
+        "reachable",
+        "note"
+      ],
+      "title": "TimelineProject",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Every dated record on one time axis: milestones (`internal` is due minus the buffer; `moved_from` the first\ncommitted due date when it differs), their moves (`milestone_moved`, at the commit that moved the date, from\n`moved_from` to `moved_to`) and outcomes, decisions, releases (local `v*` tags; `ref` is the tag), papers (the\ndate the venue requirements were retrieved), independent reviews (the time of the reviewed commit), research\nrecords, sprint windows (`time` to `end`) and their tasks (started to ended). Times are UTC; `day` marks a record\nthat dates a day, not a moment. Each event names its source file (`path`, null for a tag) and `line`. `project` is\nnull for this project and the exchange code of another project read with --all-projects; `projects` lists this\nproject first, then the others by code. A record without a date is left out; `notes` says what was not dated or\nnot read. Order: `events` newest first (by time, then ID, highest first).",
+  "properties": {
+    "events": {
+      "items": {
+        "$ref": "#/$defs/TimelineEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
+    "now": {
+      "title": "Now",
+      "type": "string"
+    },
+    "projects": {
+      "items": {
+        "$ref": "#/$defs/TimelineProject"
+      },
+      "title": "Projects",
+      "type": "array"
+    },
+    "schema": {
+      "const": "steward.timeline_events/0.1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "now",
+    "projects",
+    "events",
+    "notes"
+  ],
+  "title": "TimelineEvents",
+  "type": "object"
+}

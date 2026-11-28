@@ -1,0 +1,47 @@
+{
+  "events": [
+    {
+      "day": false,
+      "end": null,
+      "id": "milestone:review",
+      "internal": null,
+      "kind": "milestone",
+      "line": 3,
+      "moved_from": null,
+      "moved_to": null,
+      "path": "development/milestones.toml",
+      "project": null,
+      "ref": null,
+      "state": "on track",
+      "time": "2026-12-01T00:00:00Z",
+      "title": "Review the example"
+    },
+    {
+      "day": true,
+      "end": null,
+      "id": "paper:main:venue",
+      "internal": null,
+      "kind": "paper",
+      "line": 6,
+      "moved_from": null,
+      "moved_to": null,
+      "path": "paper/venue.toml",
+      "project": null,
+      "ref": null,
+      "state": null,
+      "time": "2026-11-25T00:00:00Z",
+      "title": "paper main: venue requirements retrieved (Generic preprint server (example))"
+    }
+  ],
+  "notes": [],
+  "now": "2026-11-27T00:00:00Z",
+  "projects": [
+    {
+      "code": "DEMO",
+      "note": null,
+      "path": ".",
+      "reachable": true
+    }
+  ],
+  "schema": "steward.timeline_events/0.1"
+}

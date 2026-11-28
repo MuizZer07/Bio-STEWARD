@@ -141,6 +141,19 @@ Usage and input errors can report a diagnostic on stderr and leave stdout empty.
 Discovery and the default read commands use local data. To query configured
 remote peers explicitly, use `steward exchange status --fetch --format json`.
 
+## More JSON documents (0.24.0)
+
+| Command | Schema | What it holds |
+|---|---|---|
+| `steward plans --format json` | `steward.plans/0.1` | Every plan of the project (roadmap rows of the index, release specifications, sprints, milestones), newest first, each with its `path` and `line`, its recorded state, its progress (the same counts as `steward sprint status` and `steward timeline`) and its drift. See [Plan to a deadline](guides/timeline.md#list-project-plans). |
+| `steward timeline --events --format json` | `steward.timeline_events/0.1` | Every dated record on one time axis, newest first: milestones with their buffers and moved dates, decisions, releases (local `v*` tags), papers, reviews, research records, sprint windows and their tasks. Each event names its source file and line. `--all-projects` adds the projects the exchange names that are on disk. `--format svg` draws the schedule. No network call. See [Plan to a deadline](guides/timeline.md#the-research-timeline-and-the-schedule). |
+| `steward next --format json` | `steward.next/0.1` | Additions only: `since`, what changed after the last session handoff (commits, decisions, exchange items received, sprint events, release tags), newest first, each with its `kind`, `id`, `title`, `source`, `line` and `time`. See [Where you are, what is next](guides/next-and-tidy.md). |
+| `steward task board --format json` | `steward.task_board/0.1` | Additions only: each task's `owner`, `implementer`, `window`, and `stale` with `stale_reason` (the rule of `steward tidy`). |
+| `steward authorize pending --format json` | `steward.authorize_pending/0.1` | Additions only: for a waiting payload, `sign_argv` and `sign_command`, the `sign` command bound to the payload's SHA-256 with `--expect-sha256`; null otherwise. See [Sign ahead, or sign later](guides/signing-ahead.md#sign-later-the-queue). |
+
+In a gate, `steward plans --format json` shows which plan has drifted from its record, and `steward timeline --events
+--format svg` draws the schedule as a build artifact; neither opens a network connection.
+
 ## More JSON documents (0.23.0)
 
 | Command | Schema | What it holds |
@@ -173,8 +186,8 @@ appears in `steward next --format json` until the master accepts it.
 
 | Command | Schema | What it holds |
 |---|---|---|
-| `steward task board --format json` | `steward.task_board/0.1` | The board path, when configured, and task IDs, paths, statuses and closed and archived flags. Without `[tasks]`, it searches `development/tasks/**/*.md`. |
-| `steward authorize pending --format json` | `steward.authorize_pending/0.1` | Queued payloads with their full nonce, action, scope, budget, expiry, object hash and SHA-256 of the exact payload bytes. `--all-projects` includes local peers and reports skipped peers. Current payloads carry a repository ID, so `requester` is null. |
+| `steward task board --format json` | `steward.task_board/0.1` | The board path, when configured, and task IDs, paths, statuses and closed and archived flags; each task's owner and implementer (from its header lines), its newest recorded window (`task-tokens`, `agents` or the sprint ledger, else null), and `stale` with `stale_reason`, by the same rule as `steward tidy`. `--now` evaluates staleness at another time. Without `[tasks]`, it searches `development/tasks/**/*.md`. |
+| `steward authorize pending --format json` | `steward.authorize_pending/0.1` | Queued payloads with their full nonce, action, scope, budget, expiry, object hash and SHA-256 of the exact payload bytes, and for a waiting payload the `sign` command bound to that SHA-256 (`sign_command`, `sign_argv`). `--all-projects` includes local peers and reports skipped peers. Current payloads carry a repository ID, so `requester` is null. |
 | `steward authorize list --format json` | `steward.authorize_list/0.1` | Authorization and anchor tags with verification results. |
 | `steward authorize keys --format json` | `steward.authorize_keys/0.1` | The baseline and its allowed signer principals and key types. |
 | `steward sprint status ID --format json` | `steward.sprint_status/0.1` | The sprint window, dispatch mode and ordered task list with ledger state, limits, checks and recorded branch and commit. |

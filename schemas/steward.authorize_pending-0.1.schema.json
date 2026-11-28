@@ -70,6 +70,31 @@
           "title": "Scope",
           "type": "string"
         },
+        "sign_argv": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sign Argv"
+        },
+        "sign_command": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sign Command"
+        },
         "state": {
           "enum": [
             "waiting",
@@ -104,7 +129,9 @@
         "baseline",
         "state",
         "tag",
-        "path"
+        "path",
+        "sign_argv",
+        "sign_command"
       ],
       "title": "PendingAuthorization",
       "type": "object"

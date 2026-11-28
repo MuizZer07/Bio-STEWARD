@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 172" width="100%" role="img" aria-labelledby="schedule-title schedule-desc">
+<title id="schedule-title">Research schedule: biology-geo</title>
+<desc id="schedule-desc">2 dated events from 2026-11-25 to 2026-12-01; today is 2026-11-27. Lanes: Milestones 1, Papers and reviews 1. Coming deadlines: Review the example due 2026-12-01, on track. Newest first: 2026-12-01 00:00 milestone Review the example; 2026-11-25 paper paper main: venue requirements retrieved (Generic preprint server (example)).</desc>
+<style>
+  .bg { fill: #ffffff; } .ink { fill: #1d2330; } .muted { fill: #5b6475; } .grid { stroke: #e3e6ec; }
+  @media (prefers-color-scheme: dark) {
+    .bg { fill: #14171f; } .ink { fill: #e8ebf2; } .muted { fill: #a3abba; } .grid { stroke: #2a2f3b; }
+  }
+  text { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 12px; }
+</style>
+<style>
+  .lane { fill: #f4f6f9; } .today { stroke: #d64545; } .today-ink { fill: #d64545; } .link { stroke: #8a8f98; }
+  @media (prefers-color-scheme: dark) {
+    .lane { fill: #1b1f29; } .today { stroke: #ff7b7b; } .today-ink { fill: #ff7b7b; } .link { stroke: #a3abba; }
+  }
+</style>
+<rect class="bg" width="960" height="172" rx="10"/>
+<text class="ink" x="16" y="26" font-weight="600" font-size="15">Research schedule: biology-geo</text>
+<text class="muted" x="16" y="44">2 dated events from 2026-11-25 to 2026-12-01; today is 2026-11-27.</text>
+<rect class="lane" x="190" y="73" width="746" height="28" rx="4"/>
+<text class="ink" x="180" y="91.0" text-anchor="end">Milestones</text>
+<rect class="lane" x="190" y="107" width="746" height="28" rx="4"/>
+<text class="ink" x="180" y="125.0" text-anchor="end">Papers and reviews</text>
+<line class="grid" x1="283.2" y1="70" x2="283.2" y2="138"/>
+<text class="muted" x="283.2" y="154" text-anchor="middle">11-25</text>
+<line class="grid" x1="469.8" y1="70" x2="469.8" y2="138"/>
+<text class="muted" x="469.8" y="154" text-anchor="middle">11-27</text>
+<line class="grid" x1="656.2" y1="70" x2="656.2" y2="138"/>
+<text class="muted" x="656.2" y="154" text-anchor="middle">11-29</text>
+<line class="grid" x1="842.8" y1="70" x2="842.8" y2="138"/>
+<text class="muted" x="842.8" y="154" text-anchor="middle">12-01</text>
+<text class="muted" x="853.8" y="91.0" font-size="11">review</text>
+<path d="M842.8 79.0 l8 8 l-8 8 l-8 -8 z" fill="#4c7bd9"><title>2026-12-01 00:00 Review the example (on track)</title></path>
+<circle cx="283.2" cy="121.0" r="4" fill="#c2559b" fill-opacity="0.8"><title>2026-11-25 paper main: venue requirements retrieved (Generic preprint server (example))</title></circle>
+<line class="today" x1="469.8" y1="66" x2="469.8" y2="138" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text class="today-ink" x="469.8" y="62" text-anchor="middle">today</text>
+</svg>

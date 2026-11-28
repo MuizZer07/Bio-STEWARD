@@ -87,7 +87,8 @@ paper = "main"
         plan.write_text(plan.read_text().replace('purpose      = "progress-update"', 'purpose      = "TBD"'))
 
     cfg = load_config(root)
-    append(root, "development/tasks/DEMO-001.md", "# Active task\n\n- **ID:** DEMO-001\n- **Status:** in progress (review)\n")
+    append(root, "development/tasks/DEMO-001.md", "# Active task\n\n- **ID:** DEMO-001\n- **Status:** in progress (review)\n"
+           "- **Owner:** Example owner · **Approver:** Example approver\n- **Implementer:** Example agent\n")
     append(root, "development/archive/DEMO-002.md", "# Archived task\n\n- **ID:** DEMO-002\n- **Status:** done\n")
     append(root, cfg.tasks.board, "# Board\n\n- **ID:** DEMO-999\n")
     append(root, cfg.session.handoff, "# Handoff\n\nResume from the example records.\n")

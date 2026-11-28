@@ -422,11 +422,82 @@ _add("tokens report", "TokensReport", tasks=list[TaskTokens], sources=dict[str, 
      currency=str | None)
 
 
+class PlanTask(TypedDict):
+    id: str
+    state: str
+
+
+class PlanTaskProgress(TypedDict):
+    done: int
+    total: int
+    tasks: list[PlanTask]
+
+
+class PlanRecord(TypedDict):
+    id: str
+    title: str
+    state: str
+    date: str | None
+    path: str
+    line: Annotated[int, Field(ge=1)]
+
+
+class PlanDrift(TypedDict):
+    date: DateDrift | None
+    scope: list[ScopeDrift]
+    order: list[OrderDrift]
+    changes: list[PlanChange]
+
+
+class RoadmapPlan(PlanRecord):
+    kind: Literal["roadmap"]
+    progress: PlanTaskProgress | None
+    drift: PlanDrift
+
+
+class ReleasePlanProgress(TypedDict):
+    tag: str | None
+
+
+class ReleasePlanDrift(TypedDict):
+    changed_since_tag: bool
+
+
+class ReleasePlan(PlanRecord):
+    kind: Literal["release"]
+    progress: ReleasePlanProgress
+    drift: ReleasePlanDrift | None
+
+
+class SprintPlanDrift(TypedDict):
+    unplanned_tasks: list[str]
+    missing_tasks: list[str]
+
+
+class SprintPlan(PlanRecord):
+    kind: Literal["sprint"]
+    progress: PlanTaskProgress
+    drift: SprintPlanDrift | None
+
+
+class MilestonePlan(PlanRecord):
+    kind: Literal["milestone"]
+    progress: dict[str, Object]
+    drift: PlanDrift
+
+
+Plan = Annotated[RoadmapPlan | ReleasePlan | SprintPlan | MilestonePlan, Field(discriminator="kind")]
+
+
 # 0.21.0 (W02, STW-047 C3 – C8): the documents of explain, check --digest-only, init --dry-run, skills list, and the
 # error document of a command that needs a configured project.
 def _add_tag(tag, name, **fields):
     stem, version = tag.split("/")
     SCHEMAS[f"{stem}-{version}.schema.json"] = _document(name, tag, **fields)
+
+
+_add_tag(OTHER_SCHEMAS["plans"], "Plans", plans=list[Plan],
+         history=Literal["available", "unavailable", "shallow", "partial"], notes=list[str])
 
 
 class ManifestFile(TypedDict):
@@ -590,6 +661,16 @@ class NextEntry(TypedDict):
     time: str | None
 
 
+class SinceEntry(TypedDict):
+    """P03: one change since the last session handoff, newest first, with its source."""
+    kind: Literal["commit", "decision", "exchange", "sprint", "release"]
+    id: str
+    title: str
+    source: str
+    line: int | None
+    time: str | None
+
+
 class NextTidy(TypedDict):
     counts: TidyCounts
     total: int
@@ -609,11 +690,20 @@ class Notification(TypedDict):
 
 _add_tag(OTHER_SCHEMAS["next"], "Next", tool_version=str, now=str, project=str, resume=Resume | None,
          milestone=NextMilestone | None, waiting_on_human=list[NextEntry], waiting_on_agents=list[NextEntry],
-         tidy=NextTidy, notes=list[str])
+         since=list[SinceEntry], tidy=NextTidy, notes=list[str])
 _add_tag(OTHER_SCHEMAS["tidy"], "Tidy", tool_version=str, now=str, thresholds=TidyThresholds, items=list[TidyItem],
          counts=TidyCounts, total=int, notes=list[str])
 _add_tag(OTHER_SCHEMAS["notifications"], "Notifications", tool_version=str, now=str, days=int,
          items=list[Notification], notes=list[str])
+
+
+class BoardTaskWindow(TypedDict):
+    """P03: the task's newest recorded window (`task-tokens`, `agents` or `sprint`)."""
+    open: bool
+    start: str
+    end: str | None
+    source: Literal["task-tokens", "agents", "sprint"]
+    ledger: str | None
 
 
 class BoardTask(TypedDict):
@@ -622,6 +712,11 @@ class BoardTask(TypedDict):
     status: str
     closed: bool
     archived: bool
+    owner: str | None
+    implementer: str | None
+    window: BoardTaskWindow | None
+    stale: bool
+    stale_reason: str | None
 
 
 class PendingAuthorization(TypedDict):
@@ -641,6 +736,8 @@ class PendingAuthorization(TypedDict):
     summary: NotRequired[str]
     tag: str
     path: str
+    sign_argv: list[str] | None
+    sign_command: str | None
 
 
 class SkippedPeer(TypedDict):
@@ -945,6 +1042,55 @@ class AgentsStatus(BaseModel):
 SCHEMAS[OTHER_SCHEMAS["agents status"].replace("/", "-") + ".schema.json"] = AgentsStatus
 
 
+# 0.24.0 (P02): `steward timeline --events --format json`, every dated record on one time axis.
+class TimelineEvent(TypedDict):
+    id: str
+    kind: Literal["milestone", "milestone_moved", "milestone_outcome", "decision", "release", "paper", "review",
+                  "research", "sprint", "task"]
+    project: str | None
+    time: str
+    day: bool
+    end: str | None
+    internal: str | None
+    moved_from: str | None
+    moved_to: str | None
+    state: str | None
+    title: str
+    path: str | None
+    line: int | None
+    ref: str | None
+
+
+class TimelineProject(TypedDict):
+    code: str | None
+    path: str | None
+    reachable: bool
+    note: str | None
+
+
+class TimelineEvents(BaseModel):
+    """Every dated record on one time axis: milestones (`internal` is due minus the buffer; `moved_from` the first
+    committed due date when it differs), their moves (`milestone_moved`, at the commit that moved the date, from
+    `moved_from` to `moved_to`) and outcomes, decisions, releases (local `v*` tags; `ref` is the tag), papers (the
+    date the venue requirements were retrieved), independent reviews (the time of the reviewed commit), research
+    records, sprint windows (`time` to `end`) and their tasks (started to ended). Times are UTC; `day` marks a record
+    that dates a day, not a moment. Each event names its source file (`path`, null for a tag) and `line`. `project` is
+    null for this project and the exchange code of another project read with --all-projects; `projects` lists this
+    project first, then the others by code. A record without a date is left out; `notes` says what was not dated or
+    not read. Order: `events` newest first (by time, then ID, highest first)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_: Literal["steward.timeline_events/0.1"] = Field(alias="schema")
+    now: str
+    projects: list[TimelineProject]
+    events: list[TimelineEvent]
+    notes: list[str]
+
+
+SCHEMAS[OTHER_SCHEMAS["timeline --events"].replace("/", "-") + ".schema.json"] = TimelineEvents
+
+
 # X05 (0.22.0): each document says the order of its lists, so a reader can sort. The text views print the newest
 # entry first; these documents keep the order they had in 0.21 (a contract).
 _TEXT = " The text view prints the newest entry first."
@@ -964,8 +1110,11 @@ ORDER = {
     "integrity_status": "Order: frozen sets and datasets by name (A to Z).",
     "issues_inbox": "Order: groups by fingerprint; within a group, versions, projects and items A to Z." + _TEXT,
     "next": "Order: `waiting_on_human` and `waiting_on_agents` grouped by the kind of record, in the order they are "
-            "read; each entry's `time` sorts them." + _TEXT,
+            "read; each entry's `time` sorts them. `since` newest first (by time, then ID, highest first)." + _TEXT,
     "notifications": "Order: items newest first (by time, then ID, highest first).",
+    "plans": "Order: plans by recorded date, newest first, then by natural ID, highest first. Undated plans come last. "
+             "Sprint tasks use their latest ledger event, with natural ID as a fallback. Milestone progress retains "
+             "the order used by timeline.",
     "research_list": "Order: records newest first (by date).",
     "sprint_status": "Order: tasks in dispatch order (each after the tasks it waits for, else as the sprint file "
                      "lists them)." + _TEXT,
@@ -983,7 +1132,7 @@ ORDER = {
 def _describe_order() -> None:
     for name, model in SCHEMAS.items():
         stem = name.removesuffix(".schema.json").rsplit("-", 1)[0].removeprefix("steward.")
-        if stem in ("agents_list", "agents_status"):  # its docstring already says its order
+        if stem in ("agents_list", "agents_status", "timeline_events"):  # its docstring already says its order
             continue
         own = (model.__doc__ or "").strip() if model in (ProgressAudit, LastError) else ""
         text = ORDER.get(stem, _UNDATED)

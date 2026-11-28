@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-0.23.0%20beta-4b4fd8">
+  <img alt="version" src="https://img.shields.io/badge/version-0.24.0%20beta-4b4fd8">
   <img alt="python" src="https://img.shields.io/badge/python-3.11%2B-0b6f72">
   <a href="https://doi.org/10.5281/zenodo.24548977"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.24548977.svg"></a>
   <img alt="licence" src="https://img.shields.io/badge/licence-MIT-1d7a4e">
@@ -62,14 +62,14 @@ wherever required.
 
 ## 🚀 Quick start
 ```bash
-uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.23.0"     # or: pipx install "git+…@v0.23.0"
+uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.24.0"     # or: pipx install "git+…@v0.24.0"
 cd your-research-repo
 steward init --skills .agents/skills         # scaffold; never overwrites. Claude Code: --skills .claude/skills
 steward check --summary
 ```
 Then just ask your coding agent: **"Run the using-steward skill."** It runs the checks, reads the result and tells you
 what is ready. It is a development tool, never a runtime dependency. Pinning in a requirements file:
-`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.23.0` (not in package metadata: PyPI refuses
+`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.24.0` (not in package metadata: PyPI refuses
 direct references there).
 
 **Try it on real data** (0.20.0): a public GEO series, GSE7621 (Parkinson's disease substantia nigra, 25 samples),
@@ -212,7 +212,7 @@ Quarto or Pandoc. See [docs/works-with.md](docs/works-with.md).
 | `steward example biology DIR` | A real public GEO series, checked end to end, to try it on |
 | `steward check [AREA…] [--rule R-xx] [--final] [--summary] [--output FILE]` | Evaluate the rules (read-only); `--rule` shows one rule with every detail |
 | `steward report FILE [--format md\|text\|summary] [--rule R-xx]` | Render a saved report |
-| `steward next` / `tidy` / `notifications` / `decisions` | Where you left off and what waits; what is stale; one feed of what changed; decisions and open questions |
+| `steward next` / `tidy` / `notifications` / `decisions` | Where you left off, what changed since the last handoff and what waits; what is stale; one feed of what changed; decisions and open questions |
 | `steward interface --format json` | Every JSON command, its schema and the exit codes, for CI and agents |
 | `steward upgrade --check [--online]` / `--to VERSION` | The newest known CLI and the exact install command; install after confirming |
 | `steward issue` / `issues inbox` | Report a toolkit defect through the exchange, screened, with no network call |
@@ -230,12 +230,14 @@ Quarto or Pandoc. See [docs/works-with.md](docs/works-with.md).
 | `steward licence inventory\|notices` | Licence governance: dependencies, copied code, notices |
 | `steward paper values\|displays\|citations\|manifest` | Values registry, display lock, citation record, submission manifest |
 | `steward talk plan\|prefs\|values\|export` | Talk planning and export |
-| `steward authorize pin\|prepare\|sign\|verify\|pending\|sign-pending` | Signed human approvals, now or later |
+| `steward authorize pin\|prepare\|sign\|verify\|pending\|sign-pending` | Signed human approvals, now or later; `pending --format json` gives each waiting payload its exact `sign` command |
 | `steward benchmark splits\|results CONTRACT` | Split overlaps; the results matrix |
 | `steward freeze` / `amend` / `seal` / `unseal` / `integrity status\|access` | Research integrity; who may use a dataset for what |
 | `steward spend check\|record\|status` | Spend guard |
 | `steward docs init\|build` | A documentation site for your project, with charts and study cards |
-| `steward timeline` / `sprint …` / `audit progress` | Deadlines, supervised sprints, the Progress Audit |
+| `steward plans` | Every plan (roadmap rows, release specifications, sprints, milestones) with its state, progress and drift, each at its file and line; newest first |
+| `steward timeline [--events [--format svg] [--all-projects]]` | Deadlines; every dated record on one time axis, newest first, and the schedule as an SVG |
+| `steward sprint …` / `audit progress` | Supervised sprints, the Progress Audit |
 | `steward exchange …` / `constitution` | Requests and release notices between projects; the constitution |
 | `steward release publish\|status\|go-public` | Publish releases to a public repository, development private (model A) |
 | `steward stranger-test brief\|record` | A newcomer's first hour with a release, by an agent that has never seen it |
@@ -301,7 +303,7 @@ python tools/measure_footprint.py --check
 tools/ci_local.sh                        # the same checks in Linux containers, on a clean export of HEAD
 ```
 
-> **Status: beta, latest release `v0.23.0`.** Usable and tested (2000+ tests on macOS, and on Linux with Python 3.11 and 3.13), installed from
+> **Status: beta, latest release `v0.24.0`.** Usable and tested (2000+ tests on macOS, and on Linux with Python 3.11 and 3.13), installed from
 > GitHub, not yet on PyPI. Configuration and report formats may still change before 1.0. See the
 > [changelog](CHANGELOG.md).
 

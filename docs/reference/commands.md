@@ -33,10 +33,11 @@ Every `steward` command with its one-line purpose. `steward COMMAND --help` list
 | `steward ledger` | ledger maintenance |
 | `steward licence` | licence governance: inventory and third-party notices (0.19.0) |
 | `steward mcp` | optional MCP server over stdio (read-only tools; v0.8) |
-| `steward next` | where you left off, the next milestone, what waits on you and on agents, what to tidy |
+| `steward next` | where you left off, what changed since, the next milestone, what waits on you and on agents, what to tidy |
 | `steward notifications` | one feed: CLI releases, exchange items, sprint tasks, approvals, gates, milestones |
 | `steward paper` | PaperKit helpers |
 | `steward pins` | pinned dependencies: deprecate, retire (keep the artifact), restore (0.17.0) |
+| `steward plans` | project plans, progress and drift |
 | `steward release` | release manifest and distribution audit |
 | `steward report` | render an existing JSON report |
 | `steward repro` | reproduction gate: re-derived outputs against a reference manifest |

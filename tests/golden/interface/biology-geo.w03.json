@@ -18,6 +18,7 @@
     "project": "biology-geo",
     "resume": null,
     "schema": "steward.next/0.1",
+    "since": [],
     "tidy": {
       "command": "steward tidy",
       "counts": {

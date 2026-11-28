@@ -139,8 +139,22 @@ def _version_key(text: str) -> tuple[int, int, int] | None:
 
 
 # ---------------------------------------------------------------- records
+_HEADER_SPLIT = re.compile(r"^#{2,}[ \t]+", re.M)
+_PLACEHOLDER_VALUES = {"…", "...", "-", "—"}
+
+
+def _task_field(header: str, name: str) -> str | None:
+    """Read a header field (`- **Owner:** …`, also with `· **Approver:** …` on the same line)."""
+    m = re.search(rf"(?:^\s*[-*]\s+|\s+·\s+)\*\*{re.escape(name)}(?::\*\*|\*\*:)\s*(.+?)(?=\s+·\s+\*\*|\s*$)",
+                  header, re.M | re.I)
+    if not m:
+        return None
+    val = m.group(1).strip()
+    return None if (not val or val in _PLACEHOLDER_VALUES) else val
+
+
 def board_tasks(root: Path, cfg: Any, *, use_default: bool = False) -> list[dict[str, Any]]:
-    """The board's task files (R-57's reading): ID, path, status, closed or not, archived or not."""
+    """The board's task files (R-57's reading): ID, path, status, closed, archived, owner and implementer."""
     from .fsutil import glob_match, iter_repo_files
     from .process import ID_LINE, STATUS_LINE, _status
 
@@ -162,9 +176,11 @@ def board_tasks(root: Path, cfg: Any, *, use_default: bool = False) -> list[dict
         m, s = ID_LINE.search(text), STATUS_LINE.search(text)
         if not m:
             continue
+        header = _HEADER_SPLIT.split(text, maxsplit=1)[0]
         status = _status(s.group(1) if s else None, tc.statuses) or "(none)"
         out.append({"id": m.group(1), "path": rel, "status": status, "closed": status in tc.closed,
-                    "archived": archived})
+                    "archived": archived, "owner": _task_field(header, "Owner"),
+                    "implementer": _task_field(header, "Implementer")})
     return out
 
 
@@ -225,9 +241,99 @@ def sprints(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
             t = _parse_time(e.get("time"))
             if e.get("task") in states and t is not None:
                 times[e["task"]] = t
-        out.append({"sf": sf, "states": states, "times": times,
+        out.append({"sf": sf, "states": states, "times": times, "events": evs,
                     "ledger": sp.ledger_path(root, sf.sprint.id).relative_to(root).as_posix()})
     return out, notes
+
+
+def _by_ref(sps: list[dict[str, Any]]) -> dict[str, list[tuple[str, str, dict[str, Any], dt.datetime | None]]]:
+    out: dict[str, list[tuple[str, str, dict[str, Any], dt.datetime | None]]] = {}
+    for s in sps:
+        for t in s["sf"].task:
+            if t.ref:
+                out.setdefault(t.ref, []).append((s["sf"].sprint.id, t.id, s["states"][t.id], s["times"].get(t.id)))
+    return out
+
+
+def _stale_task(t: dict[str, Any], git: _Git, by_ref: dict[str, list[Any]], runs: dict[str, dt.datetime],
+                now: dt.datetime, th: Any) -> tuple[bool, str | None, float | None]:
+    """The stale-task rule shared by `steward tidy` and `steward task board` (P03)."""
+    if t["closed"] or t["archived"]:
+        return False, None, None
+    times = [git.last_activity(t["path"])] + [when for *_, when in by_ref.get(t["id"], [])]
+    times += [when for label, when in runs.items() if re.search(rf"(?<![\w-]){re.escape(t['id'])}(?![\w-])", label)]
+    last = max((x for x in times if x is not None), default=None)
+    age = _age(now, last)
+    if age is not None and age > th.stale_days:
+        return True, f"{t['status']}; untouched for {age:g} days", age
+    return False, None, age
+
+
+def _task_windows(root: Path, cfg: Any, sps: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """P03: each task ID's newest recorded window: `task-tokens` (by hand) first, then `agents`, then `sprint`."""
+    from . import tokens as tk
+    from .models import AgentsSection
+
+    repo_id = cfg.steward.repo_id
+    by_tier: dict[int, dict[str, list[tuple[dt.datetime, dt.datetime | None, str, str | None]]]] = {0: {}, 1: {}, 2: {}}
+    try:
+        for w in tk._markers(tk._entries(root, tk.WINDOW_LEDGER, "task-tokens", repo_id)):
+            by_tier[0].setdefault(w.task, []).append((w.start, w.end, "task-tokens", tk.WINDOW_LEDGER))
+    except (tk.TokenError, OSError):
+        pass
+    agents_rel = (cfg.agents or AgentsSection()).ledger
+    try:
+        for row in tk._entries(root, agents_rel, "agents", repo_id):
+            if row.get("kind") != "attempt":
+                continue
+            tid = tk.identifier(row.get("task"))
+            start, end = tk.timestamp(row.get("started")), tk.timestamp(row.get("ended"))
+            if tid and start and (row.get("ended") is None or (end and end >= start)):
+                by_tier[1].setdefault(tid, []).append((start, end, "agents", agents_rel))
+    except (tk.TokenError, OSError):
+        pass
+    for s in sps:
+        sid = s["sf"].sprint.id
+        refs = {f"sprint {sid} {t.id}": t.ref for t in s["sf"].task if t.ref}
+        if not refs:
+            continue
+        try:
+            wins, _ = tk._sprint_windows(root, s["ledger"], repo_id)
+        except (tk.TokenError, OSError):
+            continue
+        for w in wins:
+            ref = refs.get(w.task)
+            if ref:
+                by_tier[2].setdefault(ref, []).append((w.start, w.end, "sprint", s["ledger"]))
+    out: dict[str, dict[str, Any]] = {}
+    for tier in (0, 1, 2):
+        for tid, wins in by_tier[tier].items():
+            if tid in out:
+                continue
+            start, end, source, ledger = max(wins, key=lambda x: (x[0], x[1] is None, x[1] or x[0]))
+            out[tid] = {"open": end is None, "start": iso(start), "end": iso(end), "source": source, "ledger": ledger}
+    return out
+
+
+def task_board(root: Path, cfg: Any, now: dt.datetime, *, use_default: bool = False) -> list[dict[str, Any]]:
+    """P03: `steward task board` rows with owner, implementer, task window and the `steward tidy` stale mark."""
+    tasks = board_tasks(root, cfg, use_default=use_default)
+    if not tasks:
+        return []
+    th = thresholds(cfg)
+    git = _Git(root)
+    sps, _ = sprints(root)
+    try:
+        runs = _run_labels(root, cfg)
+    except Exception:  # noqa: BLE001 - an unreadable run ledger never breaks the board view
+        runs = {}
+    by_ref = _by_ref(sps)
+    windows = _task_windows(root, cfg, sps)
+    out = []
+    for t in tasks:
+        stale, reason, _ = _stale_task(t, git, by_ref, runs, now, th)
+        out.append({**t, "window": windows.get(t["id"]), "stale": stale, "stale_reason": reason})
+    return out
 
 
 def _run_labels(root: Path, cfg: Any) -> dict[str, dt.datetime]:
@@ -306,23 +412,15 @@ def tidy(root: Path, cfg: Any, now: dt.datetime, *, memory: bool = True, peers: 
     except Exception:  # noqa: BLE001 - an unreadable run ledger is named, never a crash
         runs = {}
         notes.append("the run ledger cannot be read: runs are not counted as activity")
-    by_ref: dict[str, list[tuple[str, str, dict[str, Any], dt.datetime | None]]] = {}
-    for s in sps:
-        for t in s["sf"].task:
-            if t.ref:
-                by_ref.setdefault(t.ref, []).append((s["sf"].sprint.id, t.id, s["states"][t.id], s["times"].get(t.id)))
+    by_ref = _by_ref(sps)
 
     # stale open tasks, and board statuses the sprint ledger contradicts
     for t in tasks:
         if t["closed"] or t["archived"]:
             continue
-        times = [git.last_activity(t["path"])] + [when for *_, when in by_ref.get(t["id"], [])]
-        times += [when for label, when in runs.items() if re.search(rf"(?<![\w-]){re.escape(t['id'])}(?![\w-])", label)]
-        last = max((x for x in times if x is not None), default=None)
-        age = _age(now, last)
-        if age is not None and age > th.stale_days:
-            items.append(_item("stale_task", t["id"], t["path"], f"{t['status']}; untouched for {age:g} days",
-                               age, f"steward tidy --archive {t['id']}"))
+        stale, reason, age = _stale_task(t, git, by_ref, runs, now, th)
+        if stale and reason is not None:
+            items.append(_item("stale_task", t["id"], t["path"], reason, age, f"steward tidy --archive {t['id']}"))
         for sid, tid, st, _ in by_ref.get(t["id"], []):
             if st["state"] == "done":
                 items.append(_item("contradiction", t["id"], t["path"],
@@ -625,6 +723,142 @@ def _exchange_command(it: Any) -> str:
     return f"steward exchange respond {it.id} STATE --note \"…\""
 
 
+SINCE_COMMITS_MAX = 50
+_RELEASE_TAG = re.compile(r"^v\d+\.\d+\.\d+")
+
+
+def _since_entry(kind: str, iid: str, title: str, source: str, time: dt.datetime | None,
+                 line: int | None = None) -> dict[str, Any]:
+    return {"kind": kind, "id": iid, "title": title, "source": source, "line": line, "time": iso(time)}
+
+
+def _since(root: Path, cfg: Any, git: _Git, inbox: list[tuple[str, Any, list[dict[str, Any]]]],
+           sps: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """P03: what changed since the last session handoff: commits, decisions, exchange items received, sprint events
+    and releases, newest first, each with its source."""
+    from . import decisions as dc
+    from .newest import newest_first
+
+    rel = _handoff_rel(root, cfg)
+    if rel is None:
+        return []
+    ref_time = git.last_activity(rel)
+    if ref_time is None:
+        return []
+    handoff_sha = None
+    if git.ok:
+        r = git_run(root, "log", "-1", "--format=%H", "--", rel, text=True)
+        handoff_sha = (r.stdout.strip() or None) if r.returncode == 0 else None
+    clean_commit = handoff_sha if (handoff_sha and rel not in git.dirty()) else None
+
+    items: list[dict[str, Any]] = []
+    commit_shas: set[str] = set()
+
+    # 1. Commits since the handoff
+    if git.ok:
+        rev_range = f"{clean_commit}..HEAD" if clean_commit else "HEAD"
+        r = git_run(root, "log", "-n", str(SINCE_COMMITS_MAX), "--no-show-signature",
+                    "--format=%H%x00%ct%x00%s", rev_range, text=True)
+        if r.returncode == 0:
+            for raw in r.stdout.splitlines():
+                parts = raw.split("\x00", 2)
+                if len(parts) != 3:
+                    continue
+                sha, ct_s, subj = parts
+                when = dt.datetime.fromtimestamp(int(ct_s), dt.timezone.utc) if ct_s.isdigit() else None
+                if not clean_commit and (when is None or when <= ref_time):
+                    continue
+                commit_shas.add(sha)
+                items.append(_since_entry("commit", sha[:12], subj, "git", when))
+
+    # 2. Decisions recorded since the handoff
+    old_decisions: dict[str, set[tuple[str, str]]] = {}
+
+    def _had_at_handoff(path: str) -> set[tuple[str, str]]:
+        if path not in old_decisions:
+            blob = git_run(root, "show", "--no-textconv", f"{clean_commit}:{path}")
+            if blob.returncode == 0:
+                txt = blob.stdout.decode("utf-8", errors="replace")
+                old_decisions[path] = {(e["date"], e["heading"]) for e in dc.entries(txt, path)}
+            else:
+                old_decisions[path] = set()
+        return old_decisions[path]
+
+    for entry in dc.recorded(root, cfg):
+        try:
+            day = dt.date.fromisoformat(entry["date"])
+        except ValueError:
+            continue
+        if clean_commit:
+            is_new = day >= ref_time.date() and (entry["date"], entry["heading"]) not in _had_at_handoff(entry["path"])
+        else:
+            is_new = day > ref_time.date()
+        if is_new:
+            items.append(_since_entry("decision", f"{entry['path']}:{entry['line']}", entry["heading"],
+                                      entry["path"], _day(day), line=entry["line"]))
+
+    # 3. Exchange items received since the handoff
+    for rel_x, it, entries in inbox:
+        when = _received_at(it, entries)
+        has_ts = any("received" in e and _parse_time(e.get("time")) for e in entries)
+        is_new = when > ref_time
+        if not is_new and not has_ts and clean_commit and it.filed >= ref_time.date():
+            is_new = git_run(root, "cat-file", "-e", f"{clean_commit}:{rel_x}").returncode != 0
+        if is_new:
+            items.append(_since_entry("exchange", it.id, f"{it.kind} from {it.from_}: {it.title}", rel_x, when))
+
+    # 4. Sprint events since the handoff
+    for s in sps:
+        sid, ledger_rel = s["sf"].sprint.id, s["ledger"]
+        for e in s.get("events", []):
+            ekind = e.get("kind")
+            if ekind == "genesis":
+                continue
+            t = _parse_time(e.get("time"))
+            if t is None or t <= ref_time:
+                continue
+            seq, task = e.get("seq"), e.get("task")
+            eid = f"{sid}/{task}#{seq}" if task else f"{sid}#{seq}"
+            if ekind == "state":
+                st = e.get("state") or "updated"
+                note = f": {e['note']}" if e.get("note") else ""
+                title = f"sprint {sid} task {task}: {st}{note}"
+            elif ekind == "order":
+                title = f"sprint {sid} task {task}: order {e.get('order') or ''}".strip()
+            elif ekind == "opened":
+                title = f"sprint {sid} opened"
+            elif ekind == "added":
+                title = f"sprint {sid} task {task} added"
+            elif ekind == "reloaded":
+                title = f"sprint {sid} reloaded"
+            else:
+                title = f"sprint {sid}" + (f" task {task}" if task else "") + f": {ekind}"
+            items.append(_since_entry("sprint", eid, title, ledger_rel, t))
+
+    # 5. Releases (version tags) since the handoff
+    if git.ok:
+        r = git_run(root, "for-each-ref",
+                    "--format=%(refname:short)%00%(creatordate:unix)%00%(*objectname)%00%(objectname)%00%(subject)",
+                    "refs/tags/v*", text=True)
+        if r.returncode == 0:
+            for raw in r.stdout.splitlines():
+                parts = raw.split("\x00", 4)
+                if len(parts) != 5:
+                    continue
+                tag, ct_s, peeled, obj, subj = parts
+                if not _RELEASE_TAG.match(tag):
+                    continue
+                when = dt.datetime.fromtimestamp(int(ct_s), dt.timezone.utc) if ct_s.isdigit() else None
+                target = peeled or obj
+                is_new = (when is not None and when > ref_time) or (clean_commit is not None and target in commit_shas)
+                if is_new:
+                    subj = subj.strip()
+                    title = f"release {tag}" + (f": {subj}" if subj and subj != tag else "")
+                    items.append(_since_entry("release", tag, title, f"refs/tags/{tag}", when))
+
+    return newest_first(items, lambda e: e["time"], lambda e: e["id"])
+
+
 def next_doc(root: Path, cfg: Any, now: dt.datetime) -> dict[str, Any]:
     from . import authorize as az
     from . import milestones as ms
@@ -683,9 +917,10 @@ def next_doc(root: Path, cfg: Any, now: dt.datetime) -> dict[str, Any]:
             elif st["state"] == "done" and st.get("branch") and main and not git.merged(st["branch"], main):
                 human.append(_entry("task_done", f"{sid}/{t.id}", f"{label} is done; branch {st['branch']} waits for "
                                     "your review", s["ledger"], f"steward sprint report {sid}", when))
+    since = _since(root, cfg, git, inbox, sps)
     td = tidy(root, cfg, now)
     return {"now": iso(now), "project": cfg.steward.project, "resume": resume, "milestone": milestone,
-            "waiting_on_human": human, "waiting_on_agents": agents,
+            "waiting_on_human": human, "waiting_on_agents": agents, "since": since,
             "tidy": {"counts": td["counts"], "total": td["total"], "command": "steward tidy"},
             "notes": notes + td["notes"]}
 
@@ -700,6 +935,14 @@ def render_next(doc: dict[str, Any], brief: bool = False) -> str:
         age = f"{r['age_days']:g} days old" if r["age_days"] is not None else "age unknown"
         out.append(f"Where you left off: {r['path']} ({age}{'' if r['committed'] else ', not committed'})")
         out += [f"  {n}. {line}" for n, line in enumerate(r["next"][:cap], start=1)] or ["  (no next steps recorded)"]
+        since = doc.get("since") or []
+        out.append(f"Since last handoff ({len(since)})" + ("" if since else ": nothing"))
+        for row in since[:cap]:
+            when = f" ({row['time'][:10]})" if row.get("time") else ""
+            src = f"{row['source']}:{row['line']}" if row.get("line") else row["source"]
+            out.append(f"  {row['kind']:<12} {row['title']}{when}" + ("" if brief else f"  [{src}]"))
+        if len(since) > cap:
+            out.append(f"  and {len(since) - cap} more")
     m = doc["milestone"]
     if m is None:
         out.append("Next milestone: none open (development/milestones.toml)")

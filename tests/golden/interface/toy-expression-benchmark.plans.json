@@ -1,0 +1,97 @@
+{
+  "history": "unavailable",
+  "notes": [],
+  "plans": [
+    {
+      "date": "2026-12-01T00:00:00+00:00",
+      "drift": {
+        "changes": [],
+        "date": null,
+        "order": [],
+        "scope": []
+      },
+      "id": "review",
+      "kind": "milestone",
+      "line": 2,
+      "path": "development/milestones.toml",
+      "progress": {
+        "tasks": {
+          "done": 1,
+          "open": [],
+          "total": 1,
+          "unknown": []
+        }
+      },
+      "state": "ready",
+      "title": "Review the example"
+    },
+    {
+      "date": "2026-11-28",
+      "drift": {
+        "changes": [],
+        "date": null,
+        "order": [],
+        "scope": []
+      },
+      "id": "v1.2",
+      "kind": "roadmap",
+      "line": 7,
+      "path": "development/INDEX.md",
+      "progress": {
+        "done": 1,
+        "tasks": [
+          {
+            "id": "TASK-001",
+            "state": "done"
+          }
+        ],
+        "total": 1
+      },
+      "state": "Planned",
+      "title": "Finish the review"
+    },
+    {
+      "date": "2026-11-26T00:00:00+00:00",
+      "drift": {
+        "missing_tasks": [],
+        "unplanned_tasks": [
+          "T2"
+        ]
+      },
+      "id": "example",
+      "kind": "sprint",
+      "line": 3,
+      "path": "development/sprints/example.toml",
+      "progress": {
+        "done": 1,
+        "tasks": [
+          {
+            "id": "T1",
+            "state": "done"
+          },
+          {
+            "id": "T2",
+            "state": "proposed"
+          }
+        ],
+        "total": 2
+      },
+      "state": "open",
+      "title": "example"
+    },
+    {
+      "date": "2026-11-25",
+      "drift": null,
+      "id": "v1.2",
+      "kind": "release",
+      "line": 1,
+      "path": "development/design/RELEASE_v1.2_SPEC.md",
+      "progress": {
+        "tag": null
+      },
+      "state": "specified",
+      "title": "Release specification for v1.2"
+    }
+  ],
+  "schema": "steward.plans/0.1"
+}

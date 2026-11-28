@@ -38,6 +38,15 @@
           "repo_id": "c77f22b4-23a5-45c2-bdc7-a2b9dba8c46f",
           "requester": null,
           "scope": "task=DEMO-001",
+          "sign_argv": [
+            "steward",
+            "authorize",
+            "sign",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "--expect-sha256",
+            "4b1f6c2e5f2c7a3d72be450f6940bc66d9ea5066b5a71426670155fd9712b109"
+          ],
+          "sign_command": "steward authorize sign aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --expect-sha256 4b1f6c2e5f2c7a3d72be450f6940bc66d9ea5066b5a71426670155fd9712b109",
           "state": "waiting",
           "summary": "Example spending request.",
           "tag": "steward/auth/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -446,15 +455,25 @@
           "archived": true,
           "closed": true,
           "id": "DEMO-002",
+          "implementer": null,
+          "owner": null,
           "path": "development/archive/DEMO-002.md",
-          "status": "done"
+          "stale": false,
+          "stale_reason": null,
+          "status": "done",
+          "window": null
         },
         {
           "archived": false,
           "closed": false,
           "id": "DEMO-001",
+          "implementer": "Example agent",
+          "owner": "Example owner",
           "path": "development/tasks/DEMO-001.md",
-          "status": "in progress"
+          "stale": false,
+          "stale_reason": null,
+          "status": "in progress",
+          "window": null
         }
       ]
     }

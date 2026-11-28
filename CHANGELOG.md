@@ -2,6 +2,69 @@
 
 Pre-release. Not published on PyPI. Versions follow semantic versioning once released.
 
+## 0.24.0 (2026-11-28): plans, the research timeline and the schedule
+Per Muiz, 2026-11-28: "Good. Go on." Per development/design/RELEASE_v0.24.0_SPEC.md (sprint `2026-11-28-s3`,
+P01 – P03 side by side, then P04). `steward plans` lists every plan of a project with its state, progress and drift.
+`steward timeline --events` puts every dated record on one time axis and draws it as an SVG schedule. `steward next`
+says what changed since the last handoff. The task board and the signing queue carry what an interface needs to show
+owners, stale marks and the exact `sign` command. Every existing `--json` output is byte-identical to 0.23.0. The
+`--format json` documents of `next`, `task board` and `authorize pending` gain fields, by additions only. No command
+opens a network connection unless asked.
+
+### Added
+- **`steward plans [--format json]`** (P01; `steward.plans/0.1`): the project's plans, which are the roadmap rows of
+ the index, the release specifications, the sprints and the milestones. Each one has its recorded state, its
+ progress from the records and its drift, and names its file and line. Dated plans come newest first. Progress
+ equals what `steward sprint status` and `steward timeline` report. A release specification's drift compares it
+ with its snapshot at the local tag, when that tag exists. See [Plan to a deadline](docs/guides/timeline.md#list-project-plans).
+- **`steward timeline --events [--format text|json|svg] [--all-projects] [--now TIME]`** (P02;
+ `steward.timeline_events/0.1`): one time axis, newest first, of every record that has a date. That is milestones
+ (with their buffers, their moves and their first due dates), outcomes, decisions, releases (local `v*` tags), papers
+ and their reviews, research records, and sprint windows with their tasks. Each event names its source file and line.
+ `--all-projects` adds the projects the exchange names, read from their own records when their checkouts are on disk;
+ a peer given only as a URL is listed as not fetched.
+- **The schedule** (P02): `steward timeline --events --format svg`, drawn by `charts.py`, has one lane per kind of
+ record. It shows deadlines with their buffers shaded, moved dates (the old date faint), sprint windows, tasks and
+ today. It has a title and a text alternative (the span, the lane counts, the coming deadlines, the newest events),
+ its own light and dark colours, and no script. See the figure in
+ [Plan to a deadline](docs/guides/timeline.md#the-research-timeline-and-the-schedule).
+- **Since the last handoff** (P03): `steward next` and its `since` field list what changed after the session handoff:
+ commits (up to 50), decisions recorded, exchange items received, sprint ledger events and release tags. They come
+ newest first, each with its source. See [Where you are, what is next](docs/guides/next-and-tidy.md).
+- **Owners and stale marks on the task board** (P03): `steward task board --format json` gives each task its `owner`,
+ `implementer`, newest recorded `window`, and `stale` with `stale_reason`, by the same rule as `steward tidy`. The
+ text form marks `(stale)`. `--now TIME` evaluates at another time.
+- **The `sign` command in the pending queue** (P03): each waiting item of `steward authorize pending --format json`
+ carries `sign_argv` and `sign_command`, `steward authorize sign <nonce> --expect-sha256 <sha256>`, bound to that
+ payload's bytes (with `--repo` for a peer project). It is null for a signed, expired or foreign item. See the figure
+ in [Sign ahead, or sign later](docs/guides/signing-ahead.md#sign-later-the-queue).
+- Figures of the signing flow and of what "since the last handoff" reads, and a CI page section for the 0.24.0 JSON
+ documents (P04).
+
+### Changed
+- **Schedule labels never overlap** (P04): a milestone, release or sprint name that would overlap another moves to a
+ row just above the marks. If it still does not fit, it is shortened to its end (`…0.1.0-rc`) with the full name in
+ its `<title>`. Close milestones, such as a release candidate and its release a few days apart, no longer write their
+ names over each other.
+- `steward tidy` and the task board share one stale-task rule; `steward tidy`'s output is unchanged.
+- `steward next --format json`, `steward task board --format json` and `steward authorize pending --format json` gain
+ fields (`since`; `owner`, `implementer`, `window`, `stale`, `stale_reason`; `sign_argv`, `sign_command`). Their
+ schemas change by additions only.
+- `steward interface` lists `plans` and `timeline --events` with their schemas.
+
+### Upgrade notes (from 0.23.0)
+- **Nothing to migrate.** No configuration, record or rule changes. `steward check` reports the same rules as 0.23.0.
+- **Every `--json` output is byte-identical to 0.23.0**, and so are `steward timeline --format json` and its text form.
+ Without `--events`, `steward timeline` behaves as before. `--format svg` and `--all-projects` need `--events`;
+ without it, they exit 64.
+- **Three `--format json` documents gain fields.** A script that compares `steward next`, `steward task board` or
+ `steward authorize pending --format json` byte for byte with a saved copy sees the new keys. One that reads the old
+ keys is unaffected. `since` is `[]` right after a handoff. `steward interface --format json` lists two more
+ commands (`plans`, `timeline --events`).
+- **The text form of `steward next`** gains a "Since last handoff" block between "Where you left off" and the next
+ milestone, and `steward task board` marks stale tasks `(stale)`. A script that parses those lines should read the
+ JSON form instead.
+
 ## 0.23.0 (2026-11-27): automatic delegation, then the biology checks
 Per Muiz, 2026-11-27: "go ahead with S2"; "Steward also needs to be responsible for task delegation more frequently
 … for my development claude is master". Per development/design/RELEASE_v0.23.0_SPEC.md (sprint `2026-11-28-s2`,

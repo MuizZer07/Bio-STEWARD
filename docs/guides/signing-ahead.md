@@ -42,6 +42,26 @@ steward authorize sign <nonce> --expect-sha256 <payload_sha256>
 # steward: NOT AUTHORIZED: sign: the payload changed since it was shown: its sha256 is …, expected …; nothing signed
 ```
 
+Each waiting item of `steward authorize pending --format json` also carries that command line, ready to run:
+`sign_command` (a shell line) and `sign_argv` (the same as a list of arguments, to run without a shell). For a peer
+project listed with `--all-projects`, it adds `--repo` with the peer's checkout. An item that cannot be signed here
+(`signed`, `expired` or `foreign`) has both as null. The command signs nothing by itself: `git tag -s` still asks for
+your key.
+
+```mermaid
+flowchart LR
+  Q["authorize pending<br/>--format json"] --> I["waiting item<br/>nonce · payload_sha256<br/>sign_argv"]
+  I --> R["you read the payload"]
+  R --> S["steward authorize sign nonce<br/>--expect-sha256 payload_sha256"]
+  S -- "the bytes are the ones shown" --> K["git tag -s<br/>your key's prompt"]
+  S -- "the file changed since" --> N["NOT AUTHORIZED<br/>nothing signed"]
+  K --> T["signed tag<br/>R-33 PASS"]
+  classDef ok fill:#e8f3ec,stroke:#2f9e66,color:#1d2330;
+  classDef bad fill:#fbe7e7,stroke:#c44b4b,color:#1d2330;
+  class K,T ok;
+  class N bad;
+```
+
 While the policy files are exactly the prepared ones, R-33 is **INCOMPLETE** ("awaiting your signature"), not FAIL:
 commits continue (the pre-commit hook blocks only on FAIL), and every gate that requires R-33 stays NOT ELIGIBLE until
 you sign. Any further edit to the policy files is a FAIL again.

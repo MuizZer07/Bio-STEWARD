@@ -76,7 +76,7 @@ Install only the kits you use: `steward init --skills DIR --kits core,paper`. Ea
 | Group | Commands |
 |---|---|
 | Start | `init` · `example` · `check` · `explain` · `report` · `interface` · `skills` · `next` |
-| Plan | `benchmark` · `study` · `research` · `timeline` · `sprint` |
+| Plan | `plans` · `benchmark` · `study` · `research` · `timeline` · `sprint` |
 | Run | `run` · `diff` · `compare` · `shards` · `stage` · `tokens` |
 | Data and records | `data` · `freeze` · `amend` · `seal` · `unseal` · `integrity` · `frozen` · `storage` · `pins` · `licence` · `decisions` |
 | Papers and talks | `paper` · `talk` · `docs` |

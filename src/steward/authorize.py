@@ -386,6 +386,14 @@ def payload_sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def sign_argv(nonce: str, digest: str, repo: Path | None = None) -> list[str] | None:
+    """P03: the exact `authorize sign` command bound to the payload bytes whose SHA-256 is `digest`, as arguments;
+    `--repo` names a peer project's checkout. None when `nonce` or `digest` cannot be signed as given."""
+    if not (re.fullmatch(r"[0-9a-f]{32}", nonce or "") and re.fullmatch(r"[0-9a-f]{64}", digest or "")):
+        return None
+    return ["steward", "authorize", "sign", nonce, "--expect-sha256", digest, *(["--repo", str(repo)] if repo else [])]
+
+
 def check_digest(data: bytes, expect_sha256: str | None) -> None:
     """Refuse when the payload's bytes no longer have the hash the human was shown (STW-050, STW-057)."""
     if expect_sha256 is None:

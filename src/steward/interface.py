@@ -35,6 +35,7 @@ TAGGED_COMMANDS = {
 
 # 0.21.0 (W02): documents of commands that have no legacy --json flag, and the error document (C6).
 OTHER_SCHEMAS = {
+    "plans": "steward.plans/0.1",
     "explain": "steward.explain/0.1",
     "check --digest-only": "steward.digest/0.1",
     "init": "steward.init_plan/0.1",
@@ -50,6 +51,8 @@ OTHER_SCHEMAS = {
     "agents list": "steward.agents_list/0.1",
     # 0.23.0 (STW-061 D01): the delegation and each agent's availability
     "agents status": "steward.agents_status/0.1",
+    # 0.24.0 (P02): the research timeline
+    "timeline --events": "steward.timeline_events/0.1",
 }
 # Read commands without a legacy --json option (W05, STW-050).
 READ_COMMANDS = {
@@ -121,6 +124,7 @@ def describe() -> dict[str, Any]:
         for name, schema in TAGGED_COMMANDS.items()
     }
     commands.update({
+        "plans": {"argv": ["--format", "json"], "schema": OTHER_SCHEMAS["plans"]},
         "check": {"argv": ["--format", "json"], "schema": "steward.report/0.1"},
         "check --digest-only": {"argv": ["--digest-only", "--against", "FILE", "--format", "json"],
                                 "schema": OTHER_SCHEMAS["check --digest-only"]},
@@ -135,6 +139,7 @@ def describe() -> dict[str, Any]:
         "issues inbox": {"argv": ["--format", "json"], "schema": OTHER_SCHEMAS["issues inbox"]},
         "agents list": {"argv": ["--format", "json"], "schema": OTHER_SCHEMAS["agents list"]},
         "agents status": {"argv": ["--format", "json"], "schema": OTHER_SCHEMAS["agents status"]},
+        "timeline --events": {"argv": ["--events", "--format", "json"], "schema": OTHER_SCHEMAS["timeline --events"]},
         "interface": {"argv": ["--format", "json"], "schema": INTERFACE_SCHEMA},
         "licence notices": {"argv": ["--format", "cyclonedx"], "schema": "CycloneDX/1.5"},
         "paper manifest": {"argv": [], "schema": "steward.submission_manifest/0.1"},

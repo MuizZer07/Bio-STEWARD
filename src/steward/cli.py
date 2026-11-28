@@ -10,6 +10,7 @@ import functools
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 from contextvars import ContextVar
@@ -82,7 +83,7 @@ QUIET_BREAKERS = {"R-75.sample_imbalance", "R-53.undelivered", "R-53.upgrade_ava
 
 HELP_GROUPS = """Commands by what you do:
   Start            init · example · check · explain · report · interface · skills · next
-  Plan             benchmark · study · research · timeline · sprint
+  Plan             plans · benchmark · study · research · timeline · sprint
   Run              run · diff · compare · shards · stage · tokens
   Data and records data · freeze · amend · seal · unseal · integrity · frozen · storage · pins · licence · decisions
   Papers and talks paper · talk · docs
@@ -554,6 +555,7 @@ def build_parser() -> argparse.ArgumentParser:
     tksub = ptk.add_subparsers(dest="task_command", required=True, parser_class=_Parser)
     tkboard = tksub.add_parser("board", parents=[common], help="list tasks from the project's task records")
     add_json_format(tkboard, "task board")
+    tkboard.add_argument("--now", metavar="TIME", help="evaluate staleness at this time (ISO 8601 with its zone)")
     tkb = tksub.add_parser("brief", parents=[common], help="turn a task file into a self-contained prompt for an agent")
     tkb.add_argument("task", type=Path)
     tkb.add_argument("--for", dest="agent", choices=["codex", "gemini", "claude", "generic"], default="generic")
@@ -612,16 +614,28 @@ def build_parser() -> argparse.ArgumentParser:
                            help="the Progress Audit's evidence: where we are, use by other projects, pending work, reach")
     add_json_options(aup, "audit progress")
 
+    ppl = sub.add_parser("plans", parents=[common], help="project plans, progress and drift")
+    add_json_format(ppl, "plans")
     ptl = sub.add_parser("timeline", parents=[common],
                          help="milestone deadlines and progress, with plan drift in versioned JSON")
     add_json_options(ptl, "timeline")
+    for action in ptl._actions:  # 0.24.0 (P02): `--events --format svg` draws the schedule
+        if "--format" in action.option_strings:
+            action.choices = ["text", "json", "svg"]
+            action.help = "print text or versioned JSON; with --events, svg draws the schedule"
     ptl.add_argument("--now", metavar="TIME", help="evaluate at this time (ISO 8601 with its zone), to reproduce a state")
+    ptl.add_argument("--events", action="store_true",
+                     help="every dated record on one time axis: milestones, decisions, releases, papers, reviews, "
+                          "research records, sprints and their tasks")
+    ptl.add_argument("--all-projects", action="store_true",
+                     help="with --events: add the projects the exchange names that are present on disk")
     pde = sub.add_parser("decisions", parents=[common], help="recorded decisions and open questions with their options")
     pde.add_argument("--format", choices=["text", "json"], default="text", help="print text or versioned JSON")
 
     # 0.21.0 (W03; STW-048 C10, C12; C21): where the project stands, what is stale, and one feed of what changed
     pnx = sub.add_parser("next", parents=[common],
-                         help="where you left off, the next milestone, what waits on you and on agents, what to tidy")
+                         help="where you left off, what changed since, the next milestone, what waits on you and on "
+                              "agents, what to tidy")
     pnx.add_argument("--format", choices=["text", "json"], default="text", help="print text or versioned JSON")
     pnx.add_argument("--now", metavar="TIME", help="evaluate at this time (ISO 8601 with its zone)")
     pnx.add_argument("--brief", action="store_true", help="a short text for an agent starting a session")
@@ -930,6 +944,8 @@ def _dispatch(args: argparse.Namespace) -> int:
             return cmd_shards(args)
         if args.command == "storage":
             return cmd_storage(args)
+        if args.command == "plans":
+            return cmd_plans(args)
         if args.command == "timeline":
             return cmd_timeline(args)
         if args.command == "decisions":
@@ -1984,7 +2000,11 @@ def _pending(root: Path, cfg: Any, args: argparse.Namespace) -> int:
             proj_id = None
         if json_output:
             for q in az.pending(proj, include_digest=True, repo_id=proj_id):
-                items.append({**q, "project": code, "peer": code if i else None, "requester": None})
+                # P03: the sign command bound to the bytes listed here; only a waiting payload can be signed
+                argv = az.sign_argv(q["nonce"], q["payload_sha256"], proj if i else None) \
+                    if q["state"] == "waiting" else None
+                items.append({**q, "project": code, "peer": code if i else None, "requester": None,
+                              "sign_argv": argv, "sign_command": shlex.join(argv) if argv else None})
                 waiting += q["state"] == "waiting"
             continue
         for q in _newest_pending(proj, az.pending(proj, repo_id=proj_id)):  # None: read again there; unreadable: foreign
@@ -3398,11 +3418,38 @@ def cmd_audit(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_plans(args: argparse.Namespace) -> int:
+    from . import plans
+
+    root, cfg = _config(args)
+    if cfg is None:
+        return EXIT_USAGE
+    try:
+        doc = plans.document(root, cfg)
+    except ValueError as e:
+        print(f"steward: invalid plan record: {str(e).splitlines()[0][:220]}", file=sys.stderr)
+        return EXIT_DATAERR
+    except OSError:
+        print("steward: a plan record could not be read", file=sys.stderr)
+        return EXIT_DATAERR
+    if wants_json(args):
+        write_json(args, doc)
+    else:
+        print(plans.render(doc))
+    return EXIT_OK
+
+
 def cmd_timeline(args: argparse.Namespace) -> int:
     from pydantic import ValidationError as _VE
 
     from . import milestones as ms
 
+    if not args.events and (args.all_projects or args.format == "svg"):
+        print("steward: --all-projects and --format svg need --events", file=sys.stderr)
+        return EXIT_USAGE
+    if args.events and args.json:
+        print("steward: --events has no legacy --json form; use --format json", file=sys.stderr)
+        return EXIT_USAGE
     root, cfg = _config(args)
     if cfg is None:
         return EXIT_USAGE
@@ -3413,6 +3460,8 @@ def cmd_timeline(args: argparse.Namespace) -> int:
     except ValueError as e:
         print(f"steward: --now: {e}", file=sys.stderr)
         return EXIT_USAGE
+    if args.events:
+        return _timeline_events(args, root, cfg, now)
     try:
         rows = ms.timeline(root, cfg) if now is None else ms.timeline(root, cfg, now=now)
         payload = {"milestones": rows}
@@ -3434,6 +3483,34 @@ def cmd_timeline(args: argparse.Namespace) -> int:
         write_json(args, payload)
     else:
         print(ms.render(rows))
+    return EXIT_OK
+
+
+def _timeline_events(args: argparse.Namespace, root: Path, cfg: Any, now: Any) -> int:
+    """`steward timeline --events` (0.24.0, P02): the research timeline, and with `--format svg` the schedule."""
+    from pydantic import ValidationError as _VE
+
+    from . import charts
+    from . import timeline_events as te
+    from .cockpit import parse_now
+    from .interface import OTHER_SCHEMAS
+
+    try:
+        doc = te.document(root, cfg, now or parse_now(None), all_projects=args.all_projects,
+                          explicit_now=now is not None)
+    except _VE as e:
+        err = e.errors()[0]
+        print(f"steward: a timeline record is not valid: {'.'.join(map(str, err['loc']))}: {err['msg']}", file=sys.stderr)
+        return EXIT_DATAERR
+    except OSError:
+        print("steward: a timeline record could not be read", file=sys.stderr)
+        return EXIT_DATAERR
+    if args.format == "json":
+        write_document({"schema": OTHER_SCHEMAS["timeline --events"], **doc})
+    elif args.format == "svg":
+        sys.stdout.write(charts.schedule(doc, title=f"Research schedule: {cfg.steward.project}"))
+    else:
+        print(te.render(doc))
     return EXIT_OK
 
 

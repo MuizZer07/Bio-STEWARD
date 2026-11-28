@@ -31,7 +31,7 @@ is something your agent can do for you; the commands are shown so you can check 
 
 ## Install
 ```bash
-pipx install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.23.0"   # a development tool, pinned to a tag
+pipx install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.24.0"   # a development tool, pinned to a tag
 steward init --skills .agents/skills                                       # configuration, templates and skills
 steward check --summary
 ```

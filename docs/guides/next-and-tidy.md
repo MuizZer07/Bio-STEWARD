@@ -35,6 +35,10 @@ $ steward next
 Where you left off: development/HANDOFF.md (3 days old)
   1. Run the baseline under the frozen contract
   2. Draft the methods
+Since last handoff (3)
+  sprint       sprint s1 task A: done (2026-11-26)  [development/sprints/s1.jsonl]
+  commit       milestone (2026-11-26)  [git]
+  decision     2026-11-20: keep cohort C (2026-11-20)  [development/DECISIONS.md:6]
 Next milestone: preprint "Preprint" · 6 days · AT RISK
   blocking: task PRJ-001, signature spend
 Waiting on you (2)
@@ -47,6 +51,9 @@ Needs tidying (2): 1 stale task, 1 stale page -> steward tidy
 ```
 
 - **Where you left off** is the "Next" list of the session handoff (`steward session close` writes it).
+- **Since last handoff** is what changed after the handoff was last written, newest first, each with its source:
+  commits (up to 50), decisions recorded, exchange items received, sprint ledger events and release tags (`v*`).
+  When the handoff is committed and unchanged, "after" means after its commit; otherwise after its file's time.
 - **Next milestone** is the soonest milestone without an outcome, with what blocks it: the gate's blocking rules,
   open tasks, exchange items and signatures that wait (the same reading as `steward timeline`).
 - **Waiting on you:** signatures in the queue, the open decisions the handoff lists, received exchange items with no
@@ -54,8 +61,23 @@ Needs tidying (2): 1 stale task, 1 stale page -> steward tidy
 - **Waiting on agents:** sprint tasks running, checking, or ordered and not yet started.
 - **Needs tidying:** the counts of `steward tidy`.
 
+```mermaid
+flowchart LR
+  H["session handoff<br/>its commit, or its file's time"] --> W{"after it?"}
+  C["commits<br/>(up to 50)"] --> W
+  D["decisions<br/>recorded"] --> W
+  X["exchange items<br/>received"] --> W
+  P["sprint ledger<br/>events"] --> W
+  T["release tags<br/>v*"] --> W
+  W -- yes --> S["Since last handoff<br/>newest first, each with its source"]
+  W -- no --> O["left out"]
+  classDef ok fill:#e8f3ec,stroke:#2f9e66,color:#1d2330;
+  class S ok;
+```
+
 `steward next --brief` prints the same, shorter, for an agent starting a session. `steward next --format json` holds
-every field, each item with its source record and one command. `--now 2026-12-01T09:00:00Z` evaluates at another
+every field, each item with its source record and one command; `since` holds the changes since the handoff, each
+with its `kind`, `id`, `title`, `source`, `line` (or null) and `time`. `--now 2026-12-01T09:00:00Z` evaluates at another
 time, so a state (a milestone at risk) can be reproduced; `steward timeline --now` does the same.
 
 ## `steward tidy`

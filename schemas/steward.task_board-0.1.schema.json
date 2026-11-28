@@ -15,13 +15,60 @@
           "title": "Id",
           "type": "string"
         },
+        "implementer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Implementer"
+        },
+        "owner": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Owner"
+        },
         "path": {
           "title": "Path",
           "type": "string"
         },
+        "stale": {
+          "title": "Stale",
+          "type": "boolean"
+        },
+        "stale_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Stale Reason"
+        },
         "status": {
           "title": "Status",
           "type": "string"
+        },
+        "window": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoardTaskWindow"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -29,9 +76,68 @@
         "path",
         "status",
         "closed",
-        "archived"
+        "archived",
+        "owner",
+        "implementer",
+        "window",
+        "stale",
+        "stale_reason"
       ],
       "title": "BoardTask",
+      "type": "object"
+    },
+    "BoardTaskWindow": {
+      "additionalProperties": false,
+      "description": "P03: the task's newest recorded window (`task-tokens`, `agents` or `sprint`).",
+      "properties": {
+        "end": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "End"
+        },
+        "ledger": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ledger"
+        },
+        "open": {
+          "title": "Open",
+          "type": "boolean"
+        },
+        "source": {
+          "enum": [
+            "task-tokens",
+            "agents",
+            "sprint"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "start": {
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "open",
+        "start",
+        "end",
+        "source",
+        "ledger"
+      ],
+      "title": "BoardTaskWindow",
       "type": "object"
     }
   },

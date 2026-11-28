@@ -220,6 +220,67 @@
       "title": "Resume",
       "type": "object"
     },
+    "SinceEntry": {
+      "additionalProperties": false,
+      "description": "P03: one change since the last session handoff, newest first, with its source.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "commit",
+            "decision",
+            "exchange",
+            "sprint",
+            "release"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "line": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Line"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Time"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "title",
+        "source",
+        "line",
+        "time"
+      ],
+      "title": "SinceEntry",
+      "type": "object"
+    },
     "TidyCounts": {
       "additionalProperties": false,
       "properties": {
@@ -262,7 +323,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Order: `waiting_on_human` and `waiting_on_agents` grouped by the kind of record, in the order they are read; each entry's `time` sorts them. The text view prints the newest entry first.",
+  "description": "Order: `waiting_on_human` and `waiting_on_agents` grouped by the kind of record, in the order they are read; each entry's `time` sorts them. `since` newest first (by time, then ID, highest first). The text view prints the newest entry first.",
   "properties": {
     "milestone": {
       "anyOf": [
@@ -304,6 +365,13 @@
       "title": "Schema",
       "type": "string"
     },
+    "since": {
+      "items": {
+        "$ref": "#/$defs/SinceEntry"
+      },
+      "title": "Since",
+      "type": "array"
+    },
     "tidy": {
       "$ref": "#/$defs/NextTidy"
     },
@@ -335,6 +403,7 @@
     "milestone",
     "waiting_on_human",
     "waiting_on_agents",
+    "since",
     "tidy",
     "notes"
   ],
