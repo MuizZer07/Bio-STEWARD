@@ -43,6 +43,43 @@ If a record matches two task IDs, its usage is excluded from both totals. Task m
 `.steward/task-tokens.jsonl`. For task IDs without markers, Steward uses R-62 agent attempts with supported agent names
 and zoned start and end timestamps. An attempt with only a start timestamp is treated as open.
 
+## Windows from the records (0.22.0)
+
+`steward tokens report` also takes the windows your records already hold, so a sprint task's tokens appear with no
+step by you:
+
+| Source | Window | Label in the report |
+| --- | --- | --- |
+| `task-tokens` | `steward task start` to `steward task done` (by hand) | the task ID |
+| `agents` | an R-62 attempt's `started` to `ended` | the task ID |
+| `sprint` | each attempt of a sprint task, from `running` to `done`, `failed` or a `skip` order, in `development/sprints/<id>.jsonl` | `sprint <id> <task>` |
+| `run` | each `steward run`, from `started` to its outcome, in the run ledger | `run <run-id>` |
+
+```mermaid
+flowchart LR
+  U[usage record] --> H{inside a window by hand<br/>or an agents attempt?}
+  H -- yes --> A[that task, as before]
+  H -- no --> S{inside a sprint task's window?}
+  S -- yes --> B[sprint id task]
+  S -- no --> R{inside a run's window?}
+  R -- yes --> C[run run-id]
+  R -- no --> D[no task]
+```
+
+- A record that falls in a window by hand belongs to it exactly as before; the record windows only take usage
+  outside those. A sprint task with a window by hand, or an attempt in the agents ledger, keeps that one.
+- A sprint task run by `claude-code` or `codex` counts that agent's logs only; a `shell` or `antigravity` task counts
+  every selected log. Two sprint tasks of one agent running at once share their usage, so it is excluded from both
+  (as for two windows by hand).
+- A sprint task's own `steward run` is covered by its sprint window and is not listed again. A run in which no agent
+  logged usage is left out, unless you name it with `--task "run <run-id>"`. A run with no recorded end is counted
+  while its process lives; otherwise it is left out and the report says how many.
+- An attempt still running ends, at the latest, when the sprint's window ends.
+- `--format json` gives each task a `windows` list (oldest first) naming each window's `source`, `ledger`, `start`
+  and `end`. The legacy `--json` output and `steward tokens check` use the windows by hand and the agents ledger
+  only, as in 0.21.
+- The text report lists the task whose latest window started last first.
+
 ## Check a budget
 
 Add a positive integer to the header of the Markdown task file next to its ID.

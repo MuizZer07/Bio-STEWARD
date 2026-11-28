@@ -64,6 +64,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: items newest first (by time, then ID, highest first).",
   "properties": {
     "days": {
       "title": "Days",

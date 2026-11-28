@@ -168,6 +168,41 @@ def board_tasks(root: Path, cfg: Any, *, use_default: bool = False) -> list[dict
     return out
 
 
+def last_changed(root: Path, paths: list[str]) -> dict[str, float]:
+    """X05: each path's latest change: the time of the last commit that touched it, or now when it has changes git
+    has not committed (or git is unavailable). One `git log` for all of them."""
+    import subprocess
+    import time
+
+    from .fsutil import git_run
+
+    now = time.time()
+    if not paths:
+        return {}
+    out: dict[str, float] = {}
+    folders = sorted({p.rsplit("/", 1)[0] if "/" in p else p for p in paths})
+    try:
+        dirty = git_run(root, "status", "--porcelain", "-z", "--", *folders, timeout=30)
+        log = git_run(root, "log", "--format=%x01%ct", "--name-only", "--no-renames", "-z", "--", *folders,
+                      timeout=60)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return {p: now for p in paths}
+    if log.returncode == 0:
+        stamp = None
+        for part in log.stdout.decode("utf-8", "replace").replace("\n", "\0").split("\0"):
+            if part.startswith("\x01"):
+                try:
+                    stamp = float(part[1:])
+                except ValueError:
+                    stamp = None
+            elif part and stamp is not None:
+                out.setdefault(part, stamp)
+    changed = set()
+    if dirty.returncode == 0:
+        changed = {entry[3:] for entry in dirty.stdout.decode("utf-8", "replace").split("\0") if len(entry) > 3}
+    return {p: now if p in changed or p not in out else out[p] for p in paths}
+
+
 def sprints(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
     """Each valid sprint with its tasks' states and the time of each task's latest ledger event."""
     from . import sprint as sp
@@ -661,8 +696,10 @@ def render_next(doc: dict[str, Any], brief: bool = False) -> str:
         if m["blockers"]:
             shown = ", ".join(f"{b['kind']} {b['id']}" for b in m["blockers"][:cap * 2])
             out.append(f"  blocking: {shown}" + (f", and {len(m['blockers']) - cap * 2} more" if len(m["blockers"]) > cap * 2 else ""))
+    from .newest import newest_first
+
     for title, key in (("Waiting on you", "waiting_on_human"), ("Waiting on agents", "waiting_on_agents")):
-        rows = doc[key]
+        rows = newest_first(doc[key], lambda r: r["time"], lambda r: r["id"])  # X05: newest first
         out.append(f"{title} ({len(rows)})" + ("" if rows else ": nothing"))
         for row in rows[:cap]:
             out.append(f"  {row['kind']:<12} {row['title']}" + ("" if brief else f"\n               -> {row['command']}"))

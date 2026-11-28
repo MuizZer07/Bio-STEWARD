@@ -2,6 +2,76 @@
 
 Pre-release. Not published on PyPI. Versions follow semantic versioning once released.
 
+## 0.22.0 (2026-11-27): requests from the adopting projects, token windows, newest first
+Per Muiz, 2026-11-27: "then start S1 after publishing"; "add the pulled exchange items in this"; "make sure the token
+counts work"; "all tasks, milestones and everything should be latest first order". Per
+development/design/RELEASE_v0.22.0_SPEC.md (sprint `2026-11-28-s1`, X01 – X06). The exchange folder tolerates the
+files an operating system writes into it and names an edited received item at once; dataset access, the agents ledger
+and licence checks gain what adopters' own ledgers needed; `steward tokens report` counts sprint tasks and runs with
+no step by hand; and the text lists print the newest entry first. Every existing `--json` output is byte-identical to
+0.21.1, and no command opens a network connection unless asked. Read the upgrade notes below: lists now print in a new
+order, and two findings can newly appear in `steward check`.
+
+### Added
+- **An edited received exchange item is named at once** (X01): when one of this project's outbox items differs from
+ the bytes a peer recorded in its committed receipt, R-53 is INCOMPLETE with `R-53.receipt_mismatch`, whatever the
+ item's age and before any response arrives. It names both sha256 hashes, the commit the peer received, the
+ `git show` command that restores the bytes, and the other way out (file the revision under a new ID). See
+ [Multi-project governance](docs/guides/multi-project.md).
+- **Dataset access** (X02; `development/datasets.toml`): a role `unclear`, which denies `develop` and `confirm` to a
+ consumer without a role of its own; `links = [...]`, so access is denied when any linked dataset denies it (chains
+ are followed, a cycle ends, an undeclared link is `R-36.unknown_link`); a consumer's table form
+ `{ role, spent, excluded }`, whose `spent` and `excluded` close that consumer's own use; a top-level
+ `[consumers.<id>] deny_develop_if_spent_for = ["*" | consumer, …]`; and the dataset identifiers
+ `accession:<registry>:<id>` and `local:<id>`. See [Freeze, seal and approve](docs/guides/integrity.md).
+- **Who may score whom, and a performance ledger** (X03): `[agents] may_score = { "<scorer>" = ["<author>", …] }`
+ (R-62 FAILs a score outside it, `R-62.not_permitted`; `agents score` refuses it with exit 64); the optional attempt
+ fields `--estimate-file`, `--harness`, `--harness-version`, `--parent`, `--status`;
+ `steward agents event TASK --kind assigned|implemented|reviewed|merged|verified --time T`; and
+ `steward agents list [TASK] [--format json]` (`steward.agents_list/0.1`), newest first. See
+ [Multi-project governance](docs/guides/multi-project.md#the-agents-ledger).
+- **Licence use kinds** (X04): `[licence] use = { "<package>" = "linked" | "bundled" | "invoked" }`, default `linked`.
+ A copyleft package that is only `invoked` as a separate tool passes R-80 with its obligations stated; `bundled` is
+ judged as `linked`; the deny list wins for every use. A `use` name that matches no package is a note,
+ `R-80.use_unmatched`. `licence inventory --json` gives `use` for each declared package. See
+ [Govern licences from the first commit](docs/guides/licence.md).
+- **Token windows from the records** (X05): `steward tokens report` also counts each sprint task's window from its
+ sprint ledger (running to done, failed or skipped; labelled `sprint <id> <task>`) and each `steward run` from its run
+ record (`run <run-id>`), beside the windows made by hand. `--format json` names each window's `source` and `ledger`
+ in a new `windows` list per task. See [Track tokens per task](docs/guides/tokens.md).
+- Every document schema in `schemas/` has a `description` that says in which order its lists are written.
+
+### Changed
+- **Files the operating system writes are not exchange entries** (X01): R-53 leaves out an untracked entry in
+ `exchange/` or its subfolders that git ignores (one `git check-ignore` with the safe git settings) or that has an OS
+ metadata name (`.DS_Store`, `Thumbs.db`, `desktop.ini`, `._*`). A tracked unknown file, or one that is neither
+ ignored nor an OS metadata name, still FAILs. An untracked `._ID.md` is no longer read as an item.
+- **Newest first in the text views** (X05): `task board` (by each file's latest commit), `timeline` (latest due first),
+ `decisions`, `exchange status`, `sprint status`, `authorize pending`, `authorize sign-pending`, `authorize list`,
+ `issues inbox`,
+ `diff runs`, `study list`, `next` and `tokens report` print the newest entry first (by date, then ID, highest first).
+ The versioned JSON keeps its order.
+- **`steward sprint start` with no task ordered waits for an order** (X05) until the window ends or
+ `steward sprint stop`, instead of exiting. Once it has started a task it returns as before.
+- **R-71 in a task's worktree** (X05) reads the sprint ledger of the main checkout, so it passes after `sprint add`
+ there as it does on main.
+
+### Upgrade notes (from 0.21.1)
+- Existing `--json` outputs are unchanged, including `tokens report --json` and `tokens check`, which keep the windows
+ made by hand and the agents ledger only. To read the sprint and run windows, use `--format json`.
+- **Text order.** A script that reads the text of one of the lists above and expects the oldest entry first must
+ reverse it, or read `--format json`, whose order is unchanged and stated in its schema.
+- `steward check` can newly report `R-53.receipt_mismatch` (INCOMPLETE) for an outbox item edited after its peer
+ received it: restore the received bytes or re-file the revision under a new ID. With outbox items present, R-53 now
+ reads the declared peers (and the machine's project registry unless `STEWARD_NO_REGISTRY=1`) on every check; URL
+ peers are still not fetched.
+- R-36 can newly FAIL with `R-36.unknown_link`, and R-62 with `R-62.not_permitted`, only in files that use the new
+ settings. Earlier `datasets.toml`, `[agents]` and `[licence]` declarations give the same answers as before. A
+ consumer's plain `"spent"` keeps its meaning (that consumer may still develop); use `{ spent = true }` to close its
+ own use.
+- A script that ran `steward sprint start` with no task ordered, expecting it to return, now waits: give an order
+ first, or run `steward sprint stop`.
+
 ## 0.21.1 (2026-11-27): the logo
 Per Muiz, 2026-11-27: "lets make a logo and use it everywhere"; "make the tick green … DNA helix a litte fade in the
 background.. make the Font colors single"; "cut 0.21.1". Branding and documentation only; no change to checks,

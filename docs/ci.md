@@ -130,6 +130,11 @@ and `tokens report`. For example, `steward timeline --format json` emits a
 `--json` invocations retain their output bytes. In the tagged exchange status
 document, `items` contains the rows that the legacy flag emits as an array.
 
+**List order (0.22.0).** The text views print the newest entry first (by date, then by ID, highest first; an
+entry without a date last). The JSON documents keep the order they had before: each schema's `description` names
+the order of its lists, so a script or editor sorts as it needs. For example, `steward.timeline/0.1` lists
+milestones by due date, earliest first, while `steward timeline` prints the latest due first.
+
 Read the exit status alongside stdout. Some commands return a complete document
 and a nonzero exit status when the document describes a negative outcome.
 Usage and input errors can report a diagnostic on stderr and leave stdout empty.

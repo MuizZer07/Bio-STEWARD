@@ -194,7 +194,7 @@ NEXT = {
     "R-77": "record the citation (steward paper citations NAME --fetch) or correct the cited title or identifier",
     "R-78": "move a shared study out of tuning or test; use another judge; freeze the prompts; review cases before a cutoff",
     "R-79": "state the same SPDX licence in LICENSE, the package metadata and CITATION.cff",
-    "R-80": "replace the dependency, record a dated exception with its approver, or update the notices (steward licence notices --write)",
+    "R-80": "replace the dependency, declare it in [licence] use as invoked when it only runs as a separate tool, record a dated exception with its approver, or update the notices (steward licence notices --write)",
     "R-81": "declare the source and licence in third_party, rewrite the code independently, or record an exception",
     "R-82": "declare the code's source in third_party, or confirm it is original",
     "R-83": "inspect the reported row and column, then correct the export or the declared table contract",

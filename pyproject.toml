@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bio-steward"
-version = "0.21.1"
+version = "0.22.0"
 description = "Bio-STEWARD (Scientific Toolkit for Engineering, Workflow Assurance, Reproducibility, and Development): the engineering and integrity layer for agentic computational biology."
 readme = "docs/pypi.md"
 license = "MIT"

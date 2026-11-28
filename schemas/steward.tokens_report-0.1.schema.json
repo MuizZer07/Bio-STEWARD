@@ -231,6 +231,13 @@
           },
           "title": "Tool Outputs",
           "type": "array"
+        },
+        "windows": {
+          "items": {
+            "$ref": "#/$defs/TaskWindow"
+          },
+          "title": "Windows",
+          "type": "array"
         }
       },
       "required": [
@@ -245,6 +252,57 @@
         "tool_outputs"
       ],
       "title": "TaskTokens",
+      "type": "object"
+    },
+    "TaskWindow": {
+      "additionalProperties": false,
+      "description": "X05: one window of a task and the record it came from: `task-tokens` (opened by hand), `agents` (the agents\nledger), `sprint` (a sprint ledger), `run` (the run ledger) or `all activity` (no window recorded).",
+      "properties": {
+        "end": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "End"
+        },
+        "ledger": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ledger"
+        },
+        "source": {
+          "enum": [
+            "task-tokens",
+            "agents",
+            "sprint",
+            "run",
+            "all activity"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "start": {
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "ledger",
+        "start",
+        "end"
+      ],
+      "title": "TaskWindow",
       "type": "object"
     },
     "ToolOutput": {
@@ -299,6 +357,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: tasks by task label (A to Z); per task, models by agent then model, agents by name, files most read first, tool outputs largest first, windows oldest first; `issues` A to Z. The text view prints the newest entry first.",
   "properties": {
     "currency": {
       "anyOf": [

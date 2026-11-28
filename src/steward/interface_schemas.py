@@ -143,6 +143,7 @@ class Dependency(TypedDict):
     how: str | None
     status: str
     why: str
+    use: NotRequired[Literal["linked", "bundled", "invoked"]]
     exception: NotRequired[bool]
 
 
@@ -333,6 +334,15 @@ class FileReads(TypedDict):
     reads: int
 
 
+class TaskWindow(TypedDict):
+    """X05: one window of a task and the record it came from: `task-tokens` (opened by hand), `agents` (the agents
+    ledger), `sprint` (a sprint ledger), `run` (the run ledger) or `all activity` (no window recorded)."""
+    source: Literal["task-tokens", "agents", "sprint", "run", "all activity"]
+    ledger: str | None
+    start: str
+    end: str | None
+
+
 class TaskTokens(TypedDict):
     task: str
     tokens: int | None
@@ -343,6 +353,7 @@ class TaskTokens(TypedDict):
     issues: list[str]
     files_read: list[FileReads]
     tool_outputs: list[ToolOutput]
+    windows: NotRequired[list[TaskWindow]]  # X05: with --format json; oldest first
 
 
 class SourceFile(TypedDict):
@@ -790,3 +801,108 @@ class IssueGroup(TypedDict):
 
 
 _add_tag(OTHER_SCHEMAS["issues inbox"], "IssuesInbox", groups=list[IssueGroup])
+
+
+# 0.22.0 (X03): `steward agents list --format json`, the attribution ledger per task.
+class AgentScore(TypedDict):
+    scorer: str | None
+    score: float | None
+    rubric: str | None
+    override: str | None
+    seq: int | None
+    recorded: str | None
+
+
+class AgentAttempt(TypedDict):
+    attempt: int | None
+    agent: str | None
+    provider: str | None
+    model: str | None
+    suggested: str | None
+    started: str | None
+    ended: str | None
+    reviewer: str | None
+    estimate: Object | None
+    harness: str | None
+    harness_version: str | None
+    parent: str | None
+    status: str | None
+    seq: int | None
+    recorded: str | None
+    scores: list[AgentScore]
+
+
+class AgentEvent(TypedDict):
+    kind: str | None
+    time: str | None
+    seq: int | None
+    recorded: str | None
+
+
+class AgentTask(TypedDict):
+    task: str
+    attempts: list[AgentAttempt]
+    events: list[AgentEvent]
+
+
+class AgentsList(BaseModel):
+    """The attribution ledger per task. Order, newest first: tasks by their newest record (ledger seq, then task ID,
+    highest first); attempts by attempt number; each attempt's scores by seq; events by their time, then seq. A field
+    an attempt did not record is null."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_: Literal["steward.agents_list/0.1"] = Field(alias="schema")
+    ledger: str
+    tasks: list[AgentTask]
+
+
+SCHEMAS[OTHER_SCHEMAS["agents list"].replace("/", "-") + ".schema.json"] = AgentsList
+
+
+# X05 (0.22.0): each document says the order of its lists, so a reader can sort. The text views print the newest
+# entry first; these documents keep the order they had in 0.21 (a contract).
+_TEXT = " The text view prints the newest entry first."
+_UNDATED = "Order: its lists are not ordered by date; each keeps the order of its source (a file, a declaration, a name)."
+ORDER = {
+    "authorize_keys": "Order: keys as the allowed-signers file lists them.",
+    "authorize_list": "Order: authorization tags, then anchor tags, each by tag name (A to Z)." + _TEXT,
+    "authorize_pending": "Order: this project's queue first, then each peer's (by peer code); within one, by nonce "
+                         "(A to Z). `skipped` by peer code." + _TEXT,
+    "channel_status": "Order: channels by name (A to Z).",
+    "decisions": "Order: `entries` newest first by date (entries of one date in file order); `open_decisions` in "
+                 "file order." + _TEXT,
+    "diff_runs": "Order: runs as the run ledger records them, oldest first." + _TEXT,
+    "exchange_status": "Order: items by folder, then by file name (A to Z); then the items whose file was removed, "
+                       "by ID; then the peers' items." + _TEXT,
+    "explain": "Order: rules by rule ID.",
+    "integrity_status": "Order: frozen sets and datasets by name (A to Z).",
+    "issues_inbox": "Order: groups by fingerprint; within a group, versions, projects and items A to Z." + _TEXT,
+    "next": "Order: `waiting_on_human` and `waiting_on_agents` grouped by the kind of record, in the order they are "
+            "read; each entry's `time` sorts them." + _TEXT,
+    "notifications": "Order: items newest first (by time, then ID, highest first).",
+    "research_list": "Order: records newest first (by date).",
+    "sprint_status": "Order: tasks in dispatch order (each after the tasks it waits for, else as the sprint file "
+                     "lists them)." + _TEXT,
+    "study_list": "Order: studies by ID (A to Z); `invalid` by path." + _TEXT,
+    "task_board": "Order: tasks by path, as the repository lists its files." + _TEXT,
+    "tidy": "Order: items by kind, a worktree before its branch, then by ID.",
+    "timeline": "Order: milestones by due date, earliest first." + _TEXT,
+    "tokens_report": "Order: tasks by task label (A to Z); per task, models by agent then model, agents by name, "
+                     "files most read first, tool outputs largest first, windows oldest first; `issues` A to Z."
+                     + _TEXT,
+}
+
+
+def _describe_order() -> None:
+    for name, model in SCHEMAS.items():
+        stem = name.removesuffix(".schema.json").rsplit("-", 1)[0].removeprefix("steward.")
+        if stem == "agents_list":  # its docstring already says its order
+            continue
+        own = (model.__doc__ or "").strip() if model in (ProgressAudit, LastError) else ""
+        text = ORDER.get(stem, _UNDATED)
+        model.model_config["json_schema_extra"] = {"description": f"{own} {text}" if own else text}
+        model.model_rebuild(force=True)
+
+
+_describe_order()

@@ -8,7 +8,8 @@ profile. Steward then checks, deterministically and offline:
 - **R-80 licence.dependencies**: every dependency's licence (from its installed metadata: the SPDX
   `License-Expression` first, then the licence classifiers, then the free-text field) is compatible with the policy
   for the distribution state; an unknown licence is UNKNOWN, never a pass; weak copyleft passes with its obligation
-  stated when the profile allows it; a public project needs a current third-party notices file;
+  stated when the profile allows it; a copyleft package declared as only invoked as a separate tool (`[licence] use`,
+  0.22.0) passes with its obligations; a public project needs a current third-party notices file;
 - **R-81 licence.code**: copied, ported or translated code declared in `third_party` and files carrying
   `SPDX-License-Identifier:` or `Derived-from:` headers are compatible;
 - **R-82 licence.provenance (advisory)**: comments that suggest an undeclared port ("ported from", "translated from",
@@ -50,6 +51,14 @@ OBLIGATION = {
     "strong": "strong copyleft: distributing a combined work requires the whole under compatible terms",
     "network": "network copyleft: offering it over a network triggers the source obligation, without distribution",
 }
+INVOKED = {  # 0.22.0: a copyleft package the project only runs as a separate program forms no combined work with it
+    "weak": "invoked as a separate tool, not linked or bundled: keep its notices if the project ships the tool",
+    "strong": "invoked as a separate tool, not linked or bundled: no combined work; if the project ships the tool, "
+              "ship it under its own terms with its source offer",
+    "network": "invoked as a separate tool, not linked or bundled: no combined work; a modified copy offered over a "
+               "network must offer its source",
+}
+USES = ("linked", "bundled", "invoked")
 
 CLASSIFIERS = {
     "MIT License": "MIT", "BSD License": "BSD-3-Clause", "Apache Software License": "Apache-2.0",
@@ -181,9 +190,11 @@ class ThirdPartyFile(Strict):
 
 
 # ---------------------------------------------------------------- the policy
-def verdict(expr: str, cfg: Any) -> tuple[str, str]:
+def verdict(expr: str, cfg: Any, use: str = "linked") -> tuple[str, str]:
     """(status, why) for one SPDX expression under the project's `[licence]`: PASS, PASS_OBLIGATION, FAIL or UNKNOWN.
-    OR takes the most acceptable option; AND needs every part acceptable."""
+    OR takes the most acceptable option; AND needs every part acceptable. `use` is how the project uses the package
+    (0.22.0): `linked` and `bundled` are judged alike; a known copyleft licence that is only `invoked` as a separate
+    tool passes with its obligations. The deny list and an unknown licence are judged the same for every use."""
     lc = cfg.licence
     try:
         e = parse_expr(expr)
@@ -201,6 +212,8 @@ def verdict(expr: str, cfg: Any) -> tuple[str, str]:
             return "UNKNOWN", f"{i}: not a licence the policy knows (add it to allow or deny)"
         if fam == "permissive":
             return "PASS", f"{i}: permissive"
+        if use == "invoked":
+            return "PASS_OBLIGATION", f"{i}: {INVOKED[fam]}"
         if lc.distribution == "internal":
             return "PASS_OBLIGATION", f"{i}: {OBLIGATION[fam]} (internal use: no distribution yet)"
         if fam == "network":
@@ -317,6 +330,17 @@ def _norm(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name).lower()
 
 
+def declared_use(cfg: Any) -> dict[str, str]:
+    """{normalised package name: its declared use} from `[licence] use` (0.22.0); a package not named is linked."""
+    return {_norm(k): v for k, v in (getattr(cfg.licence, "use", None) or {}).items()}
+
+
+def unmatched_use(cfg: Any, rows: list[dict[str, Any]]) -> list[str]:
+    """The `[licence] use` names that match no package in the inventory (a stale or misspelt declaration)."""
+    seen = {_norm(r["name"]) for r in rows}
+    return sorted(k for k in (getattr(cfg.licence, "use", None) or {}) if _norm(k) not in seen)
+
+
 def installed(root: Path, globs: list[str]) -> tuple[dict[str, dict[str, Any]], list[str]]:
     """({normalised name: {name, version, licence, how}}, problems) from the `*.dist-info/METADATA` files under the
     declared site-packages folders (the project's environment, never the toolkit's own). Every file is read inside
@@ -419,7 +443,8 @@ def lock_packages(text: str, rel: str) -> list[tuple[str, str]]:
 
 
 def inventory(root: Path, cfg: Any, read, env_root: Path | None = None) -> tuple[list[dict[str, Any]], list[str]]:
-    """([{name, version, licence, how, status, why, exception?}], problems). With a lockfile, every package it pins is
+    """([{name, version, licence, how, status, why, use?, exception?}], problems). `use` is present only for a
+    package named in `[licence] use`. With a lockfile, every package it pins is
     judged (one not installed is UNKNOWN); without one, every installed distribution."""
     lc = cfg.licence
     env, problems = installed(env_root or root, lc.site_packages)
@@ -438,6 +463,7 @@ def inventory(root: Path, cfg: Any, read, env_root: Path | None = None) -> tuple
     project = _norm(project_name(root, read) or "")
     skip = {_norm(x) for x in lc.ignore_packages} | {project}
     exc = exceptions(root, cfg, read)
+    uses = declared_use(cfg)
     rows = []
     for n, v in sorted(set(names), key=lambda x: _norm(x[0])):
         if _norm(n) in skip:
@@ -456,7 +482,11 @@ def inventory(root: Path, cfg: Any, read, env_root: Path | None = None) -> tuple
             row["status"], row["why"] = "UNKNOWN", ("not installed in the declared environment" if d is None
                                                     else "no licence in its metadata")
         else:
-            row["status"], row["why"] = verdict(lic, cfg)
+            row["status"], row["why"] = verdict(lic, cfg, uses.get(_norm(n), "linked"))
+        if _norm(n) in uses:  # 0.22.0: present only when declared, so an undeclared row is as in 0.21
+            row["use"] = uses[_norm(n)]
+            if uses[_norm(n)] != "invoked" and row["status"] != "PASS":
+                row["why"] += f" (declared use: {uses[_norm(n)]})"
         e = match_exception(exc, n, lic)
         if e is not None and row["status"] in ("FAIL", "UNKNOWN"):
             if e.expires < date.today():

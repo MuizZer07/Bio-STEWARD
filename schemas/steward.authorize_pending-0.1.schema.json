@@ -135,6 +135,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: this project's queue first, then each peer's (by peer code); within one, by nonce (A to Z). `skipped` by peer code. The text view prints the newest entry first.",
   "properties": {
     "items": {
       "items": {

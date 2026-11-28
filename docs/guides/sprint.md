@@ -117,7 +117,7 @@ budget and an expiry at the end of the window) or **sign later** (policy changes
 ## 3. Run
 ```bash
 steward sprint go day1 T1          # the order for T1
-steward sprint start day1          # dispatch what has its order; returns when nothing more can start
+steward sprint start day1          # dispatch what has its order; with none ordered yet, wait for one; then return when nothing more can start
 steward sprint start day1 --watch  # stay: orders, retries and rechecks until every task is finished, the window ends or `sprint stop`
 steward sprint status day1 [--format json]
 steward sprint watch day1          # one line per new event; ends when nothing runs and nothing ordered waits
@@ -133,6 +133,19 @@ When its run ends, its `done` commands run there: all exit 0 and nothing uncommi
 window, or when it could not finish before the window ends; `status` says when the window is not open. Done commands
 can use `STEWARD_SPRINT_BASE`, `STEWARD_SPRINT_BRANCH`, `STEWARD_SPRINT_TASK` and `STEWARD_SPRINT_ID` instead of
 naming the base branch.
+
+**Waiting for the first order (0.22.0).** `steward sprint start` with no task ordered yet waits: it says which tasks
+wait (`waiting for orders: steward sprint go day1 T1 …`) and starts each as its `go` arrives, until the window ends or
+`steward sprint stop day1`. Once it has started a task, it returns when nothing more can start, as before; `--watch`
+also stays for retries and rechecks.
+
+**R-71 in a task's worktree (0.22.0).** The dispatcher writes the sprint ledger in the main checkout, so a worktree's
+committed copy can be older (after a `sprint add`, for example). On a task branch (`sprint/<sprint>/<task>`) in a
+linked worktree, R-71 reads the main checkout's ledger and says so in its result. Anywhere else it reads the ledger in
+the checkout it runs in.
+
+**Newest first.** `steward sprint status day1` prints the task that changed last first. The JSON
+(`--format json`) keeps the dispatch order; each document schema says its order.
 
 ### Changes to the sprint file while it runs
 The dispatcher reads the sprint file again before each dispatch, **while no task runs**: an edit is printed, recorded

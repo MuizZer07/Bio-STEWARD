@@ -82,6 +82,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: runs as the run ledger records them, oldest first. The text view prints the newest entry first.",
   "properties": {
     "runs": {
       "items": {

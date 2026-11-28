@@ -424,6 +424,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: milestones by due date, earliest first. The text view prints the newest entry first.",
   "properties": {
     "drift": {
       "$ref": "#/$defs/TimelineDrift"

@@ -223,7 +223,11 @@ def render(doc: dict) -> str:
     if not doc["open_decisions"]:
         lines.append("- None recorded")
     lines += ["", "Recorded decisions"]
-    lines.extend(f"- {entry['heading']} ({entry['path']}:{entry['line']})" for entry in doc["entries"])
+    from .newest import newest_first
+
+    # X05: newest first; on one date, the entry written later (lower in its file) first
+    lines.extend(f"- {entry['heading']} ({entry['path']}:{entry['line']})"
+                 for entry in newest_first(doc["entries"], lambda e: e["date"], lambda e: (e["path"], e["line"])))
     if not doc["entries"]:
         lines.append("- None recorded")
     return "\n".join(lines)

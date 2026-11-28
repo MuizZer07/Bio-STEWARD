@@ -463,7 +463,9 @@
     "exit": 0,
     "stdout": {
       "currency": "USD",
-      "issues": [],
+      "issues": [
+        "run ledger development/runs.jsonl is unavailable"
+      ],
       "schema": "steward.tokens_report/0.1",
       "sources": {
         "claude": {
@@ -526,6 +528,14 @@
               ],
               "session": "session-306e5f52",
               "time_ms": 1795608060000
+            }
+          ],
+          "windows": [
+            {
+              "end": null,
+              "ledger": null,
+              "source": "all activity",
+              "start": "1970-01-01T00:00:00+00:00"
             }
           ]
         }

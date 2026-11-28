@@ -260,6 +260,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: `waiting_on_human` and `waiting_on_agents` grouped by the kind of record, in the order they are read; each entry's `time` sorts them. The text view prints the newest entry first.",
   "properties": {
     "milestone": {
       "anyOf": [

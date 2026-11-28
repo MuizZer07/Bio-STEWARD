@@ -17,6 +17,7 @@ from .fsutil import LinkRefused, escapes_root, matching_files
 from .interface import wants_json, write_json
 from .ledger import Ledger, LedgerError, verify_bytes
 from .models import AgentsSection, StewardConfig, TaskTokenBudget
+from .newest import newest_first
 from .process import ID_LINE
 from .records import read_rel
 from .status import EXIT_DATAERR, EXIT_OK, EXIT_USAGE
@@ -44,6 +45,14 @@ class Window:
     session: str | None = None
     agent: str | None = None
     model: str | None = None
+    source: str = "task-tokens"  # X05: task-tokens (by hand), agents, sprint, run, or all activity
+    ledger: str | None = None    # X05: the record the window was read from
+
+    @property
+    def tier(self) -> int:
+        """X05: usage inside a window by hand (or from the agents ledger) belongs to it as before; inside none of
+        those, to a sprint task's window; inside none of those either, to a run's."""
+        return {"sprint": 1, "run": 2}.get(self.source, 0)
 
     def matches(self, agent: str, event: Event) -> bool:
         return ((self.agent is None or self.agent == agent)
@@ -93,7 +102,7 @@ def _markers(entries: list[dict]) -> list[Window]:
 
 def _windows(root: Path, cfg: StewardConfig) -> tuple[list[Window], set[str]]:
     repo_id = cfg.steward.repo_id
-    windows = _markers(_entries(root, WINDOW_LEDGER, "task-tokens", repo_id))
+    windows = [replace(w, ledger=WINDOW_LEDGER) for w in _markers(_entries(root, WINDOW_LEDGER, "task-tokens", repo_id))]
     recorded = {w.task for w in windows}
     issues = set()
     try:
@@ -109,9 +118,121 @@ def _windows(root: Path, cfg: StewardConfig) -> tuple[list[Window], set[str]]:
         start, end = timestamp(row.get("started")), timestamp(row.get("ended"))
         model = identifier(row.get("model"))
         if task and agent and start and (row.get("ended") is None or (end and end >= start)):
-            windows.append(Window(task, start, end, agent=agent, model=None if model == "unknown" else model))
+            windows.append(Window(task, start, end, agent=agent, model=None if model == "unknown" else model,
+                                  source="agents", ledger=(cfg.agents or AgentsSection()).ledger))
         else:
             issues.add("agents ledger has attempts without a supported agent or usable dates")
+    return windows, issues
+
+
+# X05: the sprint adapters, as the agent whose logs hold their usage; any other adapter matches every agent's logs
+SPRINT_AGENTS = {"claude-code": "claude", "codex": "codex"}
+
+
+def _sprint_end(root: Path, sid: str) -> datetime | None:
+    """The end of a sprint's window, from its file; a task cannot run past it."""
+    from . import sprint as sp
+
+    sf, _ = sp.validate_file(root / sp.DIR / f"{sid}.toml")
+    return sf.sprint.window.end.astimezone(timezone.utc) if sf is not None and sf.sprint.id == sid else None
+
+
+def _sprint_windows(root: Path, rel: str, repo_id: str) -> tuple[list[Window], set[str]]:
+    """X05: each attempt of each sprint task, from `running` to `done`, `failed` or a `skip` order, labelled
+    `sprint <id> <task>`. An attempt still open ends with the sprint's window. Also returns the runs the ledger names
+    (each task's own `steward run`, which this window already covers)."""
+    entries = _entries(root, rel, "sprint", repo_id)
+    opened = next((e for e in entries if e.get("kind") == "opened"), {})
+    sid = identifier(opened.get("sprint")) or Path(rel).stem
+    windows: list[Window] = []
+    open_: dict[str, int] = {}
+    runs: set[str] = set()
+    for e in entries:
+        task, when = identifier(e.get("task")), timestamp(e.get("time"))
+        if e.get("kind") == "state" and isinstance(e.get("run"), str):
+            runs.add(e["run"])
+        if not task or not when:
+            continue
+        state = e.get("state") if e.get("kind") == "state" else None
+        ends = state in ("done", "failed") or (e.get("kind") == "order" and e.get("order") == "skip")
+        if (state == "running" or ends) and task in open_:
+            index = open_.pop(task)
+            windows[index] = replace(windows[index], end=max(when, windows[index].start))
+        if state == "running":
+            agent = SPRINT_AGENTS.get(e.get("agent")) if isinstance(e.get("agent"), str) else None
+            open_[task] = len(windows)
+            windows.append(Window(f"sprint {sid} {task}", when, agent=agent, source="sprint", ledger=rel))
+    if open_:
+        end = _sprint_end(root, sid)
+        for index in open_.values():
+            if end is not None:
+                windows[index] = replace(windows[index], end=max(end, windows[index].start))
+    return windows, runs
+
+
+def _alive(row: dict) -> bool:
+    """A run without an outcome still runs when its recorded process does (the check `steward run` recovery uses)."""
+    import psutil
+
+    try:
+        proc = psutil.Process(int(row.get("pid")))
+        return abs(proc.create_time() - float(row.get("pid_created"))) < 1.0
+    except (psutil.Error, TypeError, ValueError, OverflowError):
+        return False
+
+
+def _record_windows(root: Path, cfg: StewardConfig, recorded: set[str]) -> tuple[list[Window], set[str]]:
+    """X05: the windows the project's records already hold: each sprint task's (its sprint ledger) and each
+    `steward run`'s (the run ledger). A sprint task that has a window by hand or in the agents ledger keeps that one."""
+    from . import sprint as sp
+    from .models import RunSection
+
+    repo_id = cfg.steward.repo_id
+    windows: list[Window] = []
+    issues: set[str] = set()
+    sprint_runs: set[str] = set()
+    folder = root / sp.DIR
+    names = sorted(p.name for p in folder.glob("*.jsonl")) if folder.is_dir() and not folder.is_symlink() else []
+    for name in names:
+        rel = f"{sp.DIR}/{name}"
+        try:
+            found, runs = _sprint_windows(root, rel, repo_id)
+        except TokenError:
+            issues.add(f"sprint ledger {rel} is unavailable")
+            continue
+        sprint_runs |= runs
+        windows += [w for w in found if w.task.rsplit(" ", 1)[-1] not in recorded]
+    rel = (cfg.run or RunSection()).ledger
+    try:
+        entries = _entries(root, rel, "runs", repo_id)
+    except TokenError:
+        issues.add(f"run ledger {rel} is unavailable")
+        return windows, issues
+    started: dict[str, dict] = {}
+    ended: dict[str, datetime] = {}
+    for e in entries:
+        run = identifier(e.get("run"))
+        if not run:
+            continue
+        if e.get("kind") == "started":
+            started.setdefault(run, e)
+        elif e.get("kind") in ("outcome", "interrupted") and (when := timestamp(e.get("time"))):
+            ended.setdefault(run, when)
+    stale = 0
+    for run, row in started.items():
+        label = row.get("label")
+        if run in sprint_runs or (isinstance(label, str) and label.startswith("sprint:")):
+            continue  # a sprint task's own run: the sprint window covers it
+        start = timestamp(row.get("time"))
+        if start is None:
+            continue
+        end = ended.get(run)
+        if end is None and not _alive(row):
+            stale += 1
+            continue
+        windows.append(Window(f"run {run}", start, max(end, start) if end else None, source="run", ledger=rel))
+    if stale:
+        issues.add(f"{stale} run(s) have no recorded end and no live process; their windows are left out")
     return windows, issues
 
 
@@ -236,7 +357,9 @@ def _report(cfg: StewardConfig, windows: list[Window], selected: set[str], logs,
         for path, event in events:
             if event.time > current or (since is not None and event.time < since):
                 continue
-            tasks = {w.task for w in applicable if w.matches(agent, event)}
+            hits = [w for w in applicable if w.matches(agent, event)]
+            tier = min((w.tier for w in hits), default=0)  # X05: windows by hand first, then sprint tasks, then runs
+            tasks = {w.task for w in hits if w.tier == tier}
             if len(tasks) > 1:
                 if event.usage is not None or event.missing_usage:
                     for task in tasks:
@@ -299,7 +422,16 @@ def _checks(root: Path, cfg: StewardConfig, rows: list[dict]) -> tuple[list[str]
     return lines, warnings
 
 
-def _plain_report(rows: list[dict], sources: dict, issues: set[str], currency: str | None) -> None:
+def _window_doc(w: Window) -> dict:
+    return {"source": w.source, "ledger": w.ledger, "start": w.start.isoformat(),
+            "end": w.end.isoformat() if w.end else None}
+
+
+def _plain_report(rows: list[dict], sources: dict, issues: set[str], currency: str | None,
+                  windows: list[Window] = ()) -> None:
+    kinds = defaultdict(set)
+    for w in windows:
+        kinds[w.task].add(w.source)
     chart = charts.text_bars([(row["task"], row["tokens"]) for row in rows if row["tokens"] is not None], "tokens")
     if chart:
         print(chart)
@@ -308,7 +440,8 @@ def _plain_report(rows: list[dict], sources: dict, issues: set[str], currency: s
     for row in rows:
         detail = "unavailable" if row["tokens"] is None else f"{row['tokens']:,} observed tokens ({row['status']})"
         cost = "unavailable" if row["cost"] is None else f"{row['cost']:.6g} {currency}"
-        print(f"{row['task']}  {detail}  estimated cost {cost}")
+        where = sorted(kinds.get(row["task"], set()) - {"task-tokens"})  # X05: a window from the records says so
+        print(f"{row['task']}  {detail}  estimated cost {cost}" + (f"  (window: {', '.join(where)})" if where else ""))
         for issue in row["issues"]:
             print(f"  {issue}")
         for agent in row["agents"]:
@@ -442,6 +575,12 @@ def _token_command(root: Path, cfg: StewardConfig, args) -> int:
             print("steward: --since needs a date in YYYY-MM-DD format", file=sys.stderr)
             return EXIT_USAGE
     windows, issues = _windows(root, cfg)
+    # X05: the report also takes the windows the records hold (sprint ledgers, run ledger). `tokens check` and the
+    # legacy `--json` output keep the 0.21 windows only, so they are unchanged.
+    records = not checking and not getattr(args, "json", False)
+    if records:
+        found, more = _record_windows(root, cfg, {w.task for w in windows})
+        windows, issues = [*windows, *found], issues | more
     current = now()
     selected = {w.task for w in windows if (not args.task or w.task == args.task)
                 and (since is None or w.end is None or w.end > since)
@@ -451,11 +590,19 @@ def _token_command(root: Path, cfg: StewardConfig, args) -> int:
         print("steward: no window recorded for this task", file=sys.stderr)
         return EXIT_USAGE
     sources, logs = _sources(paths, session, include_tools=not checking)
+    everything = Window(task="all activity", start=since or datetime(1970, 1, 1, tzinfo=timezone.utc), end=None,
+                        source="all activity")
     if not checking and not args.task and not windows:  # no task recorded yet: all activity in the period, so the
-        start = since or datetime(1970, 1, 1, tzinfo=timezone.utc)  # first report is useful before any task window
-        windows = [*windows, Window(task="all activity", start=start, end=None)]
+        windows = [*windows, everything]  # first report is useful before any task window
         selected = {"all activity"}
     rows = _report(cfg, windows, selected, logs, since, current)
+    if records:  # X05: a run in which no agent logged usage is not a task; it is left out unless asked for by name
+        runs = {w.task for w in windows if w.source == "run"}
+        rows = [r for r in rows if r["task"] not in runs or r["tokens"] is not None or r["tool_outputs"]
+                or r["task"] == args.task]
+        if not rows and not args.task and windows and all(w.source == "run" for w in windows):
+            windows, selected = [everything], {"all activity"}
+            rows = _report(cfg, windows, selected, logs, since, current)
     rows, sources = _redact(root, rows, sources)  # AF14: numbers leave the logs; paths and identifiers do not
     if checking:
         lines, warnings = _checks(root, cfg, rows)
@@ -470,8 +617,16 @@ def _token_command(root: Path, cfg: StewardConfig, args) -> int:
                                      "tokens", "Observed tokens by task", "tokens"))
     else:
         currency = cfg.spend.currency if cfg.spend else None
+        if args.format == "json":  # X05: each task names its windows and where each came from
+            for row in rows:
+                row["windows"] = [_window_doc(w) for w in sorted((w for w in windows if w.task == row["task"]),
+                                                                 key=lambda w: (w.start, w.end or current))]
         if wants_json(args):
             write_json(args, {"tasks": rows, "sources": sources, "issues": sorted(issues), "currency": currency})
         else:
-            _plain_report(rows, sources, issues, currency)
+            latest = {}
+            for w in windows:
+                latest[w.task] = max(latest.get(w.task, w.start), w.start)
+            _plain_report(newest_first(rows, lambda r: latest.get(r["task"]), lambda r: r["task"]), sources, issues,
+                          currency, windows)
     return EXIT_OK

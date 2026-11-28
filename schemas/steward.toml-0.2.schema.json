@@ -33,6 +33,24 @@
           "default": "development/agents.jsonl",
           "title": "Ledger",
           "type": "string"
+        },
+        "may_score": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "May Score"
         }
       },
       "title": "AgentsSection",
@@ -956,6 +974,18 @@
           ],
           "default": null,
           "title": "Third Party"
+        },
+        "use": {
+          "additionalProperties": {
+            "enum": [
+              "linked",
+              "bundled",
+              "invoked"
+            ],
+            "type": "string"
+          },
+          "title": "Use",
+          "type": "object"
         }
       },
       "required": [

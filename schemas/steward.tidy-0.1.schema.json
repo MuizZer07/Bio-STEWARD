@@ -137,6 +137,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: items by kind, a worktree before its branch, then by ID.",
   "properties": {
     "counts": {
       "$ref": "#/$defs/TidyCounts"

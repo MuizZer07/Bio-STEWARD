@@ -1,18 +1,80 @@
 {
   "$defs": {
+    "ConsumerPolicy": {
+      "additionalProperties": false,
+      "description": "A consumer's policy over every dataset: develop is denied on a dataset spent for any listed consumer\n(`\"*\"`: for any consumer, or for everyone).",
+      "properties": {
+        "deny_develop_if_spent_for": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Deny Develop If Spent For",
+          "type": "array"
+        }
+      },
+      "title": "ConsumerPolicy",
+      "type": "object"
+    },
+    "ConsumerUse": {
+      "additionalProperties": false,
+      "description": "One consumer's entry on one dataset, in the table form. `spent` and `excluded` close this consumer's\nown use (develop and confirm); `role` is its own role, as in the plain form `consumer = \"<role>\"`.",
+      "properties": {
+        "excluded": {
+          "default": false,
+          "title": "Excluded",
+          "type": "boolean"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "enum": [
+                "development",
+                "sealed",
+                "spent",
+                "census-only",
+                "reserved",
+                "unclear"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        },
+        "spent": {
+          "default": false,
+          "title": "Spent",
+          "type": "boolean"
+        }
+      },
+      "title": "ConsumerUse",
+      "type": "object"
+    },
     "DatasetDef": {
       "additionalProperties": false,
       "properties": {
         "consumers": {
           "additionalProperties": {
-            "enum": [
-              "development",
-              "sealed",
-              "spent",
-              "census-only",
-              "reserved"
-            ],
-            "type": "string"
+            "anyOf": [
+              {
+                "enum": [
+                  "development",
+                  "sealed",
+                  "spent",
+                  "census-only",
+                  "reserved",
+                  "unclear"
+                ],
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/ConsumerUse"
+              }
+            ]
           },
           "title": "Consumers",
           "type": "object"
@@ -32,6 +94,14 @@
           ],
           "title": "Identifier"
         },
+        "links": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Links",
+          "type": "array"
+        },
         "paths": {
           "items": {
             "type": "string"
@@ -45,7 +115,8 @@
             "sealed",
             "spent",
             "census-only",
-            "reserved"
+            "reserved",
+            "unclear"
           ],
           "title": "Role",
           "type": "string"
@@ -79,6 +150,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "consumers": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConsumerPolicy"
+      },
+      "title": "Consumers",
+      "type": "object"
+    },
     "datasets": {
       "additionalProperties": {
         "$ref": "#/$defs/DatasetDef"

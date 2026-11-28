@@ -1,0 +1,401 @@
+{
+  "$defs": {
+    "AgentAttempt": {
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Agent"
+        },
+        "attempt": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Attempt"
+        },
+        "ended": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ended"
+        },
+        "estimate": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Estimate"
+        },
+        "harness": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Harness"
+        },
+        "harness_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Harness Version"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Model"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Parent"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Provider"
+        },
+        "recorded": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Recorded"
+        },
+        "reviewer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reviewer"
+        },
+        "scores": {
+          "items": {
+            "$ref": "#/$defs/AgentScore"
+          },
+          "title": "Scores",
+          "type": "array"
+        },
+        "seq": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Seq"
+        },
+        "started": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Started"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Status"
+        },
+        "suggested": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Suggested"
+        }
+      },
+      "required": [
+        "attempt",
+        "agent",
+        "provider",
+        "model",
+        "suggested",
+        "started",
+        "ended",
+        "reviewer",
+        "estimate",
+        "harness",
+        "harness_version",
+        "parent",
+        "status",
+        "seq",
+        "recorded",
+        "scores"
+      ],
+      "title": "AgentAttempt",
+      "type": "object"
+    },
+    "AgentEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Kind"
+        },
+        "recorded": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Recorded"
+        },
+        "seq": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Seq"
+        },
+        "time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Time"
+        }
+      },
+      "required": [
+        "kind",
+        "time",
+        "seq",
+        "recorded"
+      ],
+      "title": "AgentEvent",
+      "type": "object"
+    },
+    "AgentScore": {
+      "additionalProperties": false,
+      "properties": {
+        "override": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Override"
+        },
+        "recorded": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Recorded"
+        },
+        "rubric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rubric"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Score"
+        },
+        "scorer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Scorer"
+        },
+        "seq": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Seq"
+        }
+      },
+      "required": [
+        "scorer",
+        "score",
+        "rubric",
+        "override",
+        "seq",
+        "recorded"
+      ],
+      "title": "AgentScore",
+      "type": "object"
+    },
+    "AgentTask": {
+      "additionalProperties": false,
+      "properties": {
+        "attempts": {
+          "items": {
+            "$ref": "#/$defs/AgentAttempt"
+          },
+          "title": "Attempts",
+          "type": "array"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/AgentEvent"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "task": {
+          "title": "Task",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task",
+        "attempts",
+        "events"
+      ],
+      "title": "AgentTask",
+      "type": "object"
+    },
+    "JsonValue": {}
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The attribution ledger per task. Order, newest first: tasks by their newest record (ledger seq, then task ID,\nhighest first); attempts by attempt number; each attempt's scores by seq; events by their time, then seq. A field\nan attempt did not record is null.",
+  "properties": {
+    "ledger": {
+      "title": "Ledger",
+      "type": "string"
+    },
+    "schema": {
+      "const": "steward.agents_list/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tasks": {
+      "items": {
+        "$ref": "#/$defs/AgentTask"
+      },
+      "title": "Tasks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "ledger",
+    "tasks"
+  ],
+  "title": "AgentsList",
+  "type": "object"
+}

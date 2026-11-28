@@ -75,6 +75,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: its lists are not ordered by date; each keeps the order of its source (a file, a declaration, a name).",
   "properties": {
     "artifacts": {
       "items": {

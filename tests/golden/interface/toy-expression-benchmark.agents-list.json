@@ -1,0 +1,79 @@
+{
+  "ledger": "development/agents.jsonl",
+  "schema": "steward.agents_list/0.1",
+  "tasks": [
+    {
+      "attempts": [
+        {
+          "agent": "impl",
+          "attempt": 1,
+          "ended": null,
+          "estimate": {
+            "effort": "3h",
+            "tokens": 1200
+          },
+          "harness": "fixture-harness",
+          "harness_version": "1.0",
+          "model": "m",
+          "parent": null,
+          "provider": "p",
+          "recorded": "2026-11-27T00:00:00Z",
+          "reviewer": null,
+          "scores": [
+            {
+              "override": null,
+              "recorded": "2026-11-27T00:00:00Z",
+              "rubric": "r",
+              "score": 4.0,
+              "scorer": "final",
+              "seq": 2
+            }
+          ],
+          "seq": 1,
+          "started": null,
+          "status": "review",
+          "suggested": null
+        }
+      ],
+      "events": [
+        {
+          "kind": "implemented",
+          "recorded": "2026-11-27T00:00:00Z",
+          "seq": 5,
+          "time": "2026-11-27T10:00:00Z"
+        },
+        {
+          "kind": "assigned",
+          "recorded": "2026-11-27T00:00:00Z",
+          "seq": 4,
+          "time": "2026-11-27T09:00:00Z"
+        }
+      ],
+      "task": "EX-1"
+    },
+    {
+      "attempts": [
+        {
+          "agent": "final",
+          "attempt": 1,
+          "ended": null,
+          "estimate": null,
+          "harness": null,
+          "harness_version": null,
+          "model": "m",
+          "parent": "EX-1",
+          "provider": "p",
+          "recorded": "2026-11-27T00:00:00Z",
+          "reviewer": null,
+          "scores": [],
+          "seq": 3,
+          "started": null,
+          "status": null,
+          "suggested": null
+        }
+      ],
+      "events": [],
+      "task": "EX-2"
+    }
+  ]
+}

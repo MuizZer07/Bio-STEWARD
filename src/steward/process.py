@@ -779,8 +779,10 @@ def r61(ctx: Ctx) -> list[Result]:
 
 
 # ---------------------------------------------------------------- R-62 agents.ledger (REQ-016)
-def agent_entries(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Problems in an attribution ledger's entries: self-scores, scores of unknown attempts, silent overrides."""
+def agent_entries(entries: list[dict[str, Any]],
+                  may_score: dict[str, list[str]] | None = None) -> list[dict[str, Any]]:
+    """Problems in an attribution ledger's entries: self-scores, scores of unknown attempts, silent overrides, and
+    (X03, when `may_score` is set) a score by an agent the table does not let score that attempt's author."""
     attempts: dict[tuple[str, int], dict[str, Any]] = {}
     scored: set[tuple[str, int]] = set()
     out = []
@@ -795,6 +797,10 @@ def agent_entries(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
             elif e.get("scorer") == a.get("agent"):
                 out.append({"code": "R-62.self_scored", "value": f"{key[0]}#{key[1]}", "seq": e.get("seq"),
                             "message": f"scored by its author {a.get('agent')}"})
+            elif may_score is not None and a.get("agent") not in may_score.get(str(e.get("scorer")), []):
+                out.append({"code": "R-62.not_permitted", "value": f"{key[0]}#{key[1]}", "seq": e.get("seq"),
+                            "message": f"{e.get('scorer')} may not score work by {a.get('agent')} "
+                                       "([agents] may_score)"})
             if key in scored and not str(e.get("override") or "").strip():  # Q22: a blank reason is no reason
                 out.append({"code": "R-62.silent_override", "value": f"{key[0]}#{key[1]}", "seq": e.get("seq"),
                             "message": "a later score needs an override reason"})
@@ -816,11 +822,12 @@ def r62(ctx: Ctx) -> list[Result]:
     if v.errors or v.torn_tail:  # Q22
         return [result("R-62", ac.ledger, Status.FAIL, "the attribution ledger was edited, or its last record is torn",
                        [{"code": "R-62.ledger", **e} for e in v.errors] + ([{"code": "R-62.torn_tail"}] if v.torn_tail else []))]
-    problems = agent_entries(v.entries)
+    problems = agent_entries(v.entries, ac.may_score)
     n = sum(1 for e in v.entries if e.get("kind") == "attempt")
     if problems:
         return [result("R-62", ac.ledger, Status.FAIL, "a score breaks the attribution rules", problems)]
-    return [result("R-62", ac.ledger, Status.PASS, f"{n} attempt(s); every score by another agent")]
+    return [result("R-62", ac.ledger, Status.PASS, f"{n} attempt(s); every score by another agent"
+                   + (" that [agents] may_score allows" if ac.may_score is not None else ""))]
 
 
 # ---------------------------------------------------------------- staged gates (REQ-008): checks and R-68
@@ -1284,16 +1291,20 @@ def r71(ctx: Ctx) -> list[Result]:
         if sf.sprint.id != Path(rel).stem:
             out.append(result("R-71", rel, Status.FAIL, "the file name and the sprint id differ", [{"code": "R-71.id"}]))
             continue
+        main = sp.main_checkout_ledger(ctx.root, sf.sprint.id)  # X05: in a task's worktree, the dispatcher's ledger
+        where = " (the main checkout's ledger)" if main is not None else ""
         try:
-            evs = sp.events(ctx.root, sf.sprint.id)
+            evs = sp.events(ctx.root, sf.sprint.id, at=main)
         except ValueError:
-            out.append(result("R-71", rel, Status.FAIL, "the sprint ledger is not intact", [{"code": "R-71.ledger"}]))
+            out.append(result("R-71", rel, Status.FAIL, f"the sprint ledger is not intact{where}",
+                              [{"code": "R-71.ledger"}]))
             continue
         bad = sp.ledger_findings(sf, evs)  # V15 (0.14.0)
         if bad:
-            out.append(result("R-71", rel, Status.FAIL, "the sprint ledger does not match its plan", bad))
+            out.append(result("R-71", rel, Status.FAIL, f"the sprint ledger does not match its plan{where}", bad))
             continue
-        out.append(result("R-71", rel, Status.PASS, f"{len(sf.task)} task(s), ledger intact and bound to the plan"))
+        out.append(result("R-71", rel, Status.PASS,
+                          f"{len(sf.task)} task(s), ledger intact and bound to the plan{where}"))
     return out
 
 
@@ -1655,6 +1666,9 @@ def r80(ctx: Ctx) -> list[Result]:
             details.append({"code": "R-80.obligation", "value": f"{r['name']} {r['version']}", "message": r["why"]})
         elif r.get("exception"):
             details.append({"code": "R-80.exception", "value": r["name"], "message": r["why"]})
+    for name in li.unmatched_use(ctx.config, rows):  # 0.22.0: a note, not a cause: nothing is judged by it
+        details.append({"code": "R-80.use_unmatched", "value": name,
+                        "message": "[licence] use names a package that is not in the inventory"})
     if lc.lockfile:  # name what a change to the lockfile added or upgraded (the pre-commit view)
         from .fsutil import git_run
 

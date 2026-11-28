@@ -16,29 +16,75 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated, Any, Literal, Union
 
-from pydantic import Field
+from pydantic import AfterValidator, Field
 
 from .fsutil import glob_match, iter_repo_files
 from .ledger import Ledger, verify as lverify, verify_bytes
-from .models import Identifier, Sentinel, Strict, Text
+from .models import SENTINELS, Sentinel, Strict, Text, identifier_ok
 
 ROLES = ("development", "sealed", "spent", "census-only")
 
 
-Role = Literal["development", "sealed", "spent", "census-only", "reserved"]
+# X02: `unclear` is a role nobody has decided yet; it closes develop and confirm to consumers without a role of their own
+Role = Literal["development", "sealed", "spent", "census-only", "reserved", "unclear"]
+
+# X02: dataset identifiers also take a repository accession and a project-local ID
+DATASET_IDENTIFIER_PATTERNS = {
+    "accession": re.compile(r"^accession:[a-z][a-z0-9._-]*:[A-Za-z0-9][A-Za-z0-9._:/-]*$"),
+    "local": re.compile(r"^local:[A-Za-z0-9][A-Za-z0-9._:/-]*$"),
+}
+
+
+def _dataset_identifier(v: str) -> str:
+    if v in SENTINELS or identifier_ok(v) or any(p.match(v) for p in DATASET_IDENTIFIER_PATTERNS.values()):
+        return v
+    raise ValueError(f"malformed identifier '{v}' (expected doi:, pmid:, arxiv:, url:https://, "
+                     "accession:<registry>:<id> or local:<id>)")
+
+
+DatasetIdentifier = Annotated[str, AfterValidator(_dataset_identifier)]
+
+
+class ConsumerUse(Strict):
+    """One consumer's entry on one dataset, in the table form. `spent` and `excluded` close this consumer's
+    own use (develop and confirm); `role` is its own role, as in the plain form `consumer = "<role>"`."""
+    role: Role | None = None
+    spent: bool = False
+    excluded: bool = False
+
+
+class ConsumerPolicy(Strict):
+    """A consumer's policy over every dataset: develop is denied on a dataset spent for any listed consumer
+    (`"*"`: for any consumer, or for everyone)."""
+    deny_develop_if_spent_for: list[Annotated[str, Field(min_length=1)]] = Field(default_factory=list)
 
 
 class DatasetDef(Strict):
     role: Role
-    identifier: Union[Identifier, Sentinel]
+    identifier: Union[DatasetIdentifier, Sentinel]
     paths: list[Text] = Field(default_factory=list)
     sha256: Union[Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")], Sentinel] = "TBD"
-    consumers: dict[str, Role] = Field(default_factory=dict)  # REQ-007: the role for each study or paper
+    # REQ-007: the role for each study or paper; X02: or a table with its own `spent` and `excluded`
+    consumers: dict[str, Union[Role, ConsumerUse]] = Field(default_factory=dict)
+    links: list[Annotated[str, Field(min_length=1)]] = Field(default_factory=list)  # X02: access needs each linked dataset
+
+    def own_role(self, consumer: str) -> str | None:
+        c = self.consumers.get(consumer)
+        return c.role if isinstance(c, ConsumerUse) else c
+
+    def consumer_roles(self) -> list[str]:
+        return [r for r in (self.own_role(c) for c in self.consumers) if r is not None]
+
+    def spent_for(self) -> list[str]:
+        """The consumers this dataset is spent for: the plain `"spent"` role or the table's `spent = true`."""
+        return [c for c, v in self.consumers.items()
+                if (v.spent or v.role == "spent" if isinstance(v, ConsumerUse) else v == "spent")]
 
 
 class DatasetsFile(Strict):
     schema_: Literal["steward.datasets/0.1"] = Field(alias="schema")
     datasets: dict[str, DatasetDef] = Field(default_factory=dict)
+    consumers: dict[str, ConsumerPolicy] = Field(default_factory=dict)  # X02: per-consumer policies
 
 
 class IntegrityError(Exception):
@@ -215,35 +261,69 @@ def sealed_owner(root: Path, cfg: Any, rel: str, *, read=None, hash_file=None) -
 
 
 def access(root: Path, cfg: Any, name: str, consumer: str, use: str) -> tuple[bool, str]:
-    """May `consumer` use dataset `name` for `use` (develop | confirm | metadata)? (REQ-007)
+    """May `consumer` use dataset `name` for `use` (develop | confirm | metadata)? (REQ-007, X02)
     Spent anywhere is never confirmatory again; sealed and reserved deny develop and confirm; census-only allows
-    metadata only; development data never confirms."""
+    metadata only; development data never confirms. X02: an `unclear` role closes develop and confirm to consumers
+    without a role of their own; a consumer's own `spent` or `excluded` closes its own use; a consumer's
+    `deny_develop_if_spent_for` closes develop on data spent for the listed consumers; and every linked dataset must
+    allow the same use."""
     ds = load_datasets(root, cfg)
     if ds is None or name not in ds.datasets:
         raise IntegrityError(f"no dataset {name!r} in {cfg.integrity.datasets}")
     st = state(root, cfg)  # R21: one read, verified, is the source of the roles
     if not st.intact:  # Q33: an unusable ledger gives no answer, never an "allow"
         raise IntegrityError(f"{cfg.integrity.ledger} is not intact: access cannot be decided")
+    return _access(ds, st, name, consumer, use, (name,))
+
+
+def _access(ds: DatasetsFile, st: State, name: str, consumer: str, use: str, seen: tuple[str, ...]) -> tuple[bool, str]:
     d = ds.datasets[name]
     ledger_role = st.roles.get(name, (None, None))[0]
-    role = d.consumers.get(consumer, ledger_role or d.role)
+    own = d.own_role(consumer)
+    entry = d.consumers.get(consumer)
+    role = own or ledger_role or d.role
     # Q33: an active seal (the ledger's, or the declared role) holds for every consumer, as the run input check does
     if ledger_role == "sealed" or (ledger_role is None and d.role == "sealed"):
         role = "sealed"
-    spent = "spent" in (d.role, ledger_role, *d.consumers.values())
+    spent_for = d.spent_for()
+    spent_all = "spent" in (d.role, ledger_role)
+    spent = spent_all or bool(spent_for)
     if use == "metadata":
         return True, f"{role}: metadata may be read"
+    if isinstance(entry, ConsumerUse) and entry.excluded:
+        return False, f"excluded for {consumer}: closed to its own use"
+    if isinstance(entry, ConsumerUse) and entry.spent:
+        return False, f"spent for {consumer}: closed to its own use"
+    if role != "sealed" and own is None and (d.role == "unclear" or "unclear" in d.consumer_roles()):
+        role = "unclear"
+    if role == "unclear":
+        return False, f"unclear for {consumer}: record its role first"
     if role == "census-only":
         return False, "census-only: metadata only, never the data"
     if role in ("sealed", "reserved"):
         return False, f"{role} for {consumer}" + (": unseal it with a signed authorization first" if role == "sealed"
                                                    else ": kept for a later design")
+    if use == "develop":
+        policy = ds.consumers.get(consumer)
+        if policy is not None and policy.deny_develop_if_spent_for:
+            listed = policy.deny_develop_if_spent_for
+            hit = sorted(c for c in spent_for if "*" in listed or c in listed)
+            if spent_all or hit:
+                return False, ("spent" + (f" for {', '.join(hit)}" if hit and not spent_all else "")
+                               + f": {consumer} denies develop on data spent for {', '.join(listed)}")
     if use == "confirm":
         if spent:
-            who = [c for c, r in d.consumers.items() if r == "spent"]
-            return False, "spent" + (f" for {', '.join(who)}" if who else "") + ": never confirmatory again"
+            return False, "spent" + (f" for {', '.join(spent_for)}" if spent_for else "") + ": never confirmatory again"
         if role == "development":
             return False, "development data cannot confirm"
+    for link in d.links:
+        if link in seen:
+            continue  # a link back to a dataset already on this path adds nothing
+        if link not in ds.datasets:
+            return False, f"linked to {link}, which is not declared"
+        ok, why = _access(ds, st, link, consumer, use, (*seen, link))
+        if not ok:
+            return False, f"linked to {link}: {why}"
     return True, f"{role}: {use} allowed"
 
 

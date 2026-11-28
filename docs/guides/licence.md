@@ -25,7 +25,38 @@ site_packages = [".venv/lib/python3*/site-packages"]   # the project's environme
 deny = ["AGPL-3.0*", "SSPL-*"]
 exceptions = "development/licence-exceptions.toml"
 third_party = "development/third-party.toml"
+use = { "some-cli-tool" = "invoked" }   # linked (the default) | bundled | invoked, per package (0.22.0)
 ```
+
+## Use and distribution are separate facts
+How the project **uses** a dependency and how the project is **distributed** are declared apart, and the check reads
+both.
+
+```mermaid
+flowchart LR
+  L[linked: imported by the code] --> J{policy for the distribution}
+  B[bundled: shipped inside an artifact] --> J
+  I[invoked: run as a separate tool] --> O[✅ passes with its obligations]
+  J -- allowed --> OK[✅]
+  J -- not allowed --> F[🔴 FAIL]
+```
+
+| `use` | What it means | How R-80 judges a copyleft package |
+|---|---|---|
+| `linked` (default) | imported or linked into the project's code | by the policy for the distribution state, as in the table below |
+| `bundled` | shipped inside an artifact (an image, an archive, a wheel) | the same as `linked`; the report names the declared use |
+| `invoked` | only run as a separate program (a command-line tool, a build tool) | not a FAIL: it passes with its obligations stated |
+
+- A package not named in `use` is `linked`, so a project without `use` is checked as before.
+- Names compare as installers compare them (`Some_Tool` and `some-tool` are one package); two spellings of one
+  package in `use` are refused.
+- The deny list wins for every use, and an unknown licence stays UNKNOWN whatever the use.
+- A `use` name that matches no package in the inventory is noted (`R-80.use_unmatched`); it is not a failure.
+- `steward licence inventory --json` gives a `use` field for each package named in `use`.
+
+**Distribution** stays the `distribution` setting (internal, network or public, since 0.19.0), and **which licences a
+project rejects** stays its own policy: the `policy` profile plus the `allow` and `deny` lists. Whether a project that
+pins this one ships it onward is that project's decision, made in its own `[licence]`.
 
 ## What is checked
 | Rule | Checks |

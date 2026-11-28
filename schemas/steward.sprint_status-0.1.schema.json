@@ -355,6 +355,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: tasks in dispatch order (each after the tasks it waits for, else as the sprint file lists them). The text view prints the newest entry first.",
   "properties": {
     "dispatch": {
       "enum": [

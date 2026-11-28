@@ -1230,7 +1230,7 @@
       "areas": [
         "integrity"
       ],
-      "checks": "Datasets are declared with their roles and hashes.",
+      "checks": "Datasets are declared with their roles and hashes, and their links name declared datasets.",
       "codes": [
         {
           "code": "R-36.role_mismatch",
@@ -1242,6 +1242,10 @@
         },
         {
           "code": "R-36.sealed_changed",
+          "fix": null
+        },
+        {
+          "code": "R-36.unknown_link",
           "fix": null
         }
       ],
@@ -2652,10 +2656,14 @@
       "areas": [
         "agents"
       ],
-      "checks": "Agent attempts and scores are recorded append-only, and no attempt is scored by its author.",
+      "checks": "Agent attempts and scores are recorded append-only, no attempt is scored by its author, and with `[agents] may_score` each score is by an agent the table lets score that attempt's author.",
       "codes": [
         {
           "code": "R-62.ledger",
+          "fix": null
+        },
+        {
+          "code": "R-62.not_permitted",
           "fix": null
         },
         {
@@ -3518,7 +3526,7 @@
       "areas": [
         "licence"
       ],
-      "checks": "Every dependency's licence (from its installed metadata: License-Expression, classifiers, the licence field) against the policy for the distribution state: incompatible fails, unknown is UNKNOWN, weak copyleft passes with its obligation where the policy allows; a public project's third-party notices name every dependency.",
+      "checks": "Every dependency's licence (from its installed metadata: License-Expression, classifiers, the licence field) against the policy for the distribution state: incompatible fails, unknown is UNKNOWN, weak copyleft passes with its obligation where the policy allows, a copyleft package declared in [licence] use as only invoked as a separate tool passes with its obligations; a public project's third-party notices name every dependency.",
       "codes": [
         {
           "code": "R-80.baseline_unavailable",
@@ -3559,9 +3567,13 @@
         {
           "code": "R-80.unknown",
           "fix": null
+        },
+        {
+          "code": "R-80.use_unmatched",
+          "fix": null
         }
       ],
-      "fix": "replace the dependency, record a dated exception with its approver, or update the notices (steward licence notices --write)",
+      "fix": "replace the dependency, declare it in [licence] use as invoked when it only runs as a separate tool, record a dated exception with its approver, or update the notices (steward licence notices --write)",
       "governance": "project",
       "name": "licence.dependencies",
       "pass_does_not_mean": "Legal compliance: declared rules and metadata only.",

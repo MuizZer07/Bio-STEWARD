@@ -330,6 +330,21 @@ def build_parser() -> argparse.ArgumentParser:
     aat.add_argument("--started")
     aat.add_argument("--ended")
     aat.add_argument("--reviewer")
+    # X03: optional performance-ledger fields; an attempt without them is recorded exactly as before.
+    aat.add_argument("--estimate-file", metavar="FILE",
+                     help="a JSON object with the estimate made before the attempt (assumptions, effort, cost, tokens)")
+    aat.add_argument("--harness", help="the harness that ran the agent")
+    aat.add_argument("--harness-version", help="the harness's version")
+    aat.add_argument("--parent", metavar="TASK", help="the parent task")
+    aat.add_argument("--status", help="the task's status at this attempt")
+    aev = agsub.add_parser("event", parents=[common], help="record a task milestone (assigned, implemented, ...)")
+    aev.add_argument("task")
+    aev.add_argument("--kind", required=True, choices=list(_models.AGENT_EVENTS))
+    aev.add_argument("--time", required=True, help="when it happened, ISO 8601 with a time zone (e.g. 2026-11-27T10:00:00Z)")
+    als = agsub.add_parser("list", parents=[common],
+                           help="attempts, estimates, scores and events per task, newest first")
+    als.add_argument("task", nargs="?", help="only this task")
+    add_json_format(als, "agents list")
     asc = agsub.add_parser("score", parents=[common], help="score an attempt (never by its author)")
     asc.add_argument("task")
     asc.add_argument("--attempt", type=int, required=True)
@@ -1779,7 +1794,13 @@ def cmd_authorize(args: argparse.Namespace) -> int:
                   + ("" if v.trust_source != "working-tree" else "  [trust root UNPINNED: steward authorize pin]"))
         elif args.auth_command == "list":
             items = []
-            for tag in az.list_tags(root) + az.list_tags(root, "steward/anchor/"):
+            tags = az.list_tags(root) + az.list_tags(root, "steward/anchor/")
+            if not wants_json(args):  # X05: the text lists the newest tag first; the JSON keeps its order
+                from .newest import newest_first
+
+                made = az.tag_times(root)
+                tags = newest_first(tags, made.get, str)
+            for tag in tags:
                 try:
                     v = az.verify(root, cfg, tag)
                     if wants_json(args):
@@ -1869,7 +1890,7 @@ def _pending(root: Path, cfg: Any, args: argparse.Namespace) -> int:
                 items.append({**q, "project": code, "peer": code if i else None, "requester": None})
                 waiting += q["state"] == "waiting"
             continue
-        for q in az.pending(proj, repo_id=proj_id):  # None: read again there, and unreadable means all foreign
+        for q in _newest_pending(proj, az.pending(proj, repo_id=proj_id)):  # None: read again there; unreadable: foreign
             # STW-057: a summary's control characters (terminal escapes, carriage returns) are shown, never obeyed;
             # W12 F3: a line feed too, so a multi-line summary cannot add rows to this one-line-per-payload table
             line = az.visible(f"{code}  {q['nonce'][:12]}  {q['state']:<8} {q['action']:<14} expires {q['expires']}  "
@@ -1921,6 +1942,20 @@ def _pending(root: Path, cfg: Any, args: argparse.Namespace) -> int:
         print(f"{waiting} waiting" + ("" if not waiting else "; sign them with: steward authorize sign-pending"
                                       + (" --all-projects" if args.all_projects else "")))
     return EXIT_OK
+
+
+def _newest_pending(proj: Path, queue: list[dict]) -> list[dict]:
+    """X05: the signing queue as text, newest first: by when each payload was prepared (its file's time; the queue is
+    local), then by nonce."""
+    from .newest import newest_first
+
+    def prepared(q: dict) -> float | None:
+        try:
+            return (proj / q["path"]).lstat().st_mtime
+        except (OSError, KeyError, TypeError):
+            return None
+
+    return newest_first(queue, prepared, lambda q: q.get("nonce"))
 
 
 def _contract_analysis(root: Path, cfg, cid: str) -> str | None:
@@ -2434,7 +2469,32 @@ def cmd_agents(args: argparse.Namespace) -> int:
     if cfg is None:
         return EXIT_USAGE
     ac = cfg.agents or AgentsSection()
+    if args.agents_command == "list":
+        return _agents_list(args, root, ac)
     led = Ledger(root / ac.ledger, "agents", cfg.steward.repo_id, base=root)
+    extra: dict[str, Any] = {}  # X03: only the optional fields given, so an attempt without them is as before
+    if args.agents_command == "attempt":
+        if args.estimate_file is not None:
+            try:
+                estimate = json.loads(Path(args.estimate_file).read_text(encoding="utf-8"))
+            except FileNotFoundError:
+                print(f"steward: no such estimate file: {args.estimate_file}", file=sys.stderr)
+                return EXIT_USAGE
+            except (OSError, UnicodeDecodeError, ValueError, RecursionError) as err:
+                print(f"steward: the estimate file is not readable JSON: {err}", file=sys.stderr)
+                return EXIT_DATAERR
+            if not isinstance(estimate, dict):
+                print("steward: the estimate file must hold a JSON object", file=sys.stderr)
+                return EXIT_DATAERR
+            extra["estimate"] = estimate
+        for name in ("harness", "harness_version", "parent", "status"):
+            if getattr(args, name) is not None:
+                extra[name] = getattr(args, name)
+    elif args.agents_command == "event":
+        if _event_time(args.time) is None:
+            print(f"steward: --time {args.time!r} is not an ISO 8601 time with a time zone "
+                  "(e.g. 2026-11-27T10:00:00Z)", file=sys.stderr)
+            return EXIT_USAGE
 
     def decide(entries: list[dict[str, Any]]) -> tuple[str, dict[str, Any]]:
         mine = [e for e in entries if e.get("task") == args.task]
@@ -2442,14 +2502,18 @@ def cmd_agents(args: argparse.Namespace) -> int:
             n = 1 + sum(1 for e in mine if e.get("kind") == "attempt")
             return "attempt", {"task": args.task, "attempt": n, "agent": args.agent, "provider": args.provider,
                                "model": args.model, "suggested": args.suggested, "started": args.started,
-                               "ended": args.ended, "reviewer": args.reviewer}
+                               "ended": args.ended, "reviewer": args.reviewer, **extra}
+        if args.agents_command == "event":
+            return "event", {"task": args.task, "event": args.kind, "at": args.time}
         body = {"task": args.task, "attempt": args.attempt, "scorer": args.scorer, "score": args.score,
                 "rubric": args.rubric, "override": (args.override or "").strip() or None}
-        problems = agent_entries(entries + [{"kind": "score", **body}])
+        problems = agent_entries(entries + [{"kind": "score", **body}], ac.may_score)
         new = [p for p in problems if p["value"] == f"{args.task}#{args.attempt}" and p.get("seq") is None]
         if new:
             raise ValueError({"R-62.self_scored": "an attempt is never scored by its author",
                               "R-62.unknown_attempt": "no such attempt",
+                              "R-62.not_permitted": "[agents] may_score does not let "
+                                                    f"{args.scorer} score this attempt's author",
                               "R-62.silent_override": "already scored; pass --override REASON"}[new[0]["code"]])
         return "score", body
     try:
@@ -2461,6 +2525,117 @@ def cmd_agents(args: argparse.Namespace) -> int:
         print(f"steward: {err}", file=sys.stderr)
         return EXIT_DATAERR
     print(f"{args.task}: {e['kind']} recorded (seq {e['seq']})")
+    return EXIT_OK
+
+
+def _event_time(text: str):
+    """An ISO 8601 time with a time zone, or None (X03: `steward agents event --time`)."""
+    import datetime as _dt
+
+    try:
+        t = _dt.datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    return t if t.tzinfo is not None else None
+
+
+def _agents_document(entries: list[dict[str, Any]], only: str | None) -> list[dict[str, Any]]:
+    """The attribution ledger per task (X03): tasks by their newest record, and within each task attempts, scores
+    and events newest first."""
+
+    def text(v: Any) -> str | None:
+        return v if isinstance(v, str) else None
+
+    def number(v: Any) -> int | None:
+        return v if isinstance(v, int) and not isinstance(v, bool) else None
+
+    tasks: dict[str, dict[str, Any]] = {}
+    last: dict[str, int] = {}
+    for e in entries:
+        task = e.get("task")
+        if not isinstance(task, str) or (only is not None and task != only):
+            continue
+        kind = e.get("kind")
+        if kind not in ("attempt", "score", "event"):
+            continue
+        t = tasks.setdefault(task, {"task": task, "attempts": [], "events": [], "_scores": []})
+        last[task] = max(last.get(task, -1), number(e.get("seq")) or 0)
+        seen = {"seq": number(e.get("seq")), "recorded": text(e.get("time"))}
+        if kind == "attempt":
+            estimate = e.get("estimate")
+            t["attempts"].append({
+                "attempt": number(e.get("attempt")), "agent": text(e.get("agent")),
+                "provider": text(e.get("provider")), "model": text(e.get("model")),
+                "suggested": text(e.get("suggested")), "started": text(e.get("started")),
+                "ended": text(e.get("ended")), "reviewer": text(e.get("reviewer")),
+                "estimate": estimate if isinstance(estimate, dict) else None,
+                "harness": text(e.get("harness")), "harness_version": text(e.get("harness_version")),
+                "parent": text(e.get("parent")), "status": text(e.get("status")), **seen, "scores": []})
+        elif kind == "score":
+            score = e.get("score")
+            t["_scores"].append({
+                "attempt": number(e.get("attempt")), "scorer": text(e.get("scorer")),
+                "score": float(score) if isinstance(score, (int, float)) and not isinstance(score, bool) else None,
+                "rubric": text(e.get("rubric")), "override": text(e.get("override")), **seen})
+        else:
+            t["events"].append({"kind": text(e.get("event")), "time": text(e.get("at")), **seen})
+
+    def newest(item: dict[str, Any]) -> int:
+        return item["seq"] if item["seq"] is not None else -1
+
+    out = []
+    for task in sorted(tasks, key=lambda k: (last[k], k), reverse=True):
+        t = tasks[task]
+        by_attempt: dict[int | None, list[dict[str, Any]]] = {}
+        for s in t.pop("_scores"):
+            by_attempt.setdefault(s.pop("attempt"), []).append(s)
+        for a in t["attempts"]:
+            a["scores"] = sorted(by_attempt.get(a["attempt"], []), key=newest, reverse=True)
+        t["attempts"].sort(key=lambda a: (a["attempt"] or 0, newest(a)), reverse=True)
+        t["events"].sort(key=lambda ev: (ev["time"] or "", newest(ev)), reverse=True)
+        out.append(t)
+    return out
+
+
+def _agents_list(args: argparse.Namespace, root: Path, ac: Any) -> int:
+    from . import ledger as lg
+
+    p = root / ac.ledger
+    if p.is_symlink():
+        print(f"steward: refused: {ac.ledger} is a link", file=sys.stderr)
+        return EXIT_DATAERR
+    v = lg.verify(p)
+    if v.errors or v.torn_tail:
+        print(f"steward: {ac.ledger} was edited, or its last record is torn; run `steward check agents`",
+              file=sys.stderr)
+        return EXIT_DATAERR
+    tasks = _agents_document(v.entries, args.task)
+    if wants_json(args):
+        write_json(args, {"ledger": ac.ledger, "tasks": tasks})
+        return EXIT_OK
+    if not tasks:
+        print(f"no attempts or events recorded{' for ' + args.task if args.task else ''} ({ac.ledger})")
+        return EXIT_OK
+    for t in tasks:
+        print(f"{t['task']}: {len(t['attempts'])} attempt(s), {len(t['events'])} event(s)")
+        for a in t["attempts"]:
+            parts = [f"{a['agent']}", f"{a['provider']}/{a['model']}"]
+            if a["suggested"] and a["suggested"] != a["model"]:
+                parts.append(f"suggested {a['suggested']}")
+            if a["harness"]:
+                parts.append(f"harness {a['harness']}" + (f" {a['harness_version']}" if a["harness_version"] else ""))
+            for key in ("status", "parent", "reviewer", "started", "ended"):
+                if a[key]:
+                    parts.append(f"{key} {a[key]}")
+            print(f"  attempt {a['attempt']}: " + " · ".join(parts))
+            if a["estimate"] is not None:
+                print(f"    estimate: {json.dumps(a['estimate'], sort_keys=True, ensure_ascii=False)}")
+            for s in a["scores"]:
+                print(f"    score {s['score']:g} by {s['scorer']} (rubric {s['rubric']})"
+                      + (f", override: {s['override']}" if s["override"] else "")
+                      if s["score"] is not None else f"    score by {s['scorer']} (no number)")
+        for ev in t["events"]:
+            print(f"  event {ev['kind']} at {ev['time']}")
     return EXIT_OK
 
 
@@ -2868,7 +3043,13 @@ def cmd_sprint(args: argparse.Namespace) -> int:
             if wants_json(args):  # STW-052: per task its times, run and log, commits, files and last tool step
                 write_json(args, sp.status_doc(root, sf))
                 return EXIT_OK
-            for tid in sp.order(sf):
+            from .newest import newest_first
+
+            latest: dict[str, str] = {}
+            for e in sp.events(root, sf.sprint.id):
+                if e.get("task") in st and isinstance(e.get("time"), str):
+                    latest[e["task"]] = e["time"]
+            for tid in newest_first(sp.order(sf), latest.get, str):  # X05: the task changed last first
                 s = st[tid]
                 extra = "; ordered" if s.get("go") else "; held" if s.get("hold") else ""
                 if s["state"] in ("running", "checking") and s.get("log"):
@@ -3343,10 +3524,14 @@ def cmd_issues(args: argparse.Namespace) -> int:
         else:
             if not groups:
                 print("No toolkit issue reports received.")
-            for group in groups:
+            from .newest import id_key, newest_first
+
+            filed = issues.filed_dates(root, cfg.exchange.code)  # X05: newest first, by the latest report filed
+            for group in newest_first(groups, lambda g: max((filed.get(i) or "" for i in g["items"]), default=None),
+                                      lambda g: max(g["items"], key=id_key, default="")):
                 print(f"{group['fingerprint']} · {group['count']} report(s) · versions "
                       f"{', '.join(group['versions'])} · projects {', '.join(group['projects'])} "
-                      f"({', '.join(group['items'])})")
+                      f"({', '.join(sorted(group['items'], key=id_key, reverse=True))})")
         return EXIT_OK
 
     try:
@@ -3743,6 +3928,7 @@ def cmd_exchange(args: argparse.Namespace) -> int:
             hist = xc.states(root)
             seen_by = xc.observations(root)
             rows = []
+            filed: dict[str, Any] = {}
             for place, entries in xc.items(root).items():
                 for rel, text in entries:
                     try:
@@ -3750,6 +3936,7 @@ def cmd_exchange(args: argparse.Namespace) -> int:
                     except (ValueError, ValueError, RecursionError):
                         head = {}
                     iid = head.get("id", Path(rel).stem)
+                    filed.setdefault(iid, str(head.get("filed")) if head.get("filed") else None)
                     obs = seen_by.get(iid, [])
                     far, last = xc.furthest(obs), (obs[-1] if obs else None)  # FB-019: the furthest, not the last
                     rows.append({"id": iid, "place": place, "kind": head.get("kind"), "title": head.get("title"),
@@ -3780,7 +3967,13 @@ def cmd_exchange(args: argparse.Namespace) -> int:
                     print(f"steward: could not check peer {_exchange_name(root, cfg, peer)}", file=sys.stderr)
                 write_json(args, rows)
             else:
-                for r in rows:
+                from .newest import newest_first
+
+                def changed(r):  # X05: an item's latest change: its last state, else the day it was filed
+                    entries = hist.get(r["id"], [])
+                    return entries[-1].get("time") if entries else filed.get(r["id"])
+
+                for r in newest_first(rows, changed, lambda r: r["id"]):
                     seen = f"  [{r['observed']['by']}: {r['observed']['state']} ({r['observed']['evidence']})" + (
                         f"; latest: {r['observed_latest']['state']} ({r['observed_latest']['evidence']})"
                         if "observed_latest" in r else "") + "]" if "observed" in r else ""

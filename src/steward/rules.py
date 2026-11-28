@@ -2157,6 +2157,10 @@ def r36(ctx: Ctx) -> list[Result]:
     causes, details = _sentinel_status(m.find_sentinels(ds))
     st = ig.state(ctx.root, ctx.config) if (ctx.root / ctx.config.integrity.ledger).is_file() else None
     for name, d in sorted(ds.datasets.items()):
+        for link in d.links:  # X02: a link must name a declared dataset
+            if link not in ds.datasets:
+                causes.append(Status.FAIL)
+                details.append({"code": "R-36.unknown_link", "value": name, "message": f"links to {link}, which is not declared"})
         recorded = st.roles.get(name) if st else None
         if recorded and recorded[0] != d.role:
             causes.append(Status.FAIL)

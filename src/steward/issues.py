@@ -224,6 +224,12 @@ def file_issue(root: Path, cfg: StewardConfig, text: str | None, last: LastError
         release_owner_lock(root, "issue", lock)
 
 
+def filed_dates(root: Path, code: str) -> dict[str, str]:
+    """X05: each received report's ID -> the date it was filed (for the text view's newest-first order)."""
+    return {item.id: str(item.filed) for item, _key, _raw in _self_reports(root, "inbox")
+            if item.to == code and getattr(item, "filed", None)}
+
+
 def inbox(root: Path, code: str) -> list[dict]:
     exchange.ledger_ok(root)
     history = exchange.states(root)

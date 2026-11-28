@@ -27,6 +27,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: keys as the allowed-signers file lists them.",
   "properties": {
     "baseline": {
       "title": "Baseline",

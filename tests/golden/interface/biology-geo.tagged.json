@@ -188,6 +188,13 @@
     "exit": 0,
     "stdout": {
       "commands": {
+        "agents list": {
+          "argv": [
+            "--format",
+            "json"
+          ],
+          "schema": "steward.agents_list/0.1"
+        },
         "audit progress": {
           "argv": [
             "--format",
@@ -596,6 +603,7 @@
       "interface_version": 1,
       "schema": "steward.interface/1",
       "schema_files": {
+        "steward.agents_list/0.1": "steward.agents_list-0.1.schema.json",
         "steward.artifacts/0.1": "steward.artifacts-0.1.schema.json",
         "steward.authorize_keys/0.1": "steward.authorize_keys-0.1.schema.json",
         "steward.authorize_list/0.1": "steward.authorize_list-0.1.schema.json",
@@ -827,7 +835,9 @@
     "exit": 0,
     "stdout": {
       "currency": null,
-      "issues": [],
+      "issues": [
+        "run ledger development/runs.jsonl is unavailable"
+      ],
       "schema": "steward.tokens_report/0.1",
       "sources": {
         "claude": {
@@ -890,6 +900,14 @@
               ],
               "session": "session-306e5f52",
               "time_ms": 1795608060000
+            }
+          ],
+          "windows": [
+            {
+              "end": null,
+              "ledger": null,
+              "source": "all activity",
+              "start": "1970-01-01T00:00:00+00:00"
             }
           ]
         }

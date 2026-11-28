@@ -341,7 +341,9 @@ def cmd_study(args: argparse.Namespace) -> int:
         if wants_json(args):
             write_json(args, {"studies": rows, "invalid": [r for r, _ in invalid]})
             return EXIT_OK
-        for r in rows:
+        from .newest import newest_first
+
+        for r in newest_first(rows, lambda r: None, lambda r: r["id"]):  # X05: a study has no date; highest ID first
             print(f"{r['check'] or '—':<11} {r['id']:<24} {r['status']:<8} {r['title']}")
         for rel, err in invalid:
             print(f"{'INVALID':<11} {rel}: {err}")
@@ -488,7 +490,11 @@ def cmd_task(args: argparse.Namespace) -> int:
         if wants_json(args):
             write_json(args, {"board": cfg.tasks.board if cfg.tasks else None, "tasks": rows})
         elif rows:
-            for row in rows:
+            from .cockpit import last_changed
+            from .newest import newest_first
+
+            changed = last_changed(root, [row["path"] for row in rows])  # X05: newest first, by its latest change
+            for row in newest_first(rows, lambda r: changed.get(r["path"]), lambda r: r["id"]):
                 archived = " (archived)" if row["archived"] else ""
                 print(f"{row['id']:<16} {row['status']:<14} {row['path']}{archived}")
         else:
@@ -707,7 +713,9 @@ def cmd_diff_runs(args: argparse.Namespace, root: Path, cfg: Any) -> int:
         write_json(args, {"runs": rows})
     else:
         print(f"{'Label':<28} {'Status':<11} {'Duration s':>11} {'Peak MB':>9}  Run")
-        for r in rows:
+        from .newest import newest_first
+
+        for r in newest_first(rows, lambda r: r["time"], lambda r: r["run"]):  # X05: newest first
             d = f"{r['duration_s']:.1f}" if isinstance(r["duration_s"], (int, float)) else "—"
             m = f"{r['peak_rss_mb']:.0f}" if isinstance(r["peak_rss_mb"], (int, float)) else "—"
             print(f"{(r['label'] or '—')[:28]:<28} {r['status']:<11} {d:>11} {m:>9}  {r['run']}")

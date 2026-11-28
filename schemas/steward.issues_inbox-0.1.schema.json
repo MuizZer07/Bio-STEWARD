@@ -47,6 +47,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: groups by fingerprint; within a group, versions, projects and items A to Z. The text view prints the newest entry first.",
   "properties": {
     "groups": {
       "items": {

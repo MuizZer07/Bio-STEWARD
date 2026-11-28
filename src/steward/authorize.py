@@ -680,6 +680,17 @@ def consume(root: Path, cfg: Any, verified: Verified, use: str) -> None:
     Ledger(root / cfg.policy.ledger, "authorizations", cfg.steward.repo_id).transaction(decide)
 
 
+def tag_times(root: Path) -> dict[str, int]:
+    """X05: each authorization or anchor tag -> when it was made (its tagger date, or its commit's)."""
+    out = _git(root, "for-each-ref", "--format=%(creatordate:unix) %(refname:short)", "refs/tags/steward/")
+    times: dict[str, int] = {}
+    for line in (out.stdout.decode(errors="replace").splitlines() if out.returncode == 0 else []):
+        stamp, _, tag = line.partition(" ")
+        if stamp.isdigit() and tag:
+            times[tag] = int(stamp)
+    return times
+
+
 def list_tags(root: Path, prefix: str = "steward/auth/") -> list[str]:
     out = _git(root, "tag", "-l", f"{prefix}*")
     return sorted(t for t in out.stdout.decode().splitlines() if t) if out.returncode == 0 else []

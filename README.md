@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-0.21.1%20beta-4b4fd8">
+  <img alt="version" src="https://img.shields.io/badge/version-0.22.0%20beta-4b4fd8">
   <img alt="python" src="https://img.shields.io/badge/python-3.11%2B-0b6f72">
   <a href="https://doi.org/10.5281/zenodo.24548977"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.24548977.svg"></a>
   <img alt="licence" src="https://img.shields.io/badge/licence-MIT-1d7a4e">
@@ -62,14 +62,14 @@ wherever required.
 
 ## 🚀 Quick start
 ```bash
-uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.21.1"     # or: pipx install "git+…@v0.21.1"
+uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.22.0"     # or: pipx install "git+…@v0.22.0"
 cd your-research-repo
 steward init --skills .agents/skills         # scaffold; never overwrites. Claude Code: --skills .claude/skills
 steward check --summary
 ```
 Then just ask your coding agent: **"Run the using-steward skill."** It runs the checks, reads the result and tells you
 what is ready. It is a development tool, never a runtime dependency. Pinning in a requirements file:
-`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.21.1` (not in package metadata: PyPI refuses
+`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.22.0` (not in package metadata: PyPI refuses
 direct references there).
 
 **Try it on real data** (0.20.0): a public GEO series, GSE7621 (Parkinson's disease substantia nigra, 25 samples),
@@ -220,14 +220,15 @@ Quarto or Pandoc. See [docs/works-with.md](docs/works-with.md).
 | `steward study new\|add-input\|list\|show\|fingerprint` | Study records: inputs, conventions, samples, references, tools, results, papers |
 | `steward research new\|list` | Literature reviews, novelty maps, gaps, dead-end reviews |
 | `steward task brief\|template\|dispatch` | Dispatch briefs for Codex, Gemini, Claude or any agent; run one headless with Codex or Antigravity |
+| `steward agents attempt\|score\|event\|list` | Who attempted each task and who scored it (`[agents] may_score`), estimates, milestones; newest first |
 | `steward compare record` | Two pipelines side by side: agreement and every disagreement |
-| `steward tokens report\|check` | Token use per task, from the agents' own logs |
+| `steward tokens report\|check` | Token use per task, from the agents' own logs, with sprint tasks and runs counted from their records |
 | `steward licence inventory\|notices` | Licence governance: dependencies, copied code, notices |
 | `steward paper values\|displays\|citations\|manifest` | Values registry, display lock, citation record, submission manifest |
 | `steward talk plan\|prefs\|values\|export` | Talk planning and export |
 | `steward authorize pin\|prepare\|sign\|verify\|pending\|sign-pending` | Signed human approvals, now or later |
 | `steward benchmark splits\|results CONTRACT` | Split overlaps; the results matrix |
-| `steward freeze` / `amend` / `seal` / `unseal` / `integrity status` | Research integrity |
+| `steward freeze` / `amend` / `seal` / `unseal` / `integrity status\|access` | Research integrity; who may use a dataset for what |
 | `steward spend check\|record\|status` | Spend guard |
 | `steward docs init\|build` | A documentation site for your project, with charts and study cards |
 | `steward timeline` / `sprint …` / `audit progress` | Deadlines, supervised sprints, the Progress Audit |
@@ -296,7 +297,7 @@ python tools/measure_footprint.py --check
 tools/ci_local.sh                        # the same checks in Linux containers, on a clean export of HEAD
 ```
 
-> **Status: beta, latest release `v0.21.1`.** Usable and tested (2000+ tests on macOS, and on Linux with Python 3.11 and 3.13), installed from
+> **Status: beta, latest release `v0.22.0`.** Usable and tested (2000+ tests on macOS, and on Linux with Python 3.11 and 3.13), installed from
 > GitHub, not yet on PyPI. Configuration and report formats may still change before 1.0. See the
 > [changelog](CHANGELOG.md).
 

@@ -82,7 +82,7 @@ RULE_DOCS: dict[str, dict[str, str]] = {
     "R-35": D(checks="Frozen protocol files, cohorts and parameters have not changed since they were frozen.",
               why="Confirmatory work must not change its design after seeing results.",
               **{"not": "The frozen design was a good one."}, scope="project"),
-    "R-36": D(checks="Datasets are declared with their roles and hashes.", why="Sealed and spent data must be known.",
+    "R-36": D(checks="Datasets are declared with their roles and hashes, and their links name declared datasets.", why="Sealed and spent data must be known.",
               **{"not": "The data is what its label says."}, scope="project"),
     "R-37": D(checks="Sealed data was not used without a signed unseal.", why="Held-out data used early is no longer held out.",
               **{"not": "Data copied outside steward was not used."}, scope="project"),
@@ -145,7 +145,8 @@ RULE_DOCS: dict[str, dict[str, str]] = {
               why="Two drifting copies give two agents different instructions.", **{"not": "The skills are right."}, scope="project"),
     "R-61": D(checks="No committed text file holds an unresolved merge-conflict marker.",
               why="Parallel agents and merges leave markers in records.", **{"not": "The merge was resolved correctly."}, scope="project"),
-    "R-62": D(checks="Agent attempts and scores are recorded append-only, and no attempt is scored by its author.",
+    "R-62": D(checks="Agent attempts and scores are recorded append-only, no attempt is scored by its author, and "
+              "with `[agents] may_score` each score is by an agent the table lets score that attempt's author.",
               why="Self-scored work is not evaluated work.", **{"not": "The scores are accurate."}, scope="multi-project"),
     "R-63": D(checks="Frozen file sets (agent prompts, tools, configuration, golden fixtures) are unchanged, or "
               "re-recorded with a decision.", why="A frozen agent version must stay frozen.",
@@ -212,8 +213,9 @@ RULE_DOCS: dict[str, dict[str, str]] = {
               **{"not": "That the licence suits the project (not legal advice)."}, scope="project"),
     "R-80": D(checks="Every dependency's licence (from its installed metadata: License-Expression, classifiers, the "
                      "licence field) against the policy for the distribution state: incompatible fails, unknown is "
-                     "UNKNOWN, weak copyleft passes with its obligation where the policy allows; a public project's "
-                     "third-party notices name every dependency.",
+                     "UNKNOWN, weak copyleft passes with its obligation where the policy allows, a copyleft package "
+                     "declared in [licence] use as only invoked as a separate tool passes with its obligations; a "
+                     "public project's third-party notices name every dependency.",
               why="A licence conflict found at release blocks a release already tagged; found on the commit that adds "
                   "it, it costs a package swap.", **{"not": "Legal compliance: declared rules and metadata only."},
               scope="project"),

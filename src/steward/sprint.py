@@ -397,10 +397,37 @@ def led(root: Path, sid: str, repo_id: str):
     return Ledger(ledger_path(root, sid), "sprint", repo_id)
 
 
-def events(root: Path, sid: str) -> list[dict[str, Any]]:
+def main_checkout_ledger(root: Path, sid: str) -> Path | None:
+    """X05: in a task's worktree (a linked worktree on the branch `sprint/<sid>/<task>`), the sprint ledger
+    the dispatcher writes: the main checkout's, which is newer than the copy the worktree's commit carries. None
+    elsewhere, or when the main checkout has no such ledger."""
+    from .fsutil import git_run
+
+    try:
+        branch = git_run(root, "symbolic-ref", "--short", "-q", "HEAD", text=True, timeout=30)
+        dirs = git_run(root, "rev-parse", "--absolute-git-dir", "--git-common-dir", text=True, timeout=30)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+    if branch.returncode != 0 or dirs.returncode != 0:
+        return None
+    parts = branch.stdout.strip().split("/")
+    lines = dirs.stdout.strip().splitlines()
+    if len(parts) != 3 or parts[0] != "sprint" or parts[1] != sid or len(lines) != 2:
+        return None
+    git_dir, common = Path(lines[0]).resolve(), (root / lines[1]).resolve()
+    if git_dir == common or common.name != ".git":
+        return None  # the main checkout itself, or a layout without a main checkout
+    main = common.parent
+    p = ledger_path(main, sid)
+    if main.resolve() == root.resolve() or p.is_symlink() or not p.is_file():
+        return None
+    return p
+
+
+def events(root: Path, sid: str, at: Path | None = None) -> list[dict[str, Any]]:
     from .ledger import verify
 
-    p = ledger_path(root, sid)
+    p = at if at is not None else ledger_path(root, sid)
     if not p.is_file():
         return []
     v = verify(p)
@@ -888,7 +915,8 @@ def dispatch(root: Path, cfg: Any, sf: SprintFile, *, watch: bool = False, poll:
              now=lambda: dt.datetime.now(dt.timezone.utc), out=print,
              on_fault: Callable[[Exception], None] | None = None) -> int:
     """Run the sprint until no task can progress (or, with `watch`, until the window ends, every task is finished,
-    or `sprint stop`)."""
+    or `sprint stop`). A ready task that waits only for its order is waited for, until the window ends or
+    `sprint stop` (X05)."""
     from .fsutil import owner_lock, release_owner_lock
 
     sid = sf.sprint.id
@@ -1000,6 +1028,8 @@ def _dispatch(root: Path, cfg: Any, sf: SprintFile, watch: bool, poll: float, no
                                 "note": "its dispatcher ended before it finished (see the run ledger); retry with go --retry"})
             out(f"{tid}: failed (left unfinished by an earlier dispatcher)")
     told: set[str] = set()
+    said: list[str] = []  # the tasks last named as waiting for an order
+    launched = False  # X05: whether this dispatcher has started a task
     while True:
         sf = source.refresh({tid: r[3] for tid, r in running.items()})
         tasks = {t.id: t for t in sf.task}
@@ -1065,6 +1095,7 @@ def _dispatch(root: Path, cfg: Any, sf: SprintFile, watch: bool, poll: float, no
                         stopped(events(root, sid)):  # V13: the clock and stop read again after setup
                     continue
                 try:
+                    launched = True
                     running[tid] = _launch(root, sf, t, wt, branch, base_commit, run_logs, lg, out)
                 except OSError as e:  # W12b (F9): a task log or settings file reached through a link
                     lg.append("state", {"task": tid, "state": "failed", "branch": branch,
@@ -1098,8 +1129,18 @@ def _dispatch(root: Path, cfg: Any, sf: SprintFile, watch: bool, poll: float, no
         if not startable:
             ordered = [i for i in waiting if st[i].get("go") or sf.sprint.dispatch == "auto"]
             if not ordered and sf.sprint.dispatch == "order":
-                out("waiting for orders: " + ", ".join(f"steward sprint go {sid} {i}" for i in waiting))
-            elif ordered:
+                # X05: started with no task ordered, it waits for an order, until the window ends or
+                # `sprint stop`; once it has started a task, it returns when nothing more can start, as before
+                if launched:
+                    out("waiting for orders: " + ", ".join(f"steward sprint go {sid} {i}" for i in waiting))
+                    break
+                if waiting != said:
+                    said = list(waiting)
+                    out("waiting for orders: " + ", ".join(f"steward sprint go {sid} {i}" for i in waiting)
+                        + f" (until the window ends, or steward sprint stop {sid})")
+                time.sleep(poll)
+                continue
+            if ordered:
                 out("nothing more can start now: " + ", ".join(
                     f"{i} ({'held' if st[i].get('hold') else 'would not finish before the window ends'})" for i in ordered))
             break

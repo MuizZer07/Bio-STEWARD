@@ -558,6 +558,20 @@ class LicenceSection(Strict):
     exceptions: SafePath | None = None                   # steward.licence-exceptions/1
     third_party: SafePath | None = None                  # steward.third-party/1: copied, ported, vendored code and assets
     notices: SafePath = "THIRD_PARTY_NOTICES.md"         # required and current when distribution = "public"
+    # 0.22.0: how the project uses a dependency, by package name; an undeclared package is "linked". A copyleft
+    # package only "invoked" as a separate tool (a command-line program, a build tool) passes with its obligations.
+    use: dict[Text, Literal["linked", "bundled", "invoked"]] = Field(default_factory=dict)
+
+    @field_validator("use")
+    @classmethod
+    def _one_use_per_package(cls, v: dict[str, str]) -> dict[str, str]:
+        seen: dict[str, str] = {}
+        for name in v:  # package names compare as installers compare them: case, "-", "_" and "." alike
+            key = re.sub(r"[-_.]+", "-", name).lower()
+            if key in seen:
+                raise ValueError(f"{seen[key]!r} and {name!r} name the same package")
+            seen[key] = name
+        return v
 
 
 def _table_path(value: str) -> str:
@@ -753,10 +767,15 @@ class SessionSection(Strict):
     process: SafeGlobs = Field(default_factory=list)  # further process-record paths checked at close (S5)
 
 
+AGENT_EVENTS = ("assigned", "implemented", "reviewed", "merged", "verified")  # X03: `steward agents event --kind`
+
+
 class AgentsSection(Strict):
     """Multi-agent attribution and scores (REQ-016; R-62)."""
 
     ledger: str = "development/agents.jsonl"
+    # X03: who may score whose attempts, as {scorer: [author, ...]}. Absent: any agent but the author (as before).
+    may_score: dict[str, list[str]] | None = None
 
 
 class StageDef(Strict):

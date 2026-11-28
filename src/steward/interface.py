@@ -46,6 +46,8 @@ OTHER_SCHEMAS = {
     "decisions": "steward.decisions/0.1",
     "upgrade --check": "steward.upgrade/0.1",
     "issues inbox": "steward.issues_inbox/0.1",
+    # 0.22.0 (X03): the attribution ledger per task
+    "agents list": "steward.agents_list/0.1",
 }
 # Read commands without a legacy --json option (W05, STW-050).
 READ_COMMANDS = {
@@ -129,6 +131,7 @@ def describe() -> dict[str, Any]:
         "decisions": {"argv": ["--format", "json"], "schema": OTHER_SCHEMAS["decisions"]},
         "upgrade --check": {"argv": ["--check", "--format", "json"], "schema": OTHER_SCHEMAS["upgrade --check"]},
         "issues inbox": {"argv": ["--format", "json"], "schema": OTHER_SCHEMAS["issues inbox"]},
+        "agents list": {"argv": ["--format", "json"], "schema": OTHER_SCHEMAS["agents list"]},
         "interface": {"argv": ["--format", "json"], "schema": INTERFACE_SCHEMA},
         "licence notices": {"argv": ["--format", "cyclonedx"], "schema": "CycloneDX/1.5"},
         "paper manifest": {"argv": [], "schema": "steward.submission_manifest/0.1"},

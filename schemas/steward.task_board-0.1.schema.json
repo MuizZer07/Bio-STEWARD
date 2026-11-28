@@ -37,6 +37,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Order: tasks by path, as the repository lists its files. The text view prints the newest entry first.",
   "properties": {
     "board": {
       "anyOf": [

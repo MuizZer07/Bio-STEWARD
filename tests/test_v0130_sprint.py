@@ -78,12 +78,27 @@ def _status(cli):
 
 
 def test_P2_order_dispatch_waits_for_go_then_runs_in_a_worktree(cli, repo):
+    import threading
+    import time
+
+    from steward import sprint as sp
+    from steward.models import load_config
+
     _sprint(repo)
-    code, out, _ = cli("sprint", "start", "day1")
-    assert code == 0 and "waiting for orders" in out and _status(cli)["T1"] == "ready"
+    said: list[str] = []
+    result: list[int] = []
+    # X05: started with no task ordered, the dispatcher waits for the order instead of exiting
+    worker = threading.Thread(target=lambda: result.append(
+        sp.dispatch(repo, load_config(repo), sp.load(repo, "day1"), poll=0.05, out=said.append)), daemon=True)
+    worker.start()
+    deadline = time.monotonic() + 30
+    while not any("waiting for orders" in line for line in said) and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert any("waiting for orders" in line for line in said) and worker.is_alive()
+    assert _status(cli)["T1"] == "ready"
     assert cli("sprint", "go", "day1", "T1")[0] == 0
-    code, out, err = cli("sprint", "start", "day1")
-    assert code == 0, err
+    worker.join(120)
+    assert not worker.is_alive() and result == [0], said  # it ran T1; T2 has no order, so it returns as before
     st = _status(cli)
     assert st["T1"] == "done" and st["T2"] == "ready"
     assert not (repo / "a.txt").exists()  # the work is on the task's branch, not in the main checkout

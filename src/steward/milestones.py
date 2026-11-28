@@ -175,8 +175,10 @@ def timeline(root: Path, cfg: Any, now: dt.datetime | None = None) -> list[dict[
 def render(rows: list[dict[str, Any]]) -> str:
     if not rows:
         return f"No milestones. Add them to {FILE} (see the guide \"Plan to a deadline\")."
+    from .newest import newest_first
+
     out = []
-    for r in rows:
+    for r in newest_first(rows, lambda r: r["due"], lambda r: r["id"]):  # X05: the latest due first
         days = r["days_left"]
         when = f"{abs(days):.1f} days {'left' if days >= 0 else 'ago'}"
         out.append(f"{r['state'].upper():<9} {r['id']}: {r['title']} ({r['kind']}) — due {r['due']} ({when})")

@@ -25,8 +25,8 @@ process.
     state the receiver reported (shipped beats a later accepted) and the latest one when it differs.
 - **Release notices:** a library `announce`s each release to its declared consumers, who acknowledge, then adopt
   (after their parity check) or decline.
-- **Agent attribution:** `steward agents attempt|score` records which model did what, and no attempt is scored by its
-  author (R-62).
+- **Agent attribution:** `steward agents attempt|score|event` records which model did what, and no attempt is scored
+  by its author (R-62). `steward agents list` shows it per task. See [The agents ledger](#the-agents-ledger).
 - **Shared run slots:** `[run] slots_dir` lets several checkouts share one limit on heavy jobs.
 
 ## Exchange delivery
@@ -64,6 +64,22 @@ peer's committed receipt records, R-53 is INCOMPLETE at once with `R-53.receipt_
 and before any response arrives. The message names both sha256 hashes and the commit the peer received. There are
 two ways out:
 
+```mermaid
+sequenceDiagram
+  participant A as This project (outbox)
+  participant B as Peer (inbox, ledger)
+  A->>B: item ABC-REQ-001 filed and committed
+  B->>B: exchange pull: receipt records its sha256 and the commit
+  A->>A: item edited
+  Note over A: steward check: R-53.receipt_mismatch (INCOMPLETE), at once
+  alt restore the received bytes
+    A->>A: git show <commit>:exchange/outbox/ABC-REQ-001.md
+    Note over A: R-53 clears
+  else file the revision anew
+    A->>A: restore, then file ABC-REQ-002 with the revision
+  end
+```
+
 - restore the received bytes (`git show <commit>:exchange/outbox/<ID>.md > exchange/outbox/<ID>.md`), which clears
   it;
 - or restore them and file the revision as a new item with a new ID.
@@ -76,10 +92,75 @@ leaves out an entry that is **untracked** and either
 - ignored by git (one `git check-ignore`, run with the same safe git settings as every other git call), or
 - an OS metadata file: `.DS_Store`, `Thumbs.db`, `desktop.ini` (any case) or an AppleDouble `._*` file.
 
+```mermaid
+flowchart LR
+  E[an entry R-53 does not know] --> T{tracked by git?}
+  T -- yes --> F[🔴 FAIL R-53.unknown_entry]
+  T -- no --> G{ignored by git, or an OS metadata name?}
+  G -- yes --> S[⚪ left out]
+  G -- no --> F
+```
+
 A file manager that writes `.DS_Store` into `exchange/` no longer blocks the gate or the pre-commit hook. A tracked
 unknown file, or an unknown file that is neither ignored nor an OS metadata file, still FAILs. A tracked `._ID.md`
 file is read as an item, as before. Outside a git repository nothing is tracked or ignored, so only the OS metadata
 names are left out.
+
+## The agents ledger
+
+`[agents]` in `steward.toml` turns on an append-only ledger (`development/agents.jsonl`) of who attempted each task
+and who scored it. Since 0.22.0 it can also say **who may score whom**, and hold what a performance ledger needs.
+
+```toml
+[agents]
+# scorer = [the authors whose attempts it may score]
+may_score = { final = ["impl"] }   # the final reviewer scores implementers; never the reverse
+```
+
+| Setting | Who may score an attempt by `impl` | Who may score an attempt by `final` |
+|---|---|---|
+| no `may_score` (as before 0.22.0) | any agent but `impl` | any agent but `final` |
+| `may_score = { final = ["impl"] }` | `final` | no one |
+| `may_score = {}` | no one | no one |
+
+The author never scores its own attempt, whatever the table says. `steward agents score` refuses a score outside
+the table (exit 64) and writes nothing; R-62 FAILs a hand-written one (`R-62.not_permitted`). An override
+(`--override REASON`) is checked against the table too.
+
+**What an attempt can record.** Each option is optional; an attempt without them is recorded exactly as before.
+
+| Option | Recorded as |
+|---|---|
+| `--estimate-file FILE` | `estimate`: the JSON object in FILE (assumptions, effort, cost, tokens: any fields) |
+| `--harness`, `--harness-version` | the harness that ran the agent, beside `--provider` and `--model` |
+| `--suggested` | the model suggested for the task (as before), next to the one used |
+| `--parent TASK` | the parent task |
+| `--status` | the task's status at this attempt |
+
+**Milestones.** `steward agents event TASK --kind KIND --time T` records when a task was `assigned`, `implemented`,
+`reviewed`, `merged` or `verified`. T is an ISO 8601 time with a time zone (`2026-11-27T10:00:00Z`). Record each
+reassignment as another `assigned` event, or as a new attempt by the new agent.
+
+```mermaid
+flowchart LR
+  AS[assigned] --> AT["agents attempt<br/>(estimate, harness, parent, status)"]
+  AT --> IM[implemented] --> RV[reviewed]
+  RV --> SC["agents score<br/>(only a scorer may_score allows)"]
+  RV --> MG[merged] --> VF[verified]
+```
+
+```bash
+steward agents attempt T-7 --agent impl --provider p --model m --estimate-file estimate.json --harness h --harness-version 1.2
+steward agents event T-7 --kind implemented --time 2026-11-27T11:00:00Z
+steward agents score T-7 --attempt 1 --scorer final --score 4 --rubric review-v1
+steward agents list
+```
+
+`steward agents list [TASK]` prints each task with its attempts (their estimates and scores) and events. Every list
+is newest first: tasks by their newest record, attempts by number, scores by when they were recorded, events by
+their time. `--format json` writes the same as a `steward.agents_list/0.1` document, in the same order; a field an
+attempt did not record is `null`. `steward tokens report` reads attempts as before; events and the new fields do not
+change its windows.
 
 ## Report a toolkit defect
 

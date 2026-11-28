@@ -12,12 +12,13 @@ Every rule `steward check` evaluates, by area. `steward explain R-xx` prints the
 
 *multi-project governance · rule version 1*
 
-- **Checks:** Agent attempts and scores are recorded append-only, and no attempt is scored by its author.
+- **Checks:** Agent attempts and scores are recorded append-only, no attempt is scored by its author, and with `[agents] may_score` each score is by an agent the table lets score that attempt's author.
 - **Why:** Self-scored work is not evaluated work.
 - **A PASS does not mean:** The scores are accurate.
 - **Fix:** record scores with `steward agents score` by an agent other than the author; append an override with a reason
 - **Result codes:**
   - `R-62.ledger`
+  - `R-62.not_permitted`
   - `R-62.self_scored`
   - `R-62.silent_override`
   - `R-62.torn_tail`
@@ -604,7 +605,7 @@ Every rule `steward check` evaluates, by area. `steward explain R-xx` prints the
 
 *project governance · rule version 1*
 
-- **Checks:** Datasets are declared with their roles and hashes.
+- **Checks:** Datasets are declared with their roles and hashes, and their links name declared datasets.
 - **Why:** Sealed and spent data must be known.
 - **A PASS does not mean:** The data is what its label says.
 - **Fix:** make datasets.toml roles match `steward integrity status`
@@ -612,6 +613,7 @@ Every rule `steward check` evaluates, by area. `steward explain R-xx` prints the
   - `R-36.role_mismatch`
   - `R-36.role_unrecorded`
   - `R-36.sealed_changed`
+  - `R-36.unknown_link`
 
 
 ### R-37 `integrity.sealed_use`
@@ -688,10 +690,10 @@ Every rule `steward check` evaluates, by area. `steward explain R-xx` prints the
 
 *project governance · rule version 1*
 
-- **Checks:** Every dependency's licence (from its installed metadata: License-Expression, classifiers, the licence field) against the policy for the distribution state: incompatible fails, unknown is UNKNOWN, weak copyleft passes with its obligation where the policy allows; a public project's third-party notices name every dependency.
+- **Checks:** Every dependency's licence (from its installed metadata: License-Expression, classifiers, the licence field) against the policy for the distribution state: incompatible fails, unknown is UNKNOWN, weak copyleft passes with its obligation where the policy allows, a copyleft package declared in [licence] use as only invoked as a separate tool passes with its obligations; a public project's third-party notices name every dependency.
 - **Why:** A licence conflict found at release blocks a release already tagged; found on the commit that adds it, it costs a package swap.
 - **A PASS does not mean:** Legal compliance: declared rules and metadata only.
-- **Fix:** replace the dependency, record a dated exception with its approver, or update the notices (steward licence notices --write)
+- **Fix:** replace the dependency, declare it in [licence] use as invoked when it only runs as a separate tool, record a dated exception with its approver, or update the notices (steward licence notices --write)
 - **Result codes:**
   - `R-80.baseline_unavailable`: the committed lockfile cannot be read
   - `R-80.changed`
@@ -703,6 +705,7 @@ Every rule `steward check` evaluates, by area. `steward explain R-xx` prints the
   - `R-80.obligation`
   - `R-80.scope`
   - `R-80.unknown`
+  - `R-80.use_unmatched`
 
 
 ### R-81 `licence.code`
