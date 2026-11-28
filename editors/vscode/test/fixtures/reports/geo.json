@@ -10,7 +10,7 @@
       "python": "fixture"
     },
     "tool": "steward",
-    "tool_version": "0.20.6"
+    "tool_version": "0.22.0"
   },
   "schema": "steward.report/0.1",
   "verdict": {
@@ -57,7 +57,8 @@
           "pins",
           "licence",
           "compare",
-          "models"
+          "models",
+          "tidy"
         ],
         "nothing_recorded": []
       },
@@ -78,11 +79,74 @@
         "waived": []
       }
     ],
+    "inputs": [
+      {
+        "path": "data/probe-to-gene.tsv",
+        "sha256": "4636e823219d8f1e4ed3aed6c502e424a52d4a471c30096c9029c2b3929754c6"
+      },
+      {
+        "path": "data/raw/GSE7621/GSE7621_series_matrix.txt.gz",
+        "sha256": "1389f0dc93fcde0e2e7c1996b1b4f33f1eebe30c11c6684907171ec5873c3aeb"
+      },
+      {
+        "path": "data/samples.tsv",
+        "sha256": "03f9ced768e2053aaedc0f1edf1794700561b8e4972a67cbc167f8b085268b10"
+      },
+      {
+        "path": "development/plans/pd-substantia-nigra.md",
+        "sha256": "43f5623a0371ea00c3d598c9385a4ea5e2fd41c858fb7a15cf1d006d6021d414"
+      },
+      {
+        "path": "development/studies/pd-substantia-nigra.toml",
+        "sha256": "c5647a1e03828c283945baba0c33354e236c8970d82918c8f2868be25cc24feb"
+      },
+      {
+        "path": "paper/_variables.yml",
+        "sha256": "f940f5b298a6578ddd2b2e61a90469055761326598c00815cc64dff409ebf818"
+      },
+      {
+        "path": "paper/data-availability.md",
+        "sha256": "5c1db1f1ce71d5325230a06f66147dfd99261c80b186e3b21e5a4bc5971502df"
+      },
+      {
+        "path": "paper/main.md",
+        "sha256": "9b02127558aea2ef1693a99fb395ac5f4d8fb6ff6cba43bca34e381989e3345c"
+      },
+      {
+        "path": "paper/spec.toml",
+        "sha256": "9d27ee0592b314fa509edfa708e38d9f91b80d2f573c3c7c569e85c659a23a73"
+      },
+      {
+        "path": "paper/values.toml",
+        "sha256": "0672d343a76149c411dbbf4083276fdd4815af6c0a0cbb1dd0f116b9d2843236"
+      },
+      {
+        "path": "paper/venue.toml",
+        "sha256": "6c5346fdaa0986f72c59631065d32f7e05d2767f4b8add5963e427a39323d321"
+      },
+      {
+        "path": "results/de.tsv",
+        "sha256": "d889fb59aa5436c604cde636e43f80821de0c61de70c76aa457e9a10ef87428a"
+      },
+      {
+        "path": "results/summary.toml",
+        "sha256": "27f198acda9a48b1a4e8987aa12e8702f6b78ce14c4e00b5dfa35808e839cf23"
+      },
+      {
+        "path": "results/top_genes.tsv",
+        "sha256": "9f857ba138d3b9c9f78a4f67dd08abe52591f5737dcc56c07442ea2e66d63b86"
+      },
+      {
+        "path": "steward.toml",
+        "sha256": "f96a1bceb8c7f1285488b19102678fb451d1417a1c9f4dabcf287b2bffc4cce7"
+      }
+    ],
     "inputs_digest": "sha256:b0c179bbdbb67168c6510d28b344e7125919eb8bd43ac32844d068a6b721a9ed",
     "project": "biology-geo",
     "repo_id": "00000000-0000-4000-8000-000000000000",
     "results": [
       {
+        "area": "config",
         "details": [],
         "evidence": [
           {
@@ -98,6 +162,7 @@
         "subject": "steward.toml"
       },
       {
+        "area": "contract",
         "details": [],
         "evidence": [],
         "name": "contract.valid",
@@ -108,6 +173,7 @@
         "subject": "."
       },
       {
+        "area": "contract",
         "details": [],
         "evidence": [],
         "name": "contract.consistent",
@@ -118,6 +184,7 @@
         "subject": "."
       },
       {
+        "area": "contract",
         "details": [],
         "evidence": [],
         "name": "contract.required",
@@ -128,6 +195,7 @@
         "subject": "."
       },
       {
+        "area": "prior-work",
         "details": [],
         "evidence": [],
         "name": "prior_work.valid",
@@ -138,6 +206,7 @@
         "subject": "."
       },
       {
+        "area": "prior-work",
         "details": [],
         "evidence": [],
         "name": "prior_work.required",
@@ -148,6 +217,7 @@
         "subject": "."
       },
       {
+        "area": "privacy",
         "details": [],
         "evidence": [],
         "name": "privacy.denylist",
@@ -158,6 +228,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [
           {
@@ -173,6 +244,7 @@
         "subject": "paper/spec.toml"
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [
           {
@@ -188,6 +260,7 @@
         "subject": "paper/venue.toml"
       },
       {
+        "area": "paper",
         "details": [
           {
             "code": "R-09.mode",
@@ -203,6 +276,7 @@
         "subject": "paper"
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [
           {
@@ -218,6 +292,7 @@
         "subject": "paper/values.toml"
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.displays",
@@ -228,6 +303,7 @@
         "subject": "paper/displays.toml"
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.build",
@@ -238,6 +314,7 @@
         "subject": "paper"
       },
       {
+        "area": "paper",
         "details": [
           {
             "code": "R-13.mode",
@@ -258,6 +335,7 @@
         "subject": "paper/venue.toml"
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.citations",
@@ -268,6 +346,7 @@
         "subject": "paper"
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.consistency",
@@ -278,6 +357,7 @@
         "subject": "paper/values.toml"
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.plan_valid",
@@ -288,6 +368,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.stage_confirmed",
@@ -298,6 +379,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.claim_ceiling",
@@ -308,6 +390,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.values",
@@ -318,6 +401,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.limitations",
@@ -328,6 +412,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.structure",
@@ -338,6 +423,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.figures",
@@ -348,6 +434,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.visual",
@@ -358,6 +445,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.language",
@@ -368,6 +456,7 @@
         "subject": "."
       },
       {
+        "area": "run",
         "details": [],
         "evidence": [],
         "name": "ledger.integrity",
@@ -378,6 +467,7 @@
         "subject": "."
       },
       {
+        "area": "run",
         "details": [],
         "evidence": [],
         "name": "run.records",
@@ -388,6 +478,7 @@
         "subject": "."
       },
       {
+        "area": "policy",
         "details": [],
         "evidence": [],
         "name": "policy.baseline",
@@ -398,6 +489,7 @@
         "subject": "."
       },
       {
+        "area": "spend",
         "details": [],
         "evidence": [],
         "name": "spend.ledger",
@@ -408,6 +500,7 @@
         "subject": "."
       },
       {
+        "area": "integrity",
         "details": [],
         "evidence": [],
         "name": "integrity.frozen",
@@ -418,6 +511,7 @@
         "subject": "."
       },
       {
+        "area": "integrity",
         "details": [],
         "evidence": [],
         "name": "integrity.datasets",
@@ -428,6 +522,7 @@
         "subject": "."
       },
       {
+        "area": "integrity",
         "details": [],
         "evidence": [],
         "name": "integrity.sealed_use",
@@ -438,6 +533,7 @@
         "subject": "."
       },
       {
+        "area": "integrity",
         "details": [],
         "evidence": [],
         "name": "integrity.decisions",
@@ -448,6 +544,7 @@
         "subject": "."
       },
       {
+        "area": "integrity",
         "details": [],
         "evidence": [],
         "name": "integrity.contract_frozen",
@@ -458,6 +555,7 @@
         "subject": "."
       },
       {
+        "area": "evidence",
         "details": [],
         "evidence": [],
         "name": "evidence.claims",
@@ -468,6 +566,7 @@
         "subject": "."
       },
       {
+        "area": "evidence",
         "details": [],
         "evidence": [],
         "name": "prior_work.links",
@@ -478,6 +577,7 @@
         "subject": "."
       },
       {
+        "area": "release",
         "details": [],
         "evidence": [],
         "name": "release.integrity",
@@ -488,6 +588,7 @@
         "subject": "."
       },
       {
+        "area": "release",
         "details": [],
         "evidence": [],
         "name": "release.review",
@@ -498,6 +599,7 @@
         "subject": "."
       },
       {
+        "area": "release",
         "details": [],
         "evidence": [],
         "name": "release.fingerprint",
@@ -508,6 +610,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.splits",
@@ -518,6 +621,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.datasets",
@@ -528,6 +632,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.results",
@@ -538,6 +643,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.comparison",
@@ -548,6 +654,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.leakage",
@@ -558,6 +665,7 @@
         "subject": "."
       },
       {
+        "area": "storage",
         "details": [],
         "evidence": [],
         "name": "storage.artifacts",
@@ -568,6 +676,7 @@
         "subject": "."
       },
       {
+        "area": "governance",
         "details": [],
         "evidence": [
           {
@@ -583,6 +692,7 @@
         "subject": "steward.toml"
       },
       {
+        "area": "repro",
         "details": [],
         "evidence": [],
         "name": "repro.current",
@@ -593,6 +703,7 @@
         "subject": "."
       },
       {
+        "area": "governance",
         "details": [],
         "evidence": [],
         "name": "exchange.items",
@@ -603,6 +714,7 @@
         "subject": "."
       },
       {
+        "area": "governance",
         "details": [],
         "evidence": [],
         "name": "exchange.inbox",
@@ -613,6 +725,7 @@
         "subject": "."
       },
       {
+        "area": "session",
         "details": [],
         "evidence": [],
         "name": "session.handoff",
@@ -623,6 +736,7 @@
         "subject": "."
       },
       {
+        "area": "boundary",
         "details": [],
         "evidence": [],
         "name": "boundary.imports",
@@ -633,6 +747,7 @@
         "subject": "."
       },
       {
+        "area": "tasks",
         "details": [],
         "evidence": [],
         "name": "tasks.board",
@@ -643,6 +758,7 @@
         "subject": "."
       },
       {
+        "area": "changelog",
         "details": [],
         "evidence": [],
         "name": "changelog.unreleased",
@@ -653,6 +769,7 @@
         "subject": "."
       },
       {
+        "area": "branches",
         "details": [],
         "evidence": [],
         "name": "branches.model",
@@ -663,6 +780,7 @@
         "subject": "."
       },
       {
+        "area": "skills",
         "details": [],
         "evidence": [],
         "name": "skills.copies",
@@ -673,6 +791,7 @@
         "subject": "."
       },
       {
+        "area": "files",
         "details": [],
         "evidence": [],
         "name": "files.conflict_markers",
@@ -683,6 +802,7 @@
         "subject": "."
       },
       {
+        "area": "agents",
         "details": [],
         "evidence": [],
         "name": "agents.ledger",
@@ -693,6 +813,7 @@
         "subject": "."
       },
       {
+        "area": "frozen",
         "details": [],
         "evidence": [],
         "name": "frozen.sets",
@@ -703,6 +824,7 @@
         "subject": "."
       },
       {
+        "area": "containers",
         "details": [],
         "evidence": [],
         "name": "containers.context",
@@ -713,6 +835,7 @@
         "subject": "."
       },
       {
+        "area": "containers",
         "details": [],
         "evidence": [],
         "name": "containers.compose",
@@ -723,6 +846,7 @@
         "subject": "."
       },
       {
+        "area": "dependencies",
         "details": [],
         "evidence": [],
         "name": "dependencies.parity",
@@ -733,6 +857,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.power",
@@ -743,6 +868,7 @@
         "subject": "."
       },
       {
+        "area": "stages",
         "details": [],
         "evidence": [],
         "name": "stages.records",
@@ -753,6 +879,7 @@
         "subject": "."
       },
       {
+        "area": "docs",
         "details": [],
         "evidence": [],
         "name": "docs.current",
@@ -763,6 +890,7 @@
         "subject": "."
       },
       {
+        "area": "milestones",
         "details": [],
         "evidence": [],
         "name": "milestones.valid",
@@ -773,6 +901,7 @@
         "subject": "development/milestones.toml"
       },
       {
+        "area": "sprints",
         "details": [],
         "evidence": [],
         "name": "sprint.valid",
@@ -783,6 +912,7 @@
         "subject": "development/sprints"
       },
       {
+        "area": "sprints",
         "details": [],
         "evidence": [],
         "name": "sprint.closed",
@@ -793,6 +923,7 @@
         "subject": "development/sprints"
       },
       {
+        "area": "pins",
         "details": [],
         "evidence": [],
         "name": "pins.records",
@@ -803,6 +934,7 @@
         "subject": "."
       },
       {
+        "area": "pins",
         "details": [],
         "evidence": [],
         "name": "pins.retirement",
@@ -813,6 +945,7 @@
         "subject": "."
       },
       {
+        "area": "studies",
         "details": [],
         "evidence": [],
         "name": "studies.records",
@@ -823,6 +956,7 @@
         "subject": "development/studies/pd-substantia-nigra.toml"
       },
       {
+        "area": "research",
         "details": [],
         "evidence": [],
         "name": "research.records",
@@ -833,6 +967,7 @@
         "subject": "development/research"
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.citations_verified",
@@ -843,6 +978,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.llm_eval",
@@ -853,6 +989,7 @@
         "subject": "."
       },
       {
+        "area": "licence",
         "details": [],
         "evidence": [],
         "name": "licence.declared",
@@ -863,6 +1000,7 @@
         "subject": "."
       },
       {
+        "area": "licence",
         "details": [],
         "evidence": [],
         "name": "licence.dependencies",
@@ -873,6 +1011,7 @@
         "subject": "."
       },
       {
+        "area": "licence",
         "details": [],
         "evidence": [],
         "name": "licence.code",
@@ -883,6 +1022,7 @@
         "subject": "."
       },
       {
+        "area": "licence",
         "details": [],
         "evidence": [],
         "name": "licence.provenance",
@@ -893,6 +1033,7 @@
         "subject": "."
       },
       {
+        "area": "data",
         "details": [],
         "evidence": [
           {
@@ -908,6 +1049,7 @@
         "subject": "results/de.tsv"
       },
       {
+        "area": "data",
         "details": [],
         "evidence": [
           {
@@ -923,6 +1065,7 @@
         "subject": "results/top_genes.tsv"
       },
       {
+        "area": "compare",
         "details": [],
         "evidence": [],
         "name": "compare.shadow",
@@ -933,6 +1076,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.data_availability",
@@ -943,6 +1087,7 @@
         "subject": "paper/data-availability.md"
       },
       {
+        "area": "models",
         "details": [],
         "evidence": [],
         "name": "model.records",
@@ -953,6 +1098,7 @@
         "subject": "."
       },
       {
+        "area": "release",
         "details": [],
         "evidence": [],
         "name": "release.stranger_test",
@@ -961,17 +1107,34 @@
         "rule_version": 1,
         "status": "NOT_APPLICABLE",
         "subject": "."
+      },
+      {
+        "area": "tidy",
+        "details": [],
+        "evidence": [],
+        "name": "tidy.stale",
+        "reason": "[tidy] is not configured",
+        "rule": "R-88",
+        "rule_version": 1,
+        "status": "NOT_APPLICABLE",
+        "subject": "."
       }
     ],
+    "scope": {
+      "areas": [],
+      "full": true,
+      "rule": null
+    },
     "summary": {
       "counts": {
         "FAIL": 0,
         "INCOMPLETE": 0,
-        "NOT_APPLICABLE": 70,
+        "NOT_APPLICABLE": 71,
         "PASS": 13,
         "UNKNOWN": 0
       },
       "worst": "PASS"
-    }
+    },
+    "tree_digest": "sha256:dd7044149fc50f99bd18de32ca9c742799d3ec02495e5c0b8744ab86c3f9df9b"
   }
 }

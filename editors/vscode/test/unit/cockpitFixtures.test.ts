@@ -43,7 +43,8 @@ describe('cockpit fixture corpus (U01)', () => {
     for (const [name, entry] of Object.entries(cockpit.outputs)) {
       assert.equal(entry.exit_code, 0, name);
       assert.ok(entry.workspace in manifest.workspaces, name);
-      assert.deepEqual(entry.argv.slice(-2), ['--repo', '<workspace>'], name);
+      // `steward interface` describes the program, not a project: it takes no --repo.
+      if (entry.argv[0] !== 'interface') assert.deepEqual(entry.argv.slice(-2), ['--repo', '<workspace>'], name);
       assert.ok(entry.file.endsWith(entry.format === 'json' ? '.json' : '.txt'), name);
       const body = text(name);
       if (entry.format === 'json') assert.doesNotThrow(() => JSON.parse(body), name);

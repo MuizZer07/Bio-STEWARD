@@ -42,7 +42,7 @@ describe('Tokens (U03)', () => {
       const json = JSON.parse(raw('claude-session')) as { tasks: { task: string; tokens: number; status: string;
         models: { agent: string; model: string; tokens: number; input: number; output: number; cache_read: number; cache_write: number }[] }[] };
       const nodes = one('claude-session', withClaude);
-      assert.equal(nodes[0].label, 'Per task window');
+      assert.equal(nodes[0].label, 'Per task');
       assert.equal(nodes.some((n) => n.kind === 'tokens-setup'), false, 'no setup hint once a log is selected');
       const rows = nodes.filter((n) => n.kind === 'tokens-task');
       assert.deepEqual(rows.map((n) => n.label), json.tasks.map((t) => t.task));
@@ -51,13 +51,14 @@ describe('Tokens (U03)', () => {
           (task.task === 'all activity' ? ' · shared, not this project\'s alone' : ''));
         const models = rows[i].children?.filter((n) => n.kind === 'tokens-model') ?? [];
         assert.deepEqual(models.map((n) => [n.label, n.description]), task.models.map((m) => [`${m.agent} / ${m.model}`,
-          `${m.tokens.toLocaleString('en-US')} tokens`]));
+          `${m.tokens.toLocaleString('en-US')} tokens · input ${m.input.toLocaleString('en-US')} · output ${m.output} · ` +
+          `cache read ${m.cache_read.toLocaleString('en-US')} · cache write ${m.cache_write}`]));
         for (const [j, m] of task.models.entries()) {
           assert.ok(models[j].tooltip?.includes(`input ${m.input}, output ${m.output}, cache read ${m.cache_read}, cache write ${m.cache_write}`));
         }
       }
       const total = nodes.find((n) => n.kind === 'tokens-total');
-      assert.equal(total?.description, '1,170 tokens · 1 task window');
+      assert.equal(total?.description, '1,170 tokens · 1 task');
       assert.deepEqual(total?.children?.map((n) => [n.label, n.description]), [['claude / claude-fixture', '1,170 tokens']]);
       const files = nodes.flatMap(walk).filter((n) => n.id.includes('/files/'));
       assert.deepEqual(files.map((n) => [n.label, n.description]), [['README.md', '1 read']]);
@@ -70,7 +71,7 @@ describe('Tokens (U03)', () => {
       const nodes = one('no-source', NO_LOGS);
       const setup = nodes.find((n) => n.kind === 'tokens-setup');
       assert.ok(setup);
-      assert.equal(setup.label, 'No agent logs selected');
+      assert.equal(setup.label, 'Agent log settings');
       assert.equal(setup.command, 'openTokenSettings');
       assert.deepEqual(setup.children?.map((n) => n.description), Object.values(SETTING_KEYS));
       assert.match(setup.tooltip ?? '', /Nothing leaves this machine/);
@@ -79,7 +80,7 @@ describe('Tokens (U03)', () => {
       assert.equal(row?.description, 'no counts · unavailable · shared, not this project\'s alone');
       assert.match(row?.tooltip ?? '', /Shared activity: the agent logs are this machine's/);
       assert.deepEqual(row?.children?.map((n) => n.label), ['no usable counts matched the task window']);
-      assert.equal(nodes.find((n) => n.kind === 'tokens-total')?.description, '0 tokens · 1 task window (1 without counts)');
+      assert.equal(nodes.find((n) => n.kind === 'tokens-total')?.description, '0 tokens · 1 task (1 without counts)');
     });
 
     it('shows a selected log the CLI could not use, with the CLI\'s own words', () => {
@@ -108,7 +109,7 @@ describe('Tokens (U03)', () => {
       assert.deepEqual(totals(report), { tokens: 3500, rows: 3, withoutCounts: 1, partial: 1,
         models: [{ agent: 'claude', model: 'm1', tokens: 3000 }, { agent: 'codex', model: null, tokens: 500 }] });
       const nodes = tokensNodes([{ root: '/w/p', name: 'p', tokens: { kind: 'ready', report }, logs: withClaude }]);
-      assert.equal(nodes.find((n) => n.kind === 'tokens-total')?.description, '3,500 tokens · 3 task windows (1 without counts, 1 partial)');
+      assert.equal(nodes.find((n) => n.kind === 'tokens-total')?.description, '3,500 tokens · 3 tasks (1 without counts, 1 partial) · estimated cost 0.25 USD (1 of 3 tasks priced)');
       assert.match(nodes.find((n) => n.label === 'A-1')?.tooltip ?? '', /estimated cost 0\.25 USD/);
       assert.ok(nodes.find((n) => n.label === 'A-1')?.children?.some((n) => n.label === 'codex / unknown model'));
       assert.ok(nodes.some((n) => n.kind === 'tokens-issue' && n.label.startsWith('agents ledger')), 'a report issue is shown');

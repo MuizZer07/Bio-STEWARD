@@ -1,17 +1,20 @@
-// P5 Approvals, reduced form (RELEASE_vscode_0.2.0_SPEC §3), as cards (DESIGN_vscode_extension_v0.8, which
-// overrides v0.3 §2.2 and spec §3 P5): the text of `steward authorize pending --all-projects` (CLI 0.20.6) for
-// every open project, one card per payload line, and the card page's HTML. No `vscode` import.
+// P5 Approvals (RELEASE_vscode_0.2.0_SPEC §3), as cards (DESIGN_vscode_extension_v0.8, which overrides v0.3 §2.2
+// and spec §3 P5): the text of `steward authorize pending --all-projects` for every open project, one card per payload
+// line, and the card page's HTML. The cards keep the CLI's line order: CLI 0.22.0 prints the newest prepared payload
+// first (E01). Reading `authorize pending --format json` is task E04. No `vscode` import.
 //
 // The text is never reworded. The extension reads it only to place each line: a payload line gives a card (its
 // project code, the first 12 characters of the nonce, its state, action, expiry and summary, each as printed), and
 // the CLI's last line ("N waiting; …") gives the project's count. The payload's SHA-256 and **View exactly what you
-// are approving** come from `.steward/pending/<nonce>.txt` (src/pendingPayload.ts), the one payload read of the
-// reduced form, labelled "read from the file". The full form needs `authorize pending --format json` (STW-050).
+// are approving** come from `.steward/pending/<nonce>.txt` (src/pendingPayload.ts), the one payload read of this
+// panel, labelled "read from the file".
 //
 // The page has `default-src 'none'`, no scripts and no local resources. Its only links are two command URIs (view a
 // payload, sign), and each carries only the card's full nonce, the project index and the page's render generation
 // (U09). The handler in src/ui/approvals.ts accepts a link only for a card of the page now shown, then binds it again
 // to a fresh `authorize pending` read and a fresh payload read (bindCard below), and fails closed on any doubt.
+import type { PendingDocument, PendingItem } from './full';
+import { PANELS } from './panels';
 import type { TomlTable } from './toml';
 
 export type ApprovalsState =
@@ -38,10 +41,10 @@ export interface PendingLine {
   readonly summary?: string;
 }
 
-export const APPROVALS_REDUCED_NOTE = 'The text of steward authorize pending --all-projects, as the ' +
-  'CLI printed it (CLI 0.20.6 has no JSON form for it), one card per payload line. The payload and its SHA-256 are ' +
-  'read from the file .steward/pending/<nonce>.txt. Scope, budget, object hash and who asked come with ' +
-  'authorize pending --format json in a newer CLI.';
+export const APPROVALS_SOURCE_NOTE = 'The text of steward authorize pending --all-projects, as the CLI printed it ' +
+  '(newest first), one card per payload line. The payload and its SHA-256 are read from the file ' +
+  '.steward/pending/<nonce>.txt. Scope, budget, object hash and who asked need steward 0.21 or newer (authorize ' +
+  'pending --format json): Upgrade CLI.';
 
 // Text larger than this is not shown (the queue of one project is a few lines).
 const MAX_TEXT = 256 * 1024;
@@ -153,7 +156,7 @@ export const isNonce = (value: unknown): value is string => typeof value === 'st
 // A card's action, expiry, summary and SHA-256 all come from one read of the payload file (one buffer). The queue
 // line of a fresh `authorize pending` read only has to agree with that buffer: the line the CLI would print for it
 // must be in the text exactly once, under this project's own code, and no other line may carry the same nonce
-// prefix. Anything else (a summary over several lines, a line the reduced form cannot place, a duplicate prefix of a
+// prefix. Anything else (a summary over several lines, a line this panel cannot place, a duplicate prefix of a
 // peer, a file changed in between) leaves the card display-only.
 
 // CLI 0.20.6 `authorize.HEADER`, `FIELDS` and `ACTIONS`.
@@ -233,7 +236,7 @@ export function bindCard(state: ApprovalsState | undefined, code: string | undef
   const refuse = (reason: string): Binding => ({ kind: 'display-only', reason });
   if (state?.kind !== 'ready') return refuse('no fresh steward authorize pending read');
   if (code === undefined) return refuse('steward.toml does not give this project\'s queue code');
-  if (state.lines.some((line) => line.kind === 'other')) return refuse('the queue text holds a line the reduced form cannot place (a summary over several lines?)');
+  if (state.lines.some((line) => line.kind === 'other')) return refuse('the queue text holds a line this panel cannot place (a summary over several lines?)');
   const prefix = nonce.slice(0, 12);
   const same = state.lines.filter((line) => line.kind === 'payload' && line.nonce === prefix);
   if (same.length !== 1) return refuse(same.length ? `the nonce prefix ${prefix} is in ${same.length} queue lines` : `${prefix} is not in the queue`);
@@ -256,7 +259,7 @@ export type PayloadRead =
   | { readonly kind: 'unreadable'; readonly reason: string };
 
 // The signed tag a payload gets, from its full nonce (CLI 0.20.6 `tag_name`); an anchor's tag is named from its
-// payload's scope, which the reduced form does not read, so it is not shown.
+// payload's scope, which this panel does not read, so it is not shown.
 export function signedTag(action: string, nonce: string): string | undefined {
   return action === 'anchor' ? undefined : `steward/auth/${nonce}`;
 }
@@ -270,6 +273,32 @@ export interface ApprovalsBlock {
   // Per 12-character prefix: the payload files of this project's own `.steward/pending/`. A prefix not here is a
   // peer's payload (or a file the extension cannot read): its card has no View and no Sign.
   readonly payloads: ReadonlyMap<string, PayloadRead>;
+  // E04: `authorize pending --all-projects --format json`, when the CLI offers it. Its fields are shown on the card
+  // whose line names the same project and nonce prefix; signing still binds to the line and the file (bindCard).
+  readonly pending?: PendingDocument;
+}
+
+export const APPROVALS_FULL_NOTE = 'The text of steward authorize pending --all-projects, as the CLI printed it ' +
+  '(newest first), one card per payload line, with each payload\'s scope, budget, object, who asked and hashes from ' +
+  'authorize pending --format json. The payload and the SHA-256 that ✍ Sign shows are read from the file ' +
+  '.steward/pending/<nonce>.txt.';
+
+// The JSON item of a card: the one item of that project whose nonce starts with the line's prefix.
+export function pendingItem(pending: PendingDocument | undefined, line: PendingLine): PendingItem | undefined {
+  if (!pending || !line.nonce) return undefined;
+  const items = pending.items.filter((item) => item.project === line.code && item.nonce.startsWith(line.nonce!));
+  return items.length === 1 ? items[0] : undefined;
+}
+
+function detailRows(item: PendingItem | undefined): string[] {
+  if (!item) return [];
+  const rows: [string, string | null][] = [
+    ['Scope', item.scope], ['Budget', item.budget], ['Object', item.object], ['Asked by', item.requester ?? 'not recorded'],
+    ['Peer', item.peer], ['Baseline', item.baseline], ['Payload SHA-256 (steward authorize pending)', item.payload_sha256],
+    ['Signed tag', item.tag],
+  ];
+  return [`<p>${rows.filter(([, value]) => value !== null)
+    .map(([key, value]) => `${escapeHtml(key)}: <code>${escapeHtml(value!)}</code>`).join('<br>')}</p>`];
 }
 
 export type ApprovalsPage =
@@ -279,7 +308,8 @@ export type ApprovalsPage =
 
 export const VIEW_PAYLOAD_COMMAND = 'bioSteward.approvals.viewPayload';
 export const SIGN_COMMAND = 'bioSteward.approvals.sign';
-export const CARD_COMMANDS: readonly string[] = Object.freeze([VIEW_PAYLOAD_COMMAND, SIGN_COMMAND]);
+export const APPROVAL_DETAILS_COMMAND = 'bioSteward.approvals.details';
+export const CARD_COMMANDS: readonly string[] = Object.freeze([VIEW_PAYLOAD_COMMAND, SIGN_COMMAND, APPROVAL_DETAILS_COMMAND]);
 
 export function escapeHtml(text: string): string {
   return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
@@ -295,15 +325,17 @@ export function cardUri(command: typeof VIEW_PAYLOAD_COMMAND | typeof SIGN_COMMA
   return `command:${command}?${encodeURIComponent(JSON.stringify([nonce, index, generation]))}`;
 }
 
-function card(line: PendingLine, block: ApprovalsBlock, generation: number): string {
+function card(line: PendingLine, block: ApprovalsBlock, generation: number, position: number): string {
   const action = line.action ?? '';
   const read = line.nonce ? block.payloads.get(line.nonce) : undefined;
   const bound = read?.kind === 'read' && read.binding?.kind === 'bound';
+  const details = `command:${APPROVAL_DETAILS_COMMAND}?${encodeURIComponent(JSON.stringify([position, block.index, generation]))}`;
   const parts = [
-    `<h3>${actionIcon(action)} ${escapeHtml(action)} <small>· ${escapeHtml(line.code ?? '')} ${escapeHtml(line.nonce ?? '')} · ` +
+    `<h3><a href="${escapeHtml(details)}">${actionIcon(action)} ${escapeHtml(action)}</a> <small>· ${escapeHtml(line.code ?? '')} ${escapeHtml(line.nonce ?? '')} · ` +
       `${escapeHtml(line.state ?? '')}</small></h3>`,
     `<p>${escapeHtml(line.summary ?? '')}</p>`,
     `<p>expires ${escapeHtml(line.expires ?? '')}</p>`,
+    ...detailRows(pendingItem(block.pending, line)),
   ];
   if (read?.kind === 'read') parts.push(`<p>Payload SHA-256 <i>(read from the file)</i>:<br><code>${escapeHtml(read.sha256)}</code></p>`);
   if (read?.kind === 'read') {
@@ -331,23 +363,26 @@ function blockHtml(block: ApprovalsBlock, heading: boolean, generation: number):
   const state = block.approvals;
   const out: string[] = heading ? [`<h2>${escapeHtml(block.name)} <small>· ${escapeHtml(approvalsSummary(state))}</small></h2>`] : [];
   if (!state || state.kind !== 'ready') return [...out, `<p>${escapeHtml(approvalsSummary(state))}</p>`].join('\n');
-  for (const line of state.lines) {
-    if (line.kind === 'payload') out.push(card(line, block, generation));
+  state.lines.forEach((line, position) => {
+    if (line.kind === 'payload') out.push(card(line, block, generation, position));
     else out.push(`<p>${escapeHtml(line.text)}</p>`);
-  }
+  });
   return out.join('\n<hr>\n');
 }
 
-// The whole page. Every CLI and file text is escaped; the only links are the cards' two command URIs, each naming
+// The whole page. Every CLI and file text is escaped; the only links are the cards' command URIs, each naming
 // the page's generation.
 export function approvalsHtml(page: ApprovalsPage, generation = 0): string {
   let body: string;
   if (page.kind === 'untrusted') {
-    body = '<p>This workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).</p>';
+    body = `<p>${escapeHtml(PANELS.approvals.helps)}</p>\n<p>This workspace is not trusted, so Bio-STEWARD reads and runs ` +
+      'nothing (Restricted Mode).</p>';
   } else if (page.kind === 'none' || !page.blocks.length) {
-    body = '<p>Open a folder that holds a steward.toml to see what waits for your signature.</p>';
+    body = `<p>${escapeHtml(PANELS.approvals.helps)}</p>\n<p>Open a folder that holds a steward.toml to see what waits ` +
+      'for your signature.</p>';
   } else {
-    body = [`<p><small><b>Reduced form.</b> ${escapeHtml(APPROVALS_REDUCED_NOTE)}</small></p>`,
+    const full = page.blocks.every((block) => block.pending !== undefined);
+    body = [`<p><small><b>Source.</b> ${escapeHtml(full ? APPROVALS_FULL_NOTE : APPROVALS_SOURCE_NOTE)}</small></p>`,
       ...page.blocks.map((block) => blockHtml(block, page.blocks.length > 1, generation))].join('\n<hr>\n');
   }
   return `<!doctype html>

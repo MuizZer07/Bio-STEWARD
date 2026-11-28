@@ -1,20 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="348" viewBox="0 0 760 348" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
-<rect width="760" height="348" rx="10" fill="#1f1f1f"/>
-<rect x="0" y="0" width="760" height="298" rx="10" fill="#181818"/>
-<text x="8" y="17" fill="#bbbbbb" font-size="11" font-weight="700">⌄  TODAY</text>
-<text x="748" y="17" fill="#9d9d9d" font-size="12" text-anchor="end">⌖  ⎘  ↺  ?</text>
-<text x="23" y="41.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="41" fill="#cccccc">Reduced form<tspan dx="7" fill="#9d9d9d">from CLI 0.20.6 outputs</tspan></text>
-<text x="23" y="63.5" fill="#9d9d9d" font-weight="700" font-size="12.5">↺</text><text x="40" y="63" fill="#cccccc">Resume<tspan dx="7" fill="#9d9d9d">development/HANDOFF.md · the session handoff</tspan></text>
-<text x="23" y="85.5" fill="#9d9d9d" font-weight="700" font-size="12.5">◷</text><text x="40" y="85" fill="#cccccc">Next milestone<tspan dx="7" fill="#9d9d9d">abstract · 9675.0 days ago · DUE (RECORD ITS OUTCOME) · steward timeline</tspan></text>
-<text x="8" y="107" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="107.5" fill="#cca700" font-weight="700" font-size="12.5">✎</text><text x="40" y="107" fill="#cccccc">Signatures waiting (1)<tspan dx="7" fill="#9d9d9d">steward audit progress</tspan></text>
-<text x="36" y="129" fill="#cccccc">spend (d3e83e998137)</text>
-<text x="8" y="151" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="151.5" fill="#9d9d9d" font-weight="700" font-size="12.5">✉</text><text x="40" y="151" fill="#cccccc">Exchange items open here (1)<tspan dx="7" fill="#9d9d9d">steward audit progress</tspan></text>
-<text x="36" y="173" fill="#cccccc">PEER-REQ-001</text>
-<text x="8" y="195" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="195.5" fill="#9d9d9d" font-weight="700" font-size="12.5">❝</text><text x="40" y="195" fill="#cccccc">This project's own requests still open (1)<tspan dx="7" fill="#9d9d9d">steward audit progress</tspan></text>
-<text x="36" y="217" fill="#cccccc">GEO-Q-001</text>
-<text x="8" y="239" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="239.5" fill="#9d9d9d" font-weight="700" font-size="12.5">↗</text><text x="40" y="239" fill="#cccccc">Sprints with open tasks (1)<tspan dx="7" fill="#9d9d9d">steward audit progress</tspan></text>
-<text x="36" y="261" fill="#cccccc">fixture-sprint<tspan dx="7" fill="#9d9d9d">T1, T2, T3, T4, T5</tspan></text>
-<text x="8" y="283" fill="#9d9d9d" font-size="12">›</text><text x="23" y="283.5" fill="#9d9d9d" font-weight="700" font-size="12.5">◆</text><text x="40" y="283" fill="#cccccc">Milestones (5)<tspan dx="7" fill="#9d9d9d">steward audit progress</tspan></text>
-<text x="16" y="320" font-size="11.5" fill="#8b949e">Drawing of the Today panel (reduced form), rendered by its view model from the fixture outputs of steward audit</text>
-<text x="16" y="336" font-size="11.5" fill="#8b949e">progress, steward timeline and a session handoff (not a screenshot). Each row names the CLI output it comes from.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="556" viewBox="0 0 760 556" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
+<rect width="760" height="556" rx="10" fill="#1f1f1f"/>
+<rect width="760" height="474" rx="10" fill="#181818"/>
+<rect x="0" y="0" width="760" height="452" fill="#181818"/>
+<text x="8" y="17" fill="#bbbbbb" font-size="11" font-weight="700">⌄  NOW · TODAY</text>
+<text x="748" y="17" fill="#9d9d9d" font-size="12" text-anchor="end">⌖  ⎘  ⟳  ?</text>
+<text x="23" y="41.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="41" fill="#cccccc">Sources<tspan dx="7" fill="#9d9d9d">steward next</tspan></text>
+<text x="8" y="63" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="63.5" fill="#cca700" font-weight="700" font-size="12.5">!</text><text x="40" y="63" fill="#cccccc">Notifications (2 unread · 1 read)<tspan dx="7" fill="#9d9d9d">steward notifications</tspan></text>
+<text x="37" y="85.5" fill="#cca700" font-weight="700" font-size="12.5">✎</text><text x="54" y="85" fill="#cccccc">spend waits for a signature (expires 2099-01-01T00:00:00Z)<tspan dx="7" fill="#9d9d9d">Approval waiting · 2026-11-27 09:12Z · .…</tspan></text>
+<text x="37" y="107.5" fill="#75beff" font-weight="700" font-size="12.5">✉</text><text x="54" y="107" fill="#cccccc">request from PEER: Add a gene-set enrichment table<tspan dx="7" fill="#9d9d9d">Exchange · 2026-11-26 16:40Z · exchange/inbox/PE…</tspan></text>
+<text x="37" y="129.5" fill="#8b8b8b" font-weight="700" font-size="12.5">◷</text><text x="54" y="129" fill="#8b8b8b">sprint fixture-sprint task T1: GEO-001 waits for an order<tspan dx="7" fill="#9d9d9d">read · Task waiting · 2026-11-25 08:30Z ·…</tspan></text>
+<text x="8" y="151" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="151.5" fill="#9d9d9d" font-weight="700" font-size="12.5">↺</text><text x="40" y="151" fill="#cccccc">Resume<tspan dx="7" fill="#9d9d9d">development/HANDOFF.md · 9827.0 days old</tspan></text>
+<text x="36" y="173" fill="#cccccc">Finish GEO-001 and hand GEO-004 to review.<tspan dx="7" fill="#9d9d9d">next</tspan></text>
+<text x="23" y="195.5" fill="#9d9d9d" font-weight="700" font-size="12.5">◷</text><text x="40" y="195" fill="#cccccc">Next milestone<tspan dx="7" fill="#9d9d9d">abstract · 9675.0 days ago · DUE (RECORD ITS OUTCOME)</tspan></text>
+<text x="8" y="217" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="217.5" fill="#cca700" font-weight="700" font-size="12.5">•</text><text x="40" y="217" fill="#cccccc">Waiting on you (7)<tspan dx="7" fill="#9d9d9d">newest first</tspan></text>
+<text x="37" y="239.5" fill="#9d9d9d" font-weight="700" font-size="12.5">‖</text><text x="54" y="239" fill="#cccccc">sprint fixture-sprint task T5: GEO-006 waits for an order<tspan dx="7" fill="#9d9d9d">task waits for an order · 2099-01-05</tspan></text>
+<text x="37" y="261.5" fill="#9d9d9d" font-weight="700" font-size="12.5">‖</text><text x="54" y="261" fill="#cccccc">sprint fixture-sprint task T4: GEO-005 waits for an order<tspan dx="7" fill="#9d9d9d">task waits for an order · 2099-01-05</tspan></text>
+<text x="37" y="283.5" fill="#9d9d9d" font-weight="700" font-size="12.5">‖</text><text x="54" y="283" fill="#cccccc">sprint fixture-sprint task T3: GEO-004 waits for an order<tspan dx="7" fill="#9d9d9d">task waits for an order · 2099-01-05</tspan></text>
+<text x="37" y="305.5" fill="#9d9d9d" font-weight="700" font-size="12.5">‖</text><text x="54" y="305" fill="#cccccc">sprint fixture-sprint task T2: GEO-003 waits for an order<tspan dx="7" fill="#9d9d9d">task waits for an order · 2099-01-05</tspan></text>
+<text x="37" y="327.5" fill="#9d9d9d" font-weight="700" font-size="12.5">‖</text><text x="54" y="327" fill="#cccccc">sprint fixture-sprint task T1: GEO-001 waits for an order<tspan dx="7" fill="#9d9d9d">task waits for an order · 2099-01-05</tspan></text>
+<text x="37" y="349.5" fill="#cca700" font-weight="700" font-size="12.5">✎</text><text x="54" y="349" fill="#cccccc">spend (scope -, expires 2099-01-01T00:00:00Z)<tspan dx="7" fill="#9d9d9d">signature · 2000-01-01</tspan></text>
+<text x="37" y="371.5" fill="#9d9d9d" font-weight="700" font-size="12.5">✉</text><text x="54" y="371" fill="#cccccc">request from PEER: Add a gene-set enrichment table<tspan dx="7" fill="#9d9d9d">exchange item · 2000-01-01</tspan></text>
+<text x="23" y="393.5" fill="#9d9d9d" font-weight="700" font-size="12.5">•</text><text x="40" y="393" fill="#cccccc">Waiting on agents (0)<tspan dx="7" fill="#9d9d9d">nothing</tspan></text>
+<text x="8" y="415" fill="#9d9d9d" font-size="12">›</text><text x="23" y="415.5" fill="#9d9d9d" font-weight="700" font-size="12.5">⌫</text><text x="40" y="415" fill="#cccccc">Needs tidying (6)<tspan dx="7" fill="#9d9d9d">see steward tidy</tspan></text>
+<text x="23" y="437.5" fill="#9d9d9d" font-weight="700" font-size="12.5">i</text><text x="40" y="437" fill="#cccccc">exchange peer GONE: not checked (a peer declared by URL is read only with `steward exchange status --…<tspan dx="7" fill="#9d9d9d">…</tspan></text>
+<rect x="0" y="452" width="760" height="22" fill="#181818"/>
+<rect x="690" y="452" width="53" height="22" fill="#5a4500"/>
+<text x="700" y="467" fill="#ffffff" font-size="12">(!) 2</text>
+<text x="16" y="496" font-size="11.5" fill="#8b949e">Drawing of the Today panel and the status-bar bell on CLI 0.22, rendered by their view models (not a screenshot):</text>
+<text x="16" y="512" font-size="11.5" fill="#8b949e">Notifications at the top, unread first and the item seen once dimmed below, then the fixture's steward next output</text>
+<text x="16" y="528" font-size="11.5" fill="#8b949e">(Resume, the next milestone, what waits on you, what needs tidying). The notifications are a sample document in the</text>
+<text x="16" y="544" font-size="11.5" fill="#8b949e">CLI's shape, made from the fixture's own waiting items.</text>
 </svg>

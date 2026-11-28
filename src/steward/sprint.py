@@ -16,6 +16,13 @@ cannot write `.git` (S4). Each task's output goes to `.steward/sprints/<id>/<tas
 its run (STW-052, S7). The dispatcher reads the sprint file again before each dispatch (S1), but only while no
 task runs or on the human's `steward sprint reload` order; a running task keeps the definition it started with
 (W12b, F7).
+
+0.23.0 (STW-061 D02): `agent = "auto"` gives a task to the first available worker of `[delegation]`. A run that ends
+in "cannot run" (a usage limit, not signed in, not installed, a sandbox that did not start) is recorded as
+`redelegated` and started again on the same branch with the next agent, as `on_limit` says, or waits until the
+earliest reset time (`waiting`). A worker's task that passes its done commands ends in `review`, with a review brief
+for the master, until `steward sprint accept` (done) or `steward sprint rework` (back to an agent). A task run by the
+master, or without `[delegation]`, ends in done as before.
 """
 
 from __future__ import annotations
@@ -41,6 +48,7 @@ from .models import Strict, Text
 DIR = "development/sprints"
 WORK = ".steward/sprints"  # worktrees (by default) and task logs; git-ignored
 ADAPTERS = ("claude-code", "codex", "antigravity", "shell")
+AUTO = "auto"  # D02 (STW-061): the first available worker of [delegation] takes the task
 TERMINAL = {"done", "failed", "blocked", "skipped"}
 SIGNATURES = ("policy.change", "spend", "unseal", "amend", "waiver")
 PERMISSIONS = ("read-only", "edit", "edit-and-run")
@@ -255,7 +263,7 @@ class Task(Strict):
     id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
     title: Text
     ref: str | None = None                       # a board task or an exchange item
-    agent: Literal["claude-code", "codex", "antigravity", "shell"] = "shell"
+    agent: Literal["claude-code", "codex", "antigravity", "shell", "auto"] = "shell"  # auto: D02
     model: str | None = None                     # suggested; the agent ledger records what ran
     prompt: str | None = None                    # for an agent adapter: what to do
     command: str | None = None                   # for the shell adapter
@@ -287,7 +295,7 @@ class Task(Strict):
         if why:
             raise ValueError(f"task {self.id}: `allow` cannot name {why[0][0]!r} ({why[0][1]}); name the exact "
                              "command prefix, such as `make test` or `python -m pytest`")
-        missing = [r for r in self.requires if r not in OFFERS[self.agent]]
+        missing = [] if self.agent == AUTO else [r for r in self.requires if r not in OFFERS[self.agent]]
         if missing:
             raise ValueError(f"task {self.id}: the {self.agent} adapter cannot offer {', '.join(missing)}; "
                              "choose an adapter that can")
@@ -448,6 +456,10 @@ def plan(evs: list[dict[str, Any]]) -> list[str] | None:
 
 STATE_KEYS = ("state", "run", "branch", "checks", "note", "worktree", "commit", "log", "run_log", "agent", "model",
               "task_sha256", "base", "base_commit", "uncommitted")
+# D02: what re-delegation, a wait and the master's review add to a task's state
+DELEGATION_KEYS = ("role", "until", "review", "reason", "reset", "to")
+# D02: the states a dispatcher starts a task from (a wait only once its time has come)
+STARTABLE = ("ready", "redelegated", "rework")
 
 
 def states(sf: SprintFile, evs: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -470,12 +482,12 @@ def states(sf: SprintFile, evs: list[dict[str, Any]]) -> dict[str, dict[str, Any
                 out[t]["note"] = e.get("reason")
         elif e.get("kind") == "state":
             if e.get("state") == "running":  # a new attempt: the last one's results no longer describe the task
-                for k in ("checks", "note", "commit", "uncommitted", "ended"):
+                for k in ("checks", "note", "commit", "uncommitted", "ended", *DELEGATION_KEYS):
                     out[t].pop(k, None)
                 out[t]["started"] = e.get("time")
-            elif e.get("state") in ("done", "failed"):
+            elif e.get("state") in ("done", "failed", "review"):
                 out[t]["ended"] = e.get("time")
-            out[t].update({k: v for k, v in e.items() if k in STATE_KEYS})
+            out[t].update({k: v for k, v in e.items() if k in STATE_KEYS or k in DELEGATION_KEYS})
     planned = plan(evs)
     if planned is not None:  # S6: a task in the file that the sprint never opened with, nor added, waits for `add`
         for tid, s in out.items():
@@ -506,6 +518,11 @@ def permission_summary(t: Task) -> str:
     """One line for the sprint brief: what a task's agent may do."""
     if t.agent == "shell":
         return "shell: the task's own command, with the permissions of the user who runs the sprint"
+    if t.agent == AUTO:  # D02: the agent that takes it maps the permissions as its adapter does
+        return (f"auto, {t.permissions}: the agent that takes it maps them as its adapter does; network "
+                + ("on" if "network" in t.requires else "off")
+                + ("; also allowed: " + ", ".join(t.allow) if t.allow else "")
+                + "; denied: the default list" + "".join(", " + d for d in t.deny if d not in DEFAULT_DENY))
     parts = [f"{t.agent}, {t.permissions}"]
     if t.agent == "codex" and t.permissions == "edit":
         parts.append("Codex's workspace-write sandbox also runs commands, so edit and edit-and-run are the same there")
@@ -849,14 +866,24 @@ def merge_state(root: Path, sf: SprintFile, s: dict[str, Any]) -> tuple[str, str
 
 
 # ---------------------------------------------------------------- the dispatcher
-def _checks(cwd: Path, t: Task, cancelled, deadline: dt.datetime, env: dict[str, str] | None = None) -> list[dict[str, Any]]:
-    """Each done command, polled: a stop or the end of the window ends it (V13). An unfinished command has exit None."""
+CHECK_OUTPUT = 8 * 1024  # D02: bytes of each check's output kept for the review brief
+
+
+def _checks(cwd: Path, t: Task, cancelled, deadline: dt.datetime, env: dict[str, str] | None = None,
+            capture: bool = False) -> list[dict[str, Any]]:
+    """Each done command, polled: a stop or the end of the window ends it (V13). An unfinished command has exit None.
+    D02: with `capture`, each result also holds the end of the command's output (`output`, for the review brief;
+    never written to the ledger)."""
+    import tempfile
+
     res = []
     for c in t.done:
         if cancelled() or dt.datetime.now(dt.timezone.utc) >= deadline:
             res.append({"command": c, "exit": None, "note": "not run: stopped or the window ended"})
             continue
-        proc = subprocess.Popen(c, shell=True, cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        sink = tempfile.TemporaryFile() if capture else None
+        proc = subprocess.Popen(c, shell=True, cwd=cwd, stdout=sink or subprocess.DEVNULL,
+                                stderr=subprocess.STDOUT if sink else subprocess.DEVNULL,
                                 start_new_session=True, env={**os.environ, **(env or {})})
         code = None
         while code is None:
@@ -872,7 +899,16 @@ def _checks(cwd: Path, t: Task, cancelled, deadline: dt.datetime, env: dict[str,
             time.sleep(0.05)
         else:
             res.append({"command": c, "exit": code})
+        if sink is not None:
+            size = sink.seek(0, os.SEEK_END)
+            sink.seek(max(0, size - CHECK_OUTPUT))
+            res[-1]["output"] = ("…" if size > CHECK_OUTPUT else "") + sink.read().decode("utf-8", errors="replace")
+            sink.close()
     return res
+
+
+def _ledger_checks(checks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [{k: v for k, v in c.items() if k != "output"} for c in checks]
 
 
 def _clean_commit(wt: Path) -> tuple[bool, str | None, list[str]]:
@@ -1019,7 +1055,7 @@ def _dispatch(root: Path, cfg: Any, sf: SprintFile, watch: bool, poll: float, no
     source = _Source(root, sf, lg, out)
     run_cfg = getattr(cfg, "run", None)
     run_logs = (getattr(run_cfg, "logs", None) or ".steward/runs").rstrip("/")
-    running: dict[str, tuple[subprocess.Popen, Path, str, Task, str]] = {}
+    running: dict[str, tuple[subprocess.Popen, Path, str, Task, str, dict[str, Any]]] = {}
     if not any(e.get("kind") == "opened" for e in events(root, sid)):
         lg.append("opened", {"sprint": sid, "tasks": order(sf), "dispatch": sf.sprint.dispatch})
     for tid, s in states(sf, events(root, sid)).items():  # V12: work an ended dispatcher left unfinished
@@ -1030,6 +1066,7 @@ def _dispatch(root: Path, cfg: Any, sf: SprintFile, watch: bool, poll: float, no
     told: set[str] = set()
     said: list[str] = []  # the tasks last named as waiting for an order
     launched = False  # X05: whether this dispatcher has started a task
+    limit_said: dt.datetime | None = None  # D02: the reset time last named as waited for
     while True:
         sf = source.refresh({tid: r[3] for tid, r in running.items()})
         tasks = {t.id: t for t in sf.task}
@@ -1040,28 +1077,64 @@ def _dispatch(root: Path, cfg: Any, sf: SprintFile, watch: bool, poll: float, no
             for tid, (proc, *_rest) in running.items():
                 proc.terminate()  # `steward run` stops its job, records it, and exits
         # finished runs: the acceptance commands decide
-        for tid, (proc, wt, branch, started_as, base) in list(running.items()):
+        for tid, (proc, wt, branch, started_as, base, a) in list(running.items()):
             if proc.poll() is None:
                 continue
             del running[tid]
             t = started_as  # W12b (F7): the definition it started with decides, whatever the file says now
             if proc.returncode != 0:
-                lg.append("state", {"task": tid, "state": "failed", "note": f"steward run exited {proc.returncode}",
-                                    "branch": branch})
-                out(f"{tid}: failed (steward run exited {proc.returncode})")
+                moves = _moves(cfg, t)  # D02b: also a task that names a worker, with [delegation]
+                end = _cannot_run(root, cfg, sid, tid, a, now(), redelegated=moves)
+                partial = None
+                if end is not None and a.get("agent") == "codex" and t.permissions != "read-only":
+                    partial = _commit_stopped(wt, sf, t, end, {**os.environ, **sprint_env(sf, t, branch, base)})
+                kept = {"commit": partial} if partial else {}
+                if end is not None and moves:  # D02: the next agent takes it on the same branch
+                    named = {"moved_from": t.agent} if t.agent != AUTO else {}
+                    lg.append("state", {"task": tid, "state": "redelegated", "branch": branch, "agent": a["agent"],
+                                        "model": a["model"], "reason": end.kind, "reset": end.reset, **named, **kept,
+                                        "note": f"{a['agent']} cannot run ({_ending_text(end)}); "
+                                                + (f"the task names {t.agent} and moves from it: " if named else "")
+                                                + "the next agent takes it on the same branch, keeping its commits"
+                                                + ("; Codex's partial work is committed" if partial else "")})
+                    _record_attempt(root, cfg, sid, tid, a, "redelegated", now(), end.kind)
+                    out(f"{tid}: redelegated ({a['agent']} cannot run: {_ending_text(end)}"
+                        + (f"; moved from the named agent {t.agent}" if named else "") + ")")
+                    continue
+                why = f"steward run exited {proc.returncode}" + (
+                    f"; {a['agent']} cannot run ({_ending_text(end)})" if end is not None else "") + (
+                    "; Codex's partial work is committed" if partial else "")
+                lg.append("state", {"task": tid, "state": "failed", "note": why, "branch": branch, **kept})
+                _record_attempt(root, cfg, sid, tid, a, "failed", now(), end.kind if end else None)
+                out(f"{tid}: failed ({why})")
                 continue
             if stopped(events(root, sid)):  # V13: no acceptance after a stop
                 lg.append("state", {"task": tid, "state": "failed", "branch": branch, "note": "stopped before its checks"})
+                _record_attempt(root, cfg, sid, tid, a, "failed", now())
                 out(f"{tid}: failed (stopped before its checks)")
                 continue
             lg.append("state", {"task": tid, "state": "checking", "branch": branch})
+            review = a.get("role") == "worker"  # D02: a worker's passing task waits for the master's review
             checks = _checks(wt, t, lambda: bool(stopped(events(root, sid))), sf.sprint.window.end,
-                             sprint_env(sf, t, branch, base))
+                             sprint_env(sf, t, branch, base), capture=review)
             clean, commit, lines = _clean_commit(wt) if wt != root else (True, None, [])
             ok, note = _verdict(checks, clean, lines)
-            lg.append("state", {"task": tid, "state": "done" if ok else "failed", "checks": checks, "branch": branch,
-                                "commit": commit, "note": note, **({"uncommitted": lines[:50]} if lines else {})})
             n = sum(c["exit"] == 0 for c in checks)
+            if ok and review:
+                brief = write_review(root, sf, t, a["agent"], a["model"], branch, a.get("base_commit"), commit,
+                                     checks, events(root, sid))
+                lg.append("state", {"task": tid, "state": "review", "checks": _ledger_checks(checks), "branch": branch,
+                                    "commit": commit, "review": brief, "agent": a["agent"], "role": "worker",
+                                    "note": f"passed its checks; the master reviews it ({brief}), then: steward "
+                                            f"sprint accept {sid} {tid}"})
+                _record_attempt(root, cfg, sid, tid, a, "review", now())
+                out(f"{tid}: review ({n} of {len(checks)} checks passed; {a['agent']} did it); the master reads "
+                    f"{brief}, then steward sprint accept {sid} {tid} (or rework {sid} {tid} --note …)")
+                continue
+            lg.append("state", {"task": tid, "state": "done" if ok else "failed", "checks": _ledger_checks(checks),
+                                "branch": branch, "commit": commit, "note": note,
+                                **({"uncommitted": lines[:50]} if lines else {})})
+            _record_attempt(root, cfg, sid, tid, a, "done" if ok else "failed", now())
             out(f"{tid}: done ({n} of {len(checks)} checks passed); branch {branch} waits for your merge" if ok else
                 f"{tid}: failed ({n} of {len(checks)} checks passed" + (")" if clean else f"; {note})"))
         st = states(sf, events(root, sid))
@@ -1077,12 +1150,23 @@ def _dispatch(root: Path, cfg: Any, sf: SprintFile, watch: bool, poll: float, no
                 if len(running) >= sf.sprint.max_parallel:
                     break
                 s, t = st[tid], tasks[tid]
-                if s["state"] != "ready" or s.get("hold") or tid in running or tid not in planned:
+                if not _startable(s, t_now) or s.get("hold") or tid in running or tid not in planned:
                     continue
                 if sf.sprint.dispatch == "order" and not s.get("go"):
                     continue
                 if t_now + dt.timedelta(minutes=t.limits.wall_minutes) > sf.sprint.window.end:
                     continue  # it would not finish before the window ends
+                what, a = assign(root, cfg, t, s, events(root, sid), t_now)  # D02: who runs it now
+                if what == "wait":
+                    if s["state"] != "waiting" or s.get("until") != a["until"]:
+                        lg.append("state", {"task": tid, "state": "waiting", "until": a["until"],
+                                            "branch": s.get("branch"), "note": a["why"]})
+                        out(f"{tid}: waiting until {a['until']} ({a['why']})")
+                    continue
+                if what == "fail":
+                    lg.append("state", {"task": tid, "state": "failed", "branch": s.get("branch"), "note": a["why"]})
+                    out(f"{tid}: failed ({a['why']})")
+                    continue
                 try:
                     wt, branch, base_commit = _worktree(root, sf, t) if t.worktree else (root, "(no worktree)", None)
                 except RuntimeError as e:
@@ -1096,7 +1180,8 @@ def _dispatch(root: Path, cfg: Any, sf: SprintFile, watch: bool, poll: float, no
                     continue
                 try:
                     launched = True
-                    running[tid] = _launch(root, sf, t, wt, branch, base_commit, run_logs, lg, out)
+                    running[tid] = _launch(root, sf, t, wt, branch, base_commit, run_logs, lg, out, a,
+                                           s.get("note") if s["state"] == "rework" else None)
                 except OSError as e:  # W12b (F9): a task log or settings file reached through a link
                     lg.append("state", {"task": tid, "state": "failed", "branch": branch,
                                         "note": f"its log or settings could not be opened safely: {e}"})
@@ -1105,8 +1190,18 @@ def _dispatch(root: Path, cfg: Any, sf: SprintFile, watch: bool, poll: float, no
             time.sleep(min(poll, 0.5))
             continue
         st = states(sf, events(root, sid))
-        waiting = [i for i, s in st.items() if s["state"] == "ready" and i in planned]
+        waiting = [i for i, s in st.items() if s["state"] in STARTABLE and i in planned]
         t_now = now()
+        # D02: a task waiting for a worker's reset time is waited for, when it can still finish inside the window
+        due = sorted(u for i in planned if i in st and st[i]["state"] == "waiting" and not st[i].get("hold")
+                     and (u := _when(st[i].get("until"))) is not None
+                     and u + dt.timedelta(minutes=tasks[i].limits.wall_minutes) <= sf.sprint.window.end)
+        if not stop and due and t_now < sf.sprint.window.end:
+            if due[0] != limit_said:
+                limit_said = due[0]
+                out(f"waiting until {due[0].isoformat()} for a worker's reset (on_limit = wait)")
+            time.sleep(min(poll, max(0.05, (due[0] - t_now).total_seconds())))
+            continue
         if watch:  # S3: stay while the window is open and any task can still become ready (retry, recheck, order)
             if stop or t_now >= sf.sprint.window.end:
                 break
@@ -1148,38 +1243,352 @@ def _dispatch(root: Path, cfg: Any, sf: SprintFile, watch: bool, poll: float, no
 
 
 def _launch(root: Path, sf: SprintFile, t: Task, wt: Path, branch: str, base_commit: str | None, run_logs: str,
-            lg, out) -> tuple[subprocess.Popen, Path, str, Task, str]:
+            lg, out, a: dict[str, Any] | None = None,
+            rework: str | None = None) -> tuple[subprocess.Popen, Path, str, Task, str, dict[str, Any]]:
+    """Start one attempt. `a` is who runs it (D02: the agent an `auto` task was given, its model and its role);
+    `rework` is the master's note when the task was sent back. The returned Task is the definition as the file
+    gave it (W12b, F7); the attempt runs as `a` says."""
     from .fsutil import safe_write
     from .runner import new_run_id
 
+    a = dict(a or {"agent": t.agent, "model": t.model, "role": None})
+    rt = t if a["agent"] == t.agent and a["model"] == t.model else t.model_copy(
+        update={"agent": a["agent"], "model": a["model"]})
+    if rework:
+        rt = rt.model_copy(update={"prompt": ((rt.prompt or "") + "\n\nThe master sent this task back for rework: "
+                                              + rework).strip()})
     sid, tid = sf.sprint.id, t.id
     settings = None
-    if t.agent == "antigravity":
+    if rt.agent == "antigravity":
         rel = settings_rel(sid, tid)
-        safe_write(root, rel, (json.dumps(agy_settings(t), indent=1) + "\n").encode())
+        safe_write(root, rel, (json.dumps(agy_settings(rt), indent=1) + "\n").encode())
         settings = root / rel
     run_id = new_run_id()
     argv = [sys.executable, "-m", "steward.cli", "run", "--repo", str(root), "--run-id", run_id,
             "--label", f"sprint:{sid}:{tid}", "--wall", str(int(t.limits.wall_minutes * 60))]
     if t.limits.idle_minutes:
         argv += ["--hang-cpu", str(int(t.limits.idle_minutes * 60))]
-    argv += ["--", *command(t, sf, settings)]
+    argv += ["--", *command(rt, sf, settings)]
     base = base_ref(root, sf)
     lrel = log_rel(sid, tid)
     fd = _open_log(root, lrel)
     try:
-        stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        os.write(fd, f"--- {stamp} {tid} run {run_id} ({t.agent}) ---\n".encode())
+        a["offset"] = os.fstat(fd).st_size  # D02: this attempt's output starts here (its ending is read from it)
+        started = dt.datetime.now(dt.timezone.utc)
+        stamp = started.strftime("%Y-%m-%dT%H:%M:%SZ")
+        a["started"] = started.isoformat()  # to the microsecond: the agents ledger's window of this attempt
+        os.write(fd, f"--- {stamp} {tid} run {run_id} ({rt.agent}) ---\n".encode())
         proc = subprocess.Popen(argv, cwd=wt, stdin=subprocess.DEVNULL, stdout=fd, stderr=fd,
                                 env={**os.environ, **sprint_env(sf, t, branch, base)})
     finally:
         os.close(fd)
-    lg.append("state", {"task": tid, "state": "running", "branch": branch, "agent": t.agent, "model": t.model,
+    a["base_commit"], a["log"] = base_commit, lrel
+    lg.append("state", {"task": tid, "state": "running", "branch": branch, "agent": rt.agent, "model": rt.model,
                         "worktree": shown(root, sf, wt), "run": run_id, "run_log": f"{run_logs}/{run_id}.log",
                         "log": lrel, "task_sha256": task_sha(t), "base": base, "base_commit": base_commit,
-                        "permissions": t.permissions})
-    out(f"{tid}: running ({t.agent}{', ' + t.model if t.model else ''}) on {branch}; log {lrel}")
-    return proc, wt, branch, t, base
+                        "permissions": t.permissions, **({"role": a["role"]} if a.get("role") else {}),
+                        **({"rework": True} if rework else {}),
+                        **({"moved_from": t.agent} if t.agent not in (AUTO, rt.agent) else {})})  # D02b
+    who = f"{rt.agent}{', ' + rt.model if rt.model else ''}" + (f", the {a['role']}" if a.get("role") else "")
+    out(f"{tid}: running ({who}) on {branch}; log {lrel}")
+    return proc, wt, branch, t, base, a
+
+
+# ---------------------------------------------------------------- delegation (D02, STW-061)
+def _when(value: Any) -> dt.datetime | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        t = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return t if t.tzinfo is not None else None
+
+
+def _startable(s: dict[str, Any], now: dt.datetime) -> bool:
+    """A task the dispatcher may start: ready, re-delegated, sent back for rework, or waiting and its time has come."""
+    if s["state"] in STARTABLE:
+        return True
+    until = _when(s.get("until"))
+    return s["state"] == "waiting" and (until is None or until <= now)
+
+
+def role_of(cfg: Any, agent: str) -> str | None:
+    """With [delegation]: "master" for the master, "worker" for any other agent adapter; None for the shell adapter
+    or without [delegation] (a task then ends in done as before)."""
+    d = getattr(cfg, "delegation", None)
+    if d is None or agent in ("shell", AUTO):
+        return None
+    return "master" if agent == d.master else "worker"
+
+
+def tried(evs: list[dict[str, Any]], tid: str) -> list[str]:
+    """The agents that could not run this task in its current round: those re-delegated since its last order, rework,
+    wait or result (a new round tries every agent again)."""
+    out: list[str] = []
+    for e in evs:
+        if e.get("task") != tid:
+            continue
+        if e.get("kind") == "order" and e.get("order") == "go":
+            out = []
+        elif e.get("kind") == "state":
+            st = e.get("state")
+            if st == "redelegated" and isinstance(e.get("agent"), str):
+                out.append(e["agent"])
+            elif st in ("rework", "waiting", "done", "failed", "review"):
+                out = []
+    return out
+
+
+def moved(evs: list[dict[str, Any]], tid: str) -> bool:
+    """D02b: whether a task that names its agent was re-delegated since its last order or result (`go`, done or
+    failed); it is then given out as an auto task until one of those comes."""
+    out = False
+    for e in evs:
+        if e.get("task") != tid:
+            continue
+        if e.get("kind") == "order" and e.get("order") == "go":
+            out = False
+        elif e.get("kind") == "state":
+            if e.get("state") == "redelegated":
+                out = True
+            elif e.get("state") in ("done", "failed"):
+                out = False
+    return out
+
+
+def _moves(cfg: Any, t: Task) -> bool:
+    """D02b: a task re-delegated when its agent cannot run: an auto task, or (with [delegation]) one that names a
+    worker. Without [delegation], or naming the master or the shell adapter, it fails as before."""
+    return t.agent == AUTO or role_of(cfg, t.agent) == "worker"
+
+
+COMMIT_ONLY = (f'msg=$1; {_SAFE_GIT} add -A && '
+               f'{{ {_SAFE_GIT} diff --cached --quiet || {_SAFE_GIT} commit --no-verify -q -m "$msg"; }}')
+
+
+def _commit_stopped(wt: Path, sf: SprintFile, t: Task, end: Any, env: dict[str, str]) -> str | None:
+    """D02b: the Codex commit step for a run that ended in "cannot run": its changes are committed (as COMMIT_STEP
+    does after a run that exits 0), with a message that says the run was stopped, so the next agent starts from
+    committed work. The new HEAD, or None when nothing was committed."""
+    from .fsutil import git_run
+
+    before = git_run(wt, "rev-parse", "HEAD", text=True)
+    why = (f"stopped by a limit ({_ending_text(end)})" if end.kind == "limited"
+           else f"stopped before it finished ({_ending_text(end)})")
+    msg = (f"{t.title} (sprint {sf.sprint.id}, {t.id}; written by Codex, committed by the sprint task; the run was "
+           f"{why}; partial work)")
+    try:
+        subprocess.run(["/bin/sh", "-c", COMMIT_ONLY, "steward-sprint-commit", msg], cwd=wt, env=env,
+                       stdin=subprocess.DEVNULL, capture_output=True, timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    after = git_run(wt, "rev-parse", "HEAD", text=True)
+    if after.returncode != 0 or (before.returncode == 0 and after.stdout == before.stdout):
+        return None
+    return after.stdout.strip()
+
+
+def _last_agent(evs: list[dict[str, Any]], tid: str) -> str | None:
+    return next((e.get("agent") for e in reversed(evs) if e.get("task") == tid and e.get("kind") == "state"
+                 and e.get("state") == "running"), None)
+
+
+def assign(root: Path, cfg: Any, t: Task, s: dict[str, Any], evs: list[dict[str, Any]],
+           now: dt.datetime) -> tuple[str, dict[str, Any]]:
+    """("run", {agent, model, role}), ("wait", {until, why}) or ("fail", {why}) for a task about to start. A task that
+    names its agent runs with it; an `auto` task gets the first available worker (delegation.choose)."""
+    from . import delegation as dg
+
+    if t.agent != AUTO and not (role_of(cfg, t.agent) == "worker" and moved(evs, t.id)):
+        return "run", {"agent": t.agent, "model": t.model, "role": role_of(cfg, t.agent)}
+    # D02b: a task that names a worker and could not run with it is given out as an auto task is; the named agent is
+    # asked for first in a later round (after a wait), when it is available again
+    prefer = None if t.agent == AUTO else t.agent
+    d = getattr(cfg, "delegation", None)
+    if s["state"] == "rework" and d is not None:
+        prefer = d.master if s.get("to") == "master" else _last_agent(evs, t.id)
+    try:
+        c = dg.choose(root, cfg, list(t.requires), now, tried(evs, t.id), prefer)
+    except ValueError as e:
+        return "fail", {"why": str(e)}
+    if c.agent is not None:
+        model = t.model if c.agent == t.agent else c.model  # the named agent keeps the task's model
+        return "run", {"agent": c.agent, "model": model, "role": c.role, "why": c.why}
+    if c.until is not None:
+        return "wait", {"until": c.until, "why": c.why}
+    return "fail", {"why": c.why}
+
+
+def _ending_text(e: Any) -> str:
+    kind = {"limited": "usage limit", "signed_out": "not signed in", "missing": "not installed",
+            "sandbox": "its sandbox did not start"}.get(e.kind, e.kind)
+    return kind + (f", resets {e.reset}" if e.reset else "")
+
+
+def _cannot_run(root: Path, cfg: Any, sid: str, tid: str, a: dict[str, Any], now: dt.datetime,
+                redelegated: bool = False):
+    """D02: the "cannot run" ending of this attempt's output (D01's recogniser), recorded in the availability ledger
+    (with `redelegated` and the task when the task goes to the next agent); None for a task failure, the shell
+    adapter, or a log that cannot be read."""
+    from . import delegation as dg
+
+    agent = a.get("agent")
+    if agent not in dg.AGENTS or not a.get("log"):
+        return None
+    end = dg.read_ending_from(agent, root / a["log"], int(a.get("offset") or 0), now)
+    if end is not None:
+        try:
+            dg.record_ending(root, cfg.steward.repo_id, end, a["log"], task=f"{sid}/{tid}",
+                             **({"redelegated": True} if redelegated else {}))
+        except Exception:  # noqa: BLE001 - the ledger is advisory here; the sprint ledger still records the ending
+            pass
+    return end
+
+
+def _record_attempt(root: Path, cfg: Any, sid: str, tid: str, a: dict[str, Any], outcome: str, now: dt.datetime,
+                    reason: str | None = None) -> None:
+    """D02: one attempt in the agents ledger (X03), with its agent, model and outcome; only with [delegation], and
+    never for the shell adapter. The task is named `<sprint>/<task>`."""
+    from . import delegation as dg
+    from .ledger import Ledger
+    from .models import AgentsSection
+
+    if getattr(cfg, "delegation", None) is None or a.get("agent") not in dg.AGENTS:
+        return
+    rel = (cfg.agents or AgentsSection()).ledger
+    name = f"{sid}/{tid}"
+
+    def decide(entries: list[dict[str, Any]]) -> tuple[str, dict[str, Any]]:
+        n = 1 + sum(1 for e in entries if e.get("kind") == "attempt" and e.get("task") == name)
+        return "attempt", {"task": name, "attempt": n, "agent": a["agent"], "provider": dg.PROVIDERS[a["agent"]],
+                           "model": a.get("model") or "unknown", "suggested": None, "started": a.get("started"),
+                           "ended": now.astimezone(dt.timezone.utc).isoformat(),
+                           "reviewer": None, "status": outcome, "sprint": sid, "sprint_task": tid,
+                           "role": a.get("role"), **({"reason": reason} if reason else {})}
+    try:
+        Ledger(root / rel, "agents", cfg.steward.repo_id, base=root).transaction(decide)
+    except Exception:  # noqa: BLE001 - attribution must not stop the sprint; the sprint ledger has the attempt
+        pass
+
+
+def attempts(evs: list[dict[str, Any]], tid: str) -> list[dict[str, Any]]:
+    """Each attempt of a task from the sprint ledger, newest first: its agent, model, role, times and outcome."""
+    out: list[dict[str, Any]] = []
+    for e in evs:
+        if e.get("task") != tid or e.get("kind") != "state":
+            continue
+        st = e.get("state")
+        if st == "running":
+            out.append({"agent": e.get("agent"), "model": e.get("model"), "role": e.get("role"),
+                        "started": e.get("time"), "ended": None, "outcome": None, "reason": None, "reset": None})
+        elif out and out[-1]["outcome"] is None and st in ("redelegated", "review", "done", "failed"):
+            out[-1].update(ended=e.get("time"), outcome=st, reason=e.get("reason"), reset=e.get("reset"))
+    return list(reversed(out))
+
+
+def review_rel(sid: str, tid: str) -> str:
+    return f"{WORK}/{sid}/{tid}.review.md"
+
+
+DEVIATION = re.compile(r"^(#{1,6})\s+.*\bdeviation", re.I | re.M)
+
+
+def deviations(text: str, limit: int = 8000) -> str | None:
+    """The sections of a task record whose heading names deviations, up to the next heading of the same level."""
+    found = []
+    for m in DEVIATION.finditer(text):
+        level = len(m.group(1))
+        rest = text[m.end():]
+        nxt = re.search(rf"^#{{1,{level}}}\s", rest, re.M)
+        found.append((text[m.start():m.end()] + (rest[: nxt.start()] if nxt else rest)).strip())
+    out = "\n\n".join(found)
+    return (out[:limit] + "\n…") if len(out) > limit else (out or None)
+
+
+def write_review(root: Path, sf: SprintFile, t: Task, agent: str, model: str | None, branch: str,
+                 base: str | None, commit: str | None, checks: list[dict[str, Any]],
+                 evs: list[dict[str, Any]]) -> str:
+    """D02: the review brief for the master, in the task's log folder: the diff summary, the checks with their
+    output, and the deviations the changed task records state. Returns its repository-relative path."""
+    from .fsutil import git_run, safe_write
+
+    sid, tid = sf.sprint.id, t.id
+    lines = [f"# Review brief: sprint {sid}, task {tid}", "",
+             f"- **Task:** {t.title}", f"- **Done by:** {agent}" + (f" ({model})" if model else "") + ", a worker",
+             f"- **Branch:** `{branch}`" + (f" at `{commit[:12]}`" if commit else ""),
+             f"- **Started from:** `{(base or 'unknown')[:12]}`"]
+    redelegated = [x for x in attempts(evs, tid) if x["outcome"] == "redelegated"]
+    for x in redelegated:
+        lines.append(f"- **Re-delegated:** {x['agent']} could not run ({x['reason']}"
+                     + (f", resets {x['reset']}" if x["reset"] else "") + ")")
+    lines += ["", "## Diff summary", ""]
+    stat = git_run(root, "diff", "--stat", f"{base}..{commit}", text=True) if base and commit else None
+    lines += ["```", (stat.stdout.rstrip() if stat is not None and stat.returncode == 0 and stat.stdout.strip()
+                      else "(no change, or the range could not be read)"), "```"]
+    cs = commits(root, base, branch)
+    if cs:
+        lines += ["", "Commits, newest first:", ""] + [f"- `{c['commit'][:12]}` {c['subject']}" for c in reversed(cs)]
+    lines += ["", "## Checks", ""]
+    for c in checks:
+        lines += [f"### `{c['command']}`: exit {c['exit']}", "", "```",
+                  (c.get("output") or "(no output)").rstrip().replace("```", "'''"), "```", ""]
+    lines += ["## Deviations the task records state", ""]
+    found = []
+    for rel in changed_files(root, base, branch):
+        if not rel.endswith(".md") or not commit:
+            continue
+        shown_ = git_run(root, "show", f"{commit}:{rel}", text=True)
+        dev = deviations(shown_.stdout) if shown_.returncode == 0 else None
+        if dev:
+            found += [f"From `{rel}`:", "", dev, ""]
+    lines += found or ["No changed task record names a deviation.", ""]
+    lines += ["## What the master does", "",
+              "Verify the work, fix it on the branch if needed, then one of:", "",
+              f"- `steward sprint accept {sid} {tid}`: marks it done;",
+              f"- `steward sprint rework {sid} {tid} --note \"…\"`: sends it back (to the same worker, or "
+              "`--to master`).", "", "Merging stays the master's step."]
+    rel = review_rel(sid, tid)
+    safe_write(root, rel, ("\n".join(lines) + "\n").encode("utf-8"))
+    return rel
+
+
+def accept(root: Path, cfg: Any, sf: SprintFile, tid: str, out=print) -> int:
+    """`steward sprint accept`: a task in review is done (the master's step, after verifying)."""
+    sid = sf.sprint.id
+    s = states(sf, events(root, sid))[tid]
+    if s["state"] != "review":
+        out(f"steward: {tid} is {s['state']}; accept is for a task in review")
+        return 64
+    led(root, sid, cfg.steward.repo_id).append("state", {
+        "task": tid, "state": "done", "branch": s.get("branch"), "commit": s.get("commit"), "by": "master",
+        "accepted": True, "note": "accepted by the master"})
+    out(f"{tid}: done (accepted by the master); branch {s.get('branch')} waits for your merge")
+    return 0
+
+
+def rework(root: Path, cfg: Any, sf: SprintFile, tid: str, note: str, to: str = "same", out=print) -> int:
+    """`steward sprint rework`: a task in review goes back, with the master's note, to the same agent or the master."""
+    sid = sf.sprint.id
+    s = states(sf, events(root, sid))[tid]
+    if s["state"] != "review":
+        out(f"steward: {tid} is {s['state']}; rework is for a task in review")
+        return 64
+    if not note.strip():
+        out("steward: --note says what to change")
+        return 64
+    t = next(x for x in sf.task if x.id == tid)
+    if to == "master" and getattr(cfg, "delegation", None) is None:
+        out("steward: --to master needs [delegation] in steward.toml")
+        return 64
+    if to == "master" and t.agent != AUTO:
+        out(f"steward: {tid} names its agent ({t.agent}); only an auto task can be sent to the master")
+        return 64
+    led(root, sid, cfg.steward.repo_id).append("state", {
+        "task": tid, "state": "rework", "branch": s.get("branch"), "by": "master", "to": to, "note": note.strip()})
+    out(f"{tid}: rework ({'the master' if to == 'master' else 'the same agent'}); the dispatcher starts it again on "
+        f"{s.get('branch')} (steward sprint start {sid})")
+    return 0
 
 
 def recheck(root: Path, cfg: Any, sf: SprintFile, tid: str, out=print) -> int:
@@ -1205,14 +1614,26 @@ def recheck(root: Path, cfg: Any, sf: SprintFile, tid: str, out=print) -> int:
         wt, branch = root, "(no worktree)"
     lg = led(root, sid, cfg.steward.repo_id)
     lg.append("state", {"task": tid, "state": "checking", "branch": branch, "by": "human", "recheck": True})
+    review = s.get("role") == "worker" and getattr(cfg, "delegation", None) is not None  # D02: still the master's
     checks = _checks(wt, t, lambda: False, dt.datetime.max.replace(tzinfo=dt.timezone.utc),
-                     sprint_env(sf, t, branch, base_ref(root, sf)))
+                     sprint_env(sf, t, branch, base_ref(root, sf)), capture=review)
     clean, commit, lines = _clean_commit(wt) if wt != root else (True, None, [])
     ok, note = _verdict(checks, clean, lines)
+    n = sum(c["exit"] == 0 for c in checks)
+    if ok and review:
+        agent = s.get("agent") or t.agent
+        brief = write_review(root, sf, t, agent, s.get("model"), branch, _start_of(root, sf, s), commit, checks,
+                             events(root, sid))
+        lg.append("state", {"task": tid, "state": "review", "checks": _ledger_checks(checks), "branch": branch,
+                            "commit": commit, "review": brief, "agent": agent, "role": "worker", "by": "human",
+                            "recheck": True, "note": f"passed its checks; the master reviews it ({brief}), then: "
+                                                     f"steward sprint accept {sid} {tid}"})
+        out(f"{tid}: review ({n} of {len(checks)} checks passed at {(commit or '?')[:12]}); the master reads {brief}")
+        return 0
+    checks = _ledger_checks(checks)
     lg.append("state", {"task": tid, "state": "done" if ok else "failed", "checks": checks, "branch": branch,
                         "commit": commit, "note": note, "by": "human", "recheck": True,
                         **({"uncommitted": lines[:50]} if lines else {})})
-    n = sum(c["exit"] == 0 for c in checks)
     if ok:
         out(f"{tid}: done ({n} of {len(checks)} checks passed at {(commit or '?')[:12]}); "
             f"branch {branch} waits for your merge")
@@ -1223,7 +1644,8 @@ def recheck(root: Path, cfg: Any, sf: SprintFile, tid: str, out=print) -> int:
 
 # ---------------------------------------------------------------- status and watch (STW-052)
 def status_doc(root: Path, sf: SprintFile, now: dt.datetime | None = None) -> dict[str, Any]:
-    st = states(sf, events(root, sf.sprint.id))
+    evs = events(root, sf.sprint.id)
+    st = states(sf, evs)
     tasks = {t.id: t for t in sf.task}
     rows = []
     for tid in order(sf):
@@ -1242,6 +1664,10 @@ def status_doc(root: Path, sf: SprintFile, now: dt.datetime | None = None) -> di
             "last_step": last_step(root / log) if log else None,
             "uncommitted": s.get("uncommitted") or [],
         })
+        if t.agent == AUTO or s.get("role") or s.get("state") in ("review", "waiting", "redelegated", "rework"):
+            rows[-1]["delegation"] = {  # D02: only for a delegated task, so other tasks' rows are as before
+                "role": s.get("role"), "agent": s.get("agent"), "until": s.get("until"), "review": s.get("review"),
+                "attempts": attempts(evs, tid)}
     return {"id": sf.sprint.id, "path": path(root, sf.sprint.id).relative_to(root).as_posix(),
             "window": sf.sprint.window.model_dump(mode="json"), "window_state": window_state(sf, now),
             "dispatch": sf.sprint.dispatch, "tasks": rows}
@@ -1273,6 +1699,16 @@ def _event_line(e: dict[str, Any]) -> str | None:
         return f"{when} {t} running ({e.get('agent')}) on {e.get('branch')}; log {e.get('log') or '-'}"
     if s == "checking":
         return f"{when} {t} checking" + (" (recheck)" if e.get("recheck") else "")
+    if s == "redelegated":  # D02
+        return (f"{when} {t} redelegated: {e.get('agent')} cannot run ({e.get('reason')}"
+                + (f", resets {e.get('reset')}" if e.get("reset") else "") + ")"
+                + (f"; moved from the named agent {e.get('moved_from')}" if e.get("moved_from") else ""))
+    if s == "waiting":
+        return f"{when} {t} waiting until {e.get('until')}" + (f"; {_one_line(e.get('note'))}" if e.get("note") else "")
+    if s == "rework":
+        return f"{when} {t} rework ({e.get('to')}): {_one_line(e.get('note'))}"
+    if s == "done" and e.get("accepted"):
+        return f"{when} {t} done: accepted by the master"
     checks = e.get("checks") or []
     parts = "; ".join(f"{_one_line(c.get('command'), 60)} -> {c.get('exit')}" for c in checks)
     line = f"{when} {t} {s}: {sum(c.get('exit') == 0 for c in checks)} of {len(checks)} checks passed"
@@ -1310,8 +1746,8 @@ def watch(root: Path, sid: str, *, poll: float = 2.0, out=print, once: bool = Fa
                     steps[tid] = step
                     out(f"{tid} step {step['tool']}: {step['command']}")
         busy = [i for i, s in st.items() if s["state"] in ("running", "checking")]
-        ordered = [i for i, s in st.items() if s["state"] in ("planned", "ready") and not s.get("hold")
-                   and (s.get("go") or sf.sprint.dispatch == "auto")]
+        ordered = [i for i, s in st.items() if s["state"] in ("planned", "ready", "waiting", *STARTABLE)
+                   and not s.get("hold") and (s.get("go") or sf.sprint.dispatch == "auto")]
         ended = stopped(evs) is not None or window_state(sf) == "ended"
         if once or (not busy and (not ordered or ended)):
             return 0
@@ -1352,6 +1788,9 @@ def warnings(sf: SprintFile) -> list[str]:
         if t.agent != "shell" and t.permissions == "read-only" and t.worktree:
             out.append(f"{t.id} is read-only: its agent cannot change the branch, so its done commands check the "
                        "branch as it starts")
+        if t.agent == AUTO and t.model:  # D02
+            out.append(f"{t.id} is auto: its model comes from [delegation.models] for the agent that takes it; "
+                       f"model = {t.model!r} is not used")
     return out
 
 
@@ -1372,7 +1811,9 @@ def report(root: Path, sf: SprintFile) -> str:
         m = merged.get(tid, ("", None))
         mtext = {"merged": f"yes @ {(m[1] or '')[:12]}", "checked merged": f"checked commit only @ {(m[1] or '')[:12]}",
                  "waiting": "no"}.get(m[0], "—")
-        lines.append(f"| {tid} | {tasks[tid].agent} | {s['state']} | "
+        agent = tasks[tid].agent + (f" ({s['agent']})" if s.get("agent") and (  # D02b: also a moved named task
+            tasks[tid].agent == AUTO or (s.get("role") and s["agent"] != tasks[tid].agent)) else "")
+        lines.append(f"| {tid} | {agent} | {s['state']} | "
                      f"{sum(c.get('exit') == 0 for c in checks)}/{len(checks)} | {s.get('branch') or '—'} | "
                      f"{(s.get('commit') or '—')[:12]} | {mtext} |")
     waiting = [t for t in order(sf) if st[t]["state"] == "done" and merged[t][0] != "merged"]
@@ -1442,8 +1883,11 @@ def validate_file(p: Path) -> tuple[SprintFile | None, str | None]:
         return None, str(e).splitlines()[0][:200]
 
 
-NEXT_STATE = {None: {"running", "failed"}, "running": {"checking", "failed"}, "checking": {"done", "failed"},
-              "failed": {"running", "failed", "checking"}, "done": set()}  # failed -> checking: S2 recheck
+NEXT_STATE = {None: {"running", "failed", "waiting"}, "running": {"checking", "failed", "redelegated"},
+              "checking": {"done", "failed", "review"}, "failed": {"running", "failed", "checking"}, "done": set(),
+              # D02: re-delegation, a wait for a reset time, and the master's review
+              "redelegated": {"running", "waiting", "failed"}, "waiting": {"running", "waiting", "failed"},
+              "review": {"done", "rework"}, "rework": {"running", "waiting", "failed"}}  # failed -> checking: S2 recheck
 
 
 def ledger_findings(sf: SprintFile, evs: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -1477,5 +1921,7 @@ def ledger_findings(sf: SprintFile, evs: list[dict[str, Any]]) -> list[dict[str,
             out.append({"code": "R-71.bad_transition", "value": t, "message": f"{prev or '(new)'} → {new}"})
         if prev == "failed" and new == "checking" and not (e.get("recheck") and e.get("by") == "human"):
             out.append({"code": "R-71.bad_transition", "value": t, "message": f"{prev} → checking without a recheck"})
+        if prev == "review" and e.get("by") != "master":  # D02: only the master's accept or rework leaves review
+            out.append({"code": "R-71.bad_transition", "value": t, "message": f"review → {new} not by the master"})
         last[t] = new
     return out

@@ -80,6 +80,12 @@ function windowId(value: string): string {
   return value;
 }
 
+// A sprint ID as the sprint files name it (`development/sprints/<id>.toml`).
+function sprintId(value: string): string {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(value)) throw new Error('Invalid sprint ID');
+  return value;
+}
+
 export interface TokenLogs {
   claude?: readonly string[];
   codex?: readonly string[];
@@ -175,17 +181,54 @@ export const commands = Object.freeze({
   skillsList: () => jsonCommand(['skills', 'list']),
   auditProgress: () => legacyJsonCommand(['audit', 'progress']),
   exchangeStatus: () => legacyJsonCommand(['exchange', 'status']),
-  // P5 (reduced): the queue of payloads waiting for a signature, here and in the declared peers. Read-only (CLI
+  // E03: one feed of notifications (steward.notifications/0.1), read-only.
+  notifications: () => jsonCommand(['notifications']),
+  // E03: local upgrade check (steward.upgrade/0.1), read-only; never passes --online (no network call).
+  // Upgrading itself (`upgrade --to VERSION`) runs only in a visible terminal after confirmation (src/cli/upgrade.ts).
+  upgradeCheck(): Invocation {
+    const spec = command(['upgrade']);
+    spec.args.push('--check', '--format', 'json');
+    return spec.finish();
+  },
+  nextBrief(): Invocation {
+    const spec = command(['next']);
+    spec.args.push('--brief');
+    return spec.finish();
+  },
+  taskBrief(file: string): Invocation {
+    const spec = command(['task', 'brief']);
+    spec.path(file, 'projectInput');
+    spec.args.push('--for', 'codex');
+    return spec.finish();
+  },
+  // P5: the queue of payloads waiting for a signature, here and in the declared peers. Read-only (CLI
   // 0.20.6 prints text; it has no JSON form). Signing is never built here: see src/cli/signing.ts.
   authorizePending(): Invocation {
     const spec = command(['authorize', 'pending']);
     spec.args.push('--all-projects');
     return spec.finish();
   },
-  // P4: read-only; the CLI reads the log files given and prints counts.
-  tokensReport(logs: TokenLogs = {}): Invocation {
+  // E04, the full forms (CLI 0.21 and later, found through `steward interface`). Each is read-only.
+  next: () => jsonCommand(['next']),
+  taskBoard: () => jsonCommand(['task', 'board']),
+  decisions: () => jsonCommand(['decisions']),
+  // The timeline as a versioned document: the milestones and the drift fields.
+  timelineFull: () => jsonCommand(['timeline']),
+  authorizePendingJson(): Invocation {
+    const spec = command(['authorize', 'pending']);
+    spec.args.push('--all-projects', '--format', 'json');
+    return spec.finish();
+  },
+  sprintStatus(id: string): Invocation {
+    const spec = command(['sprint', 'status']);
+    spec.args.push(sprintId(id), '--format', 'json');
+    return spec.finish();
+  },
+  // P4: read-only; the CLI reads the log files given and prints counts. With `versioned` (CLI 0.21 and later), the
+  // versioned document, which names each task's windows and the record each came from (E04).
+  tokensReport(logs: TokenLogs = {}, versioned = false): Invocation {
     const spec = command(['tokens', 'report']);
-    spec.args.push('--json');
+    spec.args.push(...(versioned ? ['--format', 'json'] : ['--json']));
     for (const agent of ['claude', 'codex', 'gemini'] as const) {
       for (const file of logs[agent] ?? []) {
         spec.args.push(`--${agent}`);

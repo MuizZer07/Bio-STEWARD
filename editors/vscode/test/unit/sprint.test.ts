@@ -18,6 +18,7 @@ import { join } from 'node:path';
 import * as git from '../../src/cli/git';
 import {
   foldStates, MAX_LEDGER_EVENTS, MAX_TASKS, notices, parseLedger, parsePlan, snapshotOf, sprintNodes, sprintStatus, taskOrder,
+  tasksNewestFirst,
 } from '../../src/model/sprint';
 import { isFloat, MAX_TOML_DEPTH, parseToml, TomlDateTime, TomlError } from '../../src/model/toml';
 import type { ViewNode } from '../../src/model/views';
@@ -271,7 +272,9 @@ describe('live sprint view (T13, S9)', () => {
         const out = repo.steward(['sprint', 'status', SID]);
         const cli = new Map(out.split('\n').filter(Boolean).map((l) => l.trim().split(/\s+/) as [string, string]));
         const ours = foldStates(parsePlan(planText), parseLedger(ledgerText).entries);
-        assert.deepEqual([...ours.values()].map((t) => [t.id, t.state]), [...cli].map(([id, state]) => [id, state]));
+        // E01: the view lists the tasks newest first, in the order the CLI prints them (latest change, then ID).
+        const shown = tasksNewestFirst(snap());
+        assert.deepEqual(shown.map((id) => [id, ours.get(id)?.state]), [...cli].map(([id, state]) => [id, state]));
         console.log(`    steward sprint status agrees on ${cli.size} tasks`);
       } finally {
         repo.remove();
@@ -573,7 +576,7 @@ describe('live sprint view (T13, S9)', () => {
       assert.deepEqual([0, 1].map((i) => byId(nodes, `sprint/scratch/task/T1/check/${i}`)?.label), ['exit 0', 'exit 0']);
       assert.equal(byId(nodes, 'sprint/scratch/task/T2')?.description, 'READY · ORDER NEEDED');
       const cli = new Map(repo.steward(['sprint', 'status', 'scratch']).split('\n').filter(Boolean).map((l) => l.trim().split(/\s+/) as [string, string]));
-      assert.deepEqual([...snapshot.states.values()].map((t) => [t.id, t.state]), [...cli].map(([id, state]) => [id, state]));
+      assert.deepEqual(tasksNewestFirst(snapshot).map((id) => [id, snapshot.states.get(id)?.state]), [...cli].map(([id, state]) => [id, state]));
       console.log(`    scratch sprint: T1 ${t1.state} at commit ${String(t1.commit).slice(0, 12)} (two commits on its branch); steward sprint status agrees`);
     });
   });

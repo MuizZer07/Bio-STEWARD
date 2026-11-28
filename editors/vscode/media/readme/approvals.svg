@@ -1,41 +1,64 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="820" height="840" viewBox="0 0 820 840" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
-<rect width="820" height="840" rx="10" fill="#1f1f1f"/>
-<rect width="820" height="758" rx="10" fill="#181818"/>
-<text x="20" y="24" fill="#bbbbbb" font-size="11" font-weight="700">APPROVALS</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="1296" viewBox="0 0 820 1296" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
+<rect width="820" height="1296" rx="10" fill="#1f1f1f"/>
+<rect width="820" height="1198" rx="10" fill="#181818"/>
+<text x="20" y="24" fill="#bbbbbb" font-size="11" font-weight="700">NOW · APPROVALS</text>
 <text x="800" y="24" fill="#9d9d9d" font-size="12" text-anchor="end">↺  ?</text>
-<text x="24" y="50" fill="#9d9d9d" font-size="12">Reduced form. The text of steward authorize pending --all-projects, as the CLI printed it (CLI 0.20.6 has no</text>
-<text x="24" y="68" fill="#9d9d9d" font-size="12">JSON form for it), one card per payload line. The payload and its SHA-256 are read from the file</text>
-<text x="24" y="86" fill="#9d9d9d" font-size="12">.steward/pending/&lt;nonce&gt;.txt. Scope, budget, object hash and who asked come with authorize pending --format</text>
-<text x="24" y="104" fill="#9d9d9d" font-size="12">json in a newer CLI.</text>
+<text x="24" y="50" fill="#9d9d9d" font-size="12">Source. The text of steward authorize pending --all-projects, as the CLI printed it (newest first), one card</text>
+<text x="24" y="68" fill="#9d9d9d" font-size="12">per payload line, with each payload's scope, budget, object, who asked and hashes from authorize pending</text>
+<text x="24" y="86" fill="#9d9d9d" font-size="12">--format json. The payload and the SHA-256 that ✍ Sign shows are read from the file</text>
+<text x="24" y="104" fill="#9d9d9d" font-size="12">.steward/pending/&lt;nonce&gt;.txt.</text>
 <text x="40" y="152" fill="#ffffff" font-size="15" font-weight="700"><tspan fill="#cca700">¤</tspan> spend<tspan dx="8" fill="#9d9d9d" font-size="12" font-weight="400">· GEO 06e95f82fc4a · expired</tspan></text>
 <text x="40" y="178" fill="#cccccc" font-size="13">Spend for the first rerun</text>
 <text x="40" y="198" fill="#cccccc" font-size="13">expires 2000-01-02T00:00:00Z</text>
-<text x="40" y="218" fill="#cccccc" font-size="13">Payload SHA-256 (read from the file):</text>
-<text x="40" y="238" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">‹the SHA-256 of .steward/pending/06e95f82fc4afc7a2e7dbb4007d9ff0d.txt›</text>
-<text x="40" y="258" fill="#75beff" font-size="13" text-decoration="underline">View exactly what you are approving</text>
-<text x="40" y="284" fill="#cca700" font-size="13">⏱ Expired: it can no longer be signed.</text>
-<text x="40" y="304" fill="#9d9d9d" font-size="11" font-family="'SF Mono', Menlo, Consolas, monospace">As printed: GEO  06e95f82fc4a  expired  spend          expires 2000-01-02T00:00:00Z  Spend for the first rerun</text>
-<rect x="24" y="128" width="772" height="192" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.5"/>
-<text x="40" y="360" fill="#ffffff" font-size="15" font-weight="700"><tspan fill="#cca700">¤</tspan> spend<tspan dx="8" fill="#9d9d9d" font-size="12" font-weight="400">· GEO d3e83e998137 · waiting</tspan></text>
-<text x="40" y="386" fill="#cccccc" font-size="13">Spend for the model comparison</text>
-<text x="40" y="406" fill="#cccccc" font-size="13">expires 2099-01-01T00:00:00Z</text>
-<text x="40" y="426" fill="#cccccc" font-size="13">Payload SHA-256 (read from the file):</text>
-<text x="40" y="446" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">‹the SHA-256 of .steward/pending/d3e83e998137f78c0c7e973875d6e77e.txt›</text>
-<text x="40" y="466" fill="#75beff" font-size="13" text-decoration="underline">View exactly what you are approving</text>
-<rect x="36" y="477" width="78" height="22" rx="4" fill="#0078d4"/>
-<text x="40" y="492" fill="#ffffff" font-size="13" font-weight="700">✍ Sign</text>
-<text x="40" y="518" fill="#9d9d9d" font-size="11" font-family="'SF Mono', Menlo, Consolas, monospace">As printed: GEO  d3e83e998137  waiting  spend          expires 2099-01-01T00:00:00Z  Spend for the model compar…</text>
-<rect x="24" y="336" width="772" height="198" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.5"/>
-<text x="24" y="556" fill="#9d9d9d" font-size="12">GONE: no-such-project: not a steward project here; skipped</text>
-<text x="40" y="604" fill="#ffffff" font-size="15" font-weight="700"><tspan fill="#cca700">¤</tspan> spend<tspan dx="8" fill="#9d9d9d" font-size="12" font-weight="400">· PEER 7b274a7e9224 · waiting</tspan></text>
-<text x="40" y="630" fill="#cccccc" font-size="13">Spend for the peer rerun</text>
-<text x="40" y="650" fill="#cccccc" font-size="13">expires 2099-01-01T00:00:00Z</text>
-<text x="40" y="670" fill="#cccccc" font-size="13">This payload is in PEER's checkout. Open that project to view and sign it.</text>
-<text x="40" y="690" fill="#9d9d9d" font-size="11" font-family="'SF Mono', Menlo, Consolas, monospace">As printed: PEER  7b274a7e9224  waiting  spend          expires 2099-01-01T00:00:00Z  Spend for the peer rerun</text>
-<rect x="24" y="580" width="772" height="126" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.5"/>
-<text x="24" y="728" fill="#9d9d9d" font-size="12">2 waiting; sign them with: steward authorize sign-pending --all-projects</text>
-<text x="16" y="780" font-size="11.5" fill="#8b949e">Drawing of the Approvals panel (reduced form): the page its view model builds from the fixture text of steward authorize</text>
-<text x="16" y="796" font-size="11.5" fill="#8b949e">pending --all-projects, one card per payload line (not a screenshot). The fixture has no payload files, so the hash is a</text>
-<text x="16" y="812" font-size="11.5" fill="#8b949e">placeholder naming the file the panel hashes; each action's colour icon is drawn as a plain mark (¤ for spend). The peer's</text>
-<text x="16" y="828" font-size="11.5" fill="#8b949e">payload has no buttons.</text>
+<text x="40" y="218" fill="#cccccc" font-size="13">Scope: -</text>
+<text x="40" y="238" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Budget: none</text>
+<text x="40" y="258" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Object: sha256:e256768e7aa71f79ed23f42a005c9697e431bc760d2e06b3150c77ab96d39ad2</text>
+<text x="40" y="278" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Asked by: not recorded</text>
+<text x="40" y="298" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Baseline: 0000000000000000000000000000000000000000</text>
+<text x="40" y="318" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Payload SHA-256 (steward authorize pending): 0000000000000000000000000000000000000000000000000000000…</text>
+<text x="40" y="338" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Signed tag: steward/auth/06e95f82fc4afc7a2e7dbb4007d9ff0d</text>
+<text x="40" y="358" fill="#cccccc" font-size="13">Payload SHA-256 (read from the file):</text>
+<text x="40" y="378" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">‹the SHA-256 of .steward/pending/06e95f82fc4afc7a2e7dbb4007d9ff0d.txt›</text>
+<text x="40" y="398" fill="#75beff" font-size="13" text-decoration="underline">View exactly what you are approving</text>
+<text x="40" y="424" fill="#cca700" font-size="13">⏱ Expired: it can no longer be signed.</text>
+<text x="40" y="444" fill="#9d9d9d" font-size="11" font-family="'SF Mono', Menlo, Consolas, monospace">As printed: GEO  06e95f82fc4a  expired  spend          expires 2000-01-02T00:00:00Z  Spend for the first rerun</text>
+<rect x="24" y="128" width="772" height="332" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.5"/>
+<text x="40" y="500" fill="#ffffff" font-size="15" font-weight="700"><tspan fill="#cca700">¤</tspan> spend<tspan dx="8" fill="#9d9d9d" font-size="12" font-weight="400">· GEO d3e83e998137 · waiting</tspan></text>
+<text x="40" y="526" fill="#cccccc" font-size="13">Spend for the model comparison</text>
+<text x="40" y="546" fill="#cccccc" font-size="13">expires 2099-01-01T00:00:00Z</text>
+<text x="40" y="566" fill="#cccccc" font-size="13">Scope: -</text>
+<text x="40" y="586" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Budget: none</text>
+<text x="40" y="606" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Object: sha256:e256768e7aa71f79ed23f42a005c9697e431bc760d2e06b3150c77ab96d39ad2</text>
+<text x="40" y="626" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Asked by: not recorded</text>
+<text x="40" y="646" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Baseline: 0000000000000000000000000000000000000000</text>
+<text x="40" y="666" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Payload SHA-256 (steward authorize pending): 0000000000000000000000000000000000000000000000000000000…</text>
+<text x="40" y="686" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Signed tag: steward/auth/d3e83e998137f78c0c7e973875d6e77e</text>
+<text x="40" y="706" fill="#cccccc" font-size="13">Payload SHA-256 (read from the file):</text>
+<text x="40" y="726" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">‹the SHA-256 of .steward/pending/d3e83e998137f78c0c7e973875d6e77e.txt›</text>
+<text x="40" y="746" fill="#75beff" font-size="13" text-decoration="underline">View exactly what you are approving</text>
+<rect x="36" y="757" width="78" height="22" rx="4" fill="#0078d4"/>
+<text x="40" y="772" fill="#ffffff" font-size="13" font-weight="700">✍ Sign</text>
+<text x="40" y="798" fill="#9d9d9d" font-size="11" font-family="'SF Mono', Menlo, Consolas, monospace">As printed: GEO  d3e83e998137  waiting  spend          expires 2099-01-01T00:00:00Z  Spend for the model compar…</text>
+<rect x="24" y="476" width="772" height="338" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.5"/>
+<text x="24" y="836" fill="#9d9d9d" font-size="12">GONE: no-such-project: not a steward project here; skipped</text>
+<text x="40" y="884" fill="#ffffff" font-size="15" font-weight="700"><tspan fill="#cca700">¤</tspan> spend<tspan dx="8" fill="#9d9d9d" font-size="12" font-weight="400">· PEER 7b274a7e9224 · waiting</tspan></text>
+<text x="40" y="910" fill="#cccccc" font-size="13">Spend for the peer rerun</text>
+<text x="40" y="930" fill="#cccccc" font-size="13">expires 2099-01-01T00:00:00Z</text>
+<text x="40" y="950" fill="#cccccc" font-size="13">Scope: -</text>
+<text x="40" y="970" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Budget: none</text>
+<text x="40" y="990" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Object: sha256:e256768e7aa71f79ed23f42a005c9697e431bc760d2e06b3150c77ab96d39ad2</text>
+<text x="40" y="1010" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Asked by: not recorded</text>
+<text x="40" y="1030" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Peer: PEER</text>
+<text x="40" y="1050" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Baseline: 0000000000000000000000000000000000000000</text>
+<text x="40" y="1070" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Payload SHA-256 (steward authorize pending): 0000000000000000000000000000000000000000000000000000000…</text>
+<text x="40" y="1090" fill="#9d9d9d" font-size="11.5" font-family="'SF Mono', Menlo, Consolas, monospace">Signed tag: steward/auth/7b274a7e92249e37ac57dd488e04c43a</text>
+<text x="40" y="1110" fill="#cccccc" font-size="13">This payload is in PEER's checkout. Open that project to view and sign it.</text>
+<text x="40" y="1130" fill="#9d9d9d" font-size="11" font-family="'SF Mono', Menlo, Consolas, monospace">As printed: PEER  7b274a7e9224  waiting  spend          expires 2099-01-01T00:00:00Z  Spend for the peer rerun</text>
+<rect x="24" y="860" width="772" height="286" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.5"/>
+<text x="24" y="1168" fill="#9d9d9d" font-size="12">2 waiting; sign them with: steward authorize sign-pending --all-projects</text>
+<text x="16" y="1220" font-size="11.5" fill="#8b949e">Drawing of the Approvals panel: the page its view model builds from the fixture text of steward authorize pending</text>
+<text x="16" y="1236" font-size="11.5" fill="#8b949e">--all-projects, one card per payload line, with the fields of authorize pending --format json (not a screenshot). The baselines</text>
+<text x="16" y="1252" font-size="11.5" fill="#8b949e">and the CLI's payload hashes are normalised to zeros in the fixture, which has no payload files, so the hash read from the file</text>
+<text x="16" y="1268" font-size="11.5" fill="#8b949e">is a placeholder naming the file the panel hashes; each action's colour icon is drawn as a plain mark (¤ for spend). The peer's</text>
+<text x="16" y="1284" font-size="11.5" fill="#8b949e">payload has no buttons.</text>
 </svg>

@@ -11,45 +11,49 @@ One task, one spec, one implementer, one independent reviewer, and a human who d
 apart.
 
 ## 1. Write the spec first
-- Copy `development/templates/task.md` (created by `steward init`) to `development/tasks/<short-name>.md`.
-- Fill in the goal, the scope (in and out) and **checkable** acceptance criteria: a command, a test or a file that
-  must exist. "Works well" is not checkable; "`steward check` gate default is ELIGIBLE" is.
-- Set the status to `proposed` and show the spec to the human.
+- Copy `development/templates/task.md` to `development/tasks/<short-name>.md`.
+- Fill in goal, scope (in/out) and **checkable** acceptance criteria (a command, test or file, e.g.
+  "`steward check` gate default is ELIGIBLE", not "works well").
+- Set status to `proposed` and show the human.
 
 ## 2. Hold until a GO is recorded
-- Do not start implementing until the human says to go ahead for this task.
-- Record the human's words verbatim in `development/DECISIONS.md` (date, quote, decision, consequences) and put the
-  link in the spec's **GO reference**.
-- A GO covers the scope written in the spec, nothing more. If the work needs more than that, stop and ask.
-- Your transcription of the human's words is a record, not an authorisation for anything beyond what they said.
+- Wait until the human says to go ahead for this task.
+- Record their words verbatim in `development/DECISIONS.md` (date, quote, decision, consequences) and link it in
+  **GO reference**.
+- A GO covers only the spec's scope. Stop and ask before widening it; your transcription is a record, never an
+  authorisation beyond what was said.
 
 ## 3. Implement
-- Keep changes inside the scope. Note anything you deliberately left out.
-- Run the project's tests and `steward check` (see the `using-steward` skill).
-- Fill in **Outcome**: what was done, what was not, the evidence (commits, test output, the `steward check` summary
-  line and gate line).
-- **Close-out rule:** a task is done only when every acceptance criterion ran and passed, or the Outcome names each
-  one that did not, and why. Never close it on a summary.
-- Work delegated to another agent comes back as a patch: apply, run and review it before it counts. The procedure is
-  in [delegation.md](delegation.md).
+- Keep changes in scope; note anything left out.
+- Run the project's tests and `steward check` (see `using-steward`).
+- Fill in **Outcome**: what was done, what was not, and evidence (commits, test output, summary and gate lines).
+- **Close-out rule:** a task is done only when every acceptance criterion ran and passed, or Outcome names each one
+  that did not and why. Never close on a summary.
+
+## Delegating subtasks
+- **When:** the project's master (named in `[delegation]` and `AGENTS.md`) delegates any self-contained, specified
+  subtask with its own checkable acceptance commands.
+- **How:** `steward task dispatch TASK --to auto` for a brief, or `agent = "auto"` in a sprint; steward selects the
+  first available worker and re-delegates on usage limits or sign-out.
+- **What the master keeps:** reviewing worker output (`steward sprint accept` or `steward sprint rework --note …`),
+  merging, and anything that needs a signature.
+- Automatic delegation and patch-mode procedure: [delegation.md](delegation.md).
 
 ## Toolkit issues
-
-At your discretion, use `steward issue` to file a toolkit defect with generic wording. Keep project problems in the project's own records. After a fault hint, `steward issue --from-last-error` files the local toolkit diagnostic.
+Use `steward issue` for toolkit defects with generic wording (or `--from-last-error` after a fault hint). Keep project
+problems in project records.
 
 ## 4. Independent review
-- The reviewer is not the implementer: another agent session, another model, or a human.
-- The reviewer checks each acceptance criterion against evidence, not against the implementer's summary, and
-  re-runs the checks rather than trusting pasted output.
-- Findings are recorded in the spec. The implementer fixes them; the reviewer re-checks.
+- Reviewer is not the implementer: another agent session, model or human.
+- Check each acceptance criterion against evidence and re-run checks rather than trusting pasted output.
+- Record findings in the spec; implementer fixes, reviewer re-checks.
 
 ## 5. Decide
-- Only the human approves the task as done, merges, or grants the next GO.
-- **Archive** closed specs at a release: move them to the archive folder, keep their IDs (never reused), and keep
-  links working.
-- **When the session ends,** record the decisions first, then `steward session close --decisions-logged --next …`
-  writes the bounded `HANDOFF.md`; commit it. Decisions go to DECISIONS.md, never into the handoff.
-- **No agent approves its own work**, and no agent approves a gate, a merge, a spend or a GO.
+- Only the human approves a task as done, merges, or grants the next GO.
+- **Archive** closed specs at a release: move them to archive, keep IDs (never reused) and links working.
+- **Session end:** record decisions first, then `steward session close --decisions-logged --next …` writes bounded
+  `HANDOFF.md`; commit it. Decisions belong in DECISIONS.md, never in the handoff.
+- **No agent approves its own work**, a gate, a merge, a spend or a GO.
 
 ## Stale tasks and memory: name them and ask
 At session start run `steward next --brief` (or `steward tidy`). If it lists stale tasks or memory, say so **for each

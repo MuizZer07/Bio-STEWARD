@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { commands, isAllowed, type Invocation } from '../../src/cli/commands';
 import { signingArgs, signingCommand, signingEnvironment } from '../../src/cli/signing';
 import {
-  actionIcon, approvalsHtml, approvalsSummary, bindCard, cardUri, needsTypedName, pageLinks, parsePayload, parsePendingText,
+  actionIcon, APPROVAL_DETAILS_COMMAND, approvalsHtml, approvalsSummary, bindCard, cardUri, needsTypedName, pageLinks, parsePayload, parsePendingText,
   printedLine, queueCode, SIGN_BUTTON, SIGN_COMMAND, signDialog, signedTag, typedNamePrompt, VIEW_PAYLOAD_COMMAND,
   type ApprovalsBlock, type ApprovalsState, type Binding, type PayloadFields, type PayloadRead,
 } from '../../src/model/approvals';
@@ -53,7 +53,7 @@ function block(stdout: string, payloads: [string, PayloadRead][] = [], index = 0
   return { root: '/w/geo-cockpit', name: 'geo-cockpit', index, approvals: ready(stdout), payloads: new Map(payloads) };
 }
 
-describe('Approvals (U04b, reduced form, cards)', () => {
+describe('Approvals (U04b, cards)', () => {
   describe('steward authorize pending --all-projects', () => {
     it('keeps every line of each U01 fixture unchanged, and reads each payload line\'s fields as printed', () => {
       for (const name of ['geo', 'geo-cockpit', 'geo-cockpit-all-projects']) {
@@ -95,17 +95,19 @@ describe('Approvals (U04b, reduced form, cards)', () => {
       ['06e95f82fc4a', { kind: 'read', nonce: EXPIRED, sha256: 'e'.repeat(64) }],
     ], 3)] }, 7);
 
-    it('has default-src \'none\', no script, and only the two card links, each carrying the full nonce, index and generation', () => {
+    it('has default-src \'none\', no script, and only the card commands with a row or nonce, project index and generation', () => {
       const page = html();
       assert.match(page, /<meta http-equiv="Content-Security-Policy" content="default-src 'none'">/);
       assert.doesNotMatch(page, /<script|<style|style=|<img|<iframe|<form|\son\w+=/i);
-      const links = pageLinks(page);
+      const links = pageLinks(page).filter((link) => !link.startsWith(`command:${APPROVAL_DETAILS_COMMAND}?`));
+      const detailLinks = pageLinks(page).filter((link) => link.startsWith(`command:${APPROVAL_DETAILS_COMMAND}?`));
+      assert.deepEqual(detailLinks.map((link) => JSON.parse(decodeURIComponent(link.split('?')[1]))), [[0, 3, 7], [1, 3, 7], [3, 3, 7]]);
       assert.deepEqual(links, [
         `command:${VIEW_PAYLOAD_COMMAND}?${encodeURIComponent(`["${EXPIRED}",3,7]`)}`,
         `command:${VIEW_PAYLOAD_COMMAND}?${encodeURIComponent(`["${FULL}",3,7]`)}`,
         `command:${SIGN_COMMAND}?${encodeURIComponent(`["${FULL}",3,7]`)}`,
       ]);
-      assert.match(page, /Reduced form/);
+      assert.match(page, /<b>Source\.<\/b>/);
     });
 
     it('shows each CLI line as printed, the summary, expiry, hash and the buttons (parity)', () => {
@@ -145,7 +147,7 @@ describe('Approvals (U04b, reduced form, cards)', () => {
       assert.ok(page.includes(escape(hostile)));
       assert.doesNotMatch(page, /<img|<script|<a href="command:evil/);
       assert.equal(pageLinks(page).filter((link) => !link.startsWith(`command:${VIEW_PAYLOAD_COMMAND}?`)
-        && !link.startsWith(`command:${SIGN_COMMAND}?`)).length, 0);
+        && !link.startsWith(`command:${SIGN_COMMAND}?`) && !link.startsWith(`command:${APPROVAL_DETAILS_COMMAND}?`)).length, 0);
     });
 
     it('with several projects: one block each, in the order given; untrusted and empty pages have no link', () => {
@@ -404,9 +406,10 @@ describe('Approvals (U04b, reduced form, cards)', () => {
       const rel = (file: string) => file.slice(extensionRoot.length);
       const holding = (pattern: RegExp) => sources.filter((file) => pattern.test(readFileSync(file, 'utf8'))).map(rel).sort();
       assert.deepEqual(holding(/\.sendText\(/), [], 'the old "type without Enter" path is gone');
-      assert.deepEqual(holding(/createTerminal\(/), ['/src/ui/approvals.ts']);
+      // Only Approvals (sign-pending) and Upgrade CLI (upgrade --to, E03) open a dedicated visible terminal with strictEnv.
+      assert.deepEqual(holding(/createTerminal\(/), ['/src/ui/approvals.ts', '/src/ui/upgrade.ts']);
       assert.deepEqual(holding(/signingCommand\(/), ['/src/cli/signing.ts', '/src/ui/approvals.ts']);
-      assert.deepEqual(holding(/shellPath/), ['/src/ui/approvals.ts']);
+      assert.deepEqual(holding(/shellPath/), ['/src/ui/approvals.ts', '/src/ui/upgrade.ts']);
       // Only the signing module, and the panel's words about it, name the signing command; the allow-list does not.
       assert.deepEqual(holding(/sign-pending/), ['/src/cli/signing.ts', '/src/model/approvals.ts', '/src/ui/approvals.ts']);
     });

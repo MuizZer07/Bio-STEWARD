@@ -328,6 +328,10 @@
       [
         "R-88",
         "tidy"
+      ],
+      [
+        "R-89",
+        "agents"
       ]
     ],
     "scope": {
@@ -365,31 +369,31 @@
           },
           {
             "code": "R-60.dangling",
-            "fix": null
+            "fix": "a skills copy is a broken symbolic link whose target does not exist"
           },
           {
             "code": "R-60.drift",
-            "fix": null
+            "fix": "a skills copy differs from the canonical skills directory"
           },
           {
             "code": "R-60.linked",
-            "fix": null
+            "fix": "a skills copy is properly linked to the canonical skills directory"
           },
           {
             "code": "R-60.missing",
-            "fix": null
+            "fix": "a declared skills copy directory does not exist"
           },
           {
             "code": "R-60.no_canonical",
-            "fix": null
+            "fix": "the declared canonical skills directory does not exist"
           },
           {
             "code": "R-60.pointer",
-            "fix": null
+            "fix": "a skills copy uses a STEWARD_SKILLS pointer file matching the canonical directory"
           },
           {
             "code": "R-60.pointer_wrong",
-            "fix": null
+            "fix": "a STEWARD_SKILLS pointer file does not resolve to the canonical skills directory"
           },
           {
             "code": "R-60.wrong_target",

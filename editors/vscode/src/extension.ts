@@ -33,15 +33,30 @@ import { OPEN_TASK_FILE_COMMAND, openTaskFile, TASKS_REFRESH_COMMAND, TasksView 
 import { DECISIONS_REFRESH_COMMAND, DecisionsView, OPEN_DECISIONS_COMMAND, openDecisions } from './ui/decisions';
 import { DRIFT_REFRESH_COMMAND, DriftView } from './ui/drift';
 import {
-  DONE_WINDOW_COMMAND, START_WINDOW_COMMAND, taskWindow, TOKENS_REFRESH_COMMAND, TokensView, type Confirm,
+  DONE_WINDOW_COMMAND, START_WINDOW_COMMAND, taskWindow, TOKENS_REFRESH_COMMAND, TokensView, type Confirm, USE_FOLDER_COMMAND,
+  useFolder,
 } from './ui/tokens';
 import {
-  APPROVALS_REFRESH_COMMAND, ApprovalsView, PayloadDocuments, SIGN_COMMAND, signCard, VIEW_PAYLOAD_COMMAND, viewPayload,
+  APPROVAL_DETAILS_COMMAND, APPROVALS_REFRESH_COMMAND, ApprovalsView, PayloadDocuments, SIGN_COMMAND, signCard, VIEW_PAYLOAD_COMMAND, viewPayload,
   type SigningHooks, type SigningOutcome,
 } from './ui/approvals';
+import {
+  MARK_ALL_READ_COMMAND, MARK_READ_COMMAND, MARK_UNREAD_COMMAND, NotificationDetailsView, NotificationsBell,
+  NotificationsReadStore, OPEN_BELL_COMMAND, OPEN_NOTIFICATION_DETAILS_COMMAND,
+} from './ui/notifications';
+import { DimmedDecorationProvider } from './ui/tree';
+import {
+  runPostUpgradeContractCheck, UPGRADE_CLI_COMMAND, upgradeCli, type UpgradeHooks, type UpgradeOutcome,
+} from './ui/upgrade';
 import type { RunResult } from './cli/runner';
+import { PANELS, Refreshes, type RefreshRecord } from './ui/refresh';
 import { orderProjects } from './model/today';
+import { DetailsView } from './ui/preview';
+import { exchangeReadKey, RowActions } from './ui/rowActions';
+import { COMMANDS, OPEN_ROW_COMMAND } from './ui/tree';
 import type { Notice } from './model/sprint';
+import type { ContractCheckResult } from './model/upgrade';
+import type { ProjectNotification } from './model/notifications';
 
 export const OUTPUT_CHANNEL_NAME = 'Bio-STEWARD';
 export const SELECT_PROJECT_COMMAND = 'bioSteward.selectProject';
@@ -61,7 +76,7 @@ export interface TestApi {
   readonly init: InitView;
   readonly skills: SkillsView;
   readonly skillsInstall: SkillsInstall;
-  // 0.2.0 P1, P2 (reduced): Today, the "Where am I?" page, and the reopening check.
+  // 0.2.0 P1, P2: Today, the "Where am I?" page, and the reopening check.
   readonly today: TodayView;
   readonly whereAmI: WhereAmIView;
   readonly reopen: {
@@ -69,13 +84,13 @@ export interface TestApi {
     // Run the start-up check again (as on reopening): the project whose page it showed, if any.
     check(now?: Date): Promise<Project | undefined>;
   };
-  // 0.2.0 P3 (reduced) and P4: the Tasks and Tokens panels, and the task-window action with a test confirmation.
+  // 0.2.0 P3 and P4: the Tasks and Tokens panels, and the task-window action with a test confirmation.
   readonly tasks: TasksView;
   readonly tokens: {
     readonly view: TokensView;
     window(action: 'start' | 'done', root: string, id: string, confirm: Confirm): Promise<RunResult | undefined>;
   };
-  // 0.2.0 P5 (reduced, design v0.8): the Approvals cards, View exactly what you are approving, and ✍ Sign with
+  // 0.2.0 P5 (design v0.8): the Approvals cards, View exactly what you are approving, and ✍ Sign with
   // test hooks (the modal's answer, the typed name, the terminal). A link's arguments: full nonce, project index,
   // page generation (U09).
   readonly approvals: {
@@ -83,7 +98,7 @@ export interface TestApi {
     viewPayload(nonce: unknown, index: unknown, generation: unknown): Promise<{ uri: vscode.Uri; text: string } | undefined>;
     sign(nonce: unknown, index: unknown, generation: unknown, hooks: SigningHooks): Promise<SigningOutcome | undefined>;
   };
-  // 0.2.0 P6, P7 (reduced): the Decisions panel and Open DECISIONS.md, and the Drift panel (timeline states only).
+  // 0.2.0 P6, P7: the Decisions panel and Open DECISIONS.md, and the Drift panel (timeline states only).
   readonly decisions: {
     readonly view: DecisionsView;
     open(root?: string): Promise<vscode.Uri | undefined>;
@@ -95,6 +110,25 @@ export interface TestApi {
     readonly statusBar: SprintStatusBar;
     readonly live: LiveSprint | undefined;
     readonly notices: readonly Notice[];
+  };
+  // E01: every panel refresh that ran (panel, start, end), newest last.
+  readonly refreshes: readonly RefreshRecord[];
+  // E03: the notifications bell, local per-machine read state, details page, and Upgrade CLI with test hooks.
+  readonly notifications: {
+    readonly readStore: NotificationsReadStore;
+    readonly bell: NotificationsBell;
+    readonly details: NotificationDetailsView;
+    openBell(): Promise<readonly ProjectNotification[]>;
+    closeBell(): void;
+    openDetails(target: unknown): Promise<vscode.TextDocument | undefined>;
+    markRead(target: unknown): Promise<boolean>;
+    markUnread(target: unknown): Promise<boolean>;
+    markAllRead(target?: unknown): Promise<boolean>;
+  };
+  readonly upgrade: {
+    run(root?: string, hooks?: UpgradeHooks): Promise<UpgradeOutcome | undefined>;
+    contractCheck(project?: Project, beforeVersion?: string): Promise<ContractCheckResult>;
+    readonly lastContractCheck: ContractCheckResult | undefined;
   };
   // The last text this extension copied (src/ui/clipboard.ts), so tests never read the shared system clipboard.
   readonly clipboard: typeof lastCopy;
@@ -131,7 +165,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
   const countdown = new CountdownStatusBar();
   const explain = new ExplainView(() => session?.selection.active);
   const resume = new ResumeView();
-  const today = new TodayView();
+  const dimmedDecorations = new DimmedDecorationProvider();
+  const notificationsReadStore = new NotificationsReadStore(context.globalState);
+  const notificationDetails = new NotificationDetailsView();
+  const today = new TodayView(notificationsReadStore,
+    (root, id) => context.workspaceState.get(exchangeReadKey(root, id), false));
+  const details = new DetailsView();
+  const notificationsBell = new NotificationsBell(notificationsReadStore, notificationDetails, async () => {
+    await Promise.all((session?.projects ?? []).map((project) => project.refreshNotifications()));
+    notificationsBell.update(session?.projects ?? [], isTrusted());
+    await today.update(session?.projects ?? [], isTrusted());
+  });
   const tasks = new TasksView();
   const approvals = new ApprovalsView();
   const payloadDocuments = new PayloadDocuments();
@@ -179,6 +223,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
   const sprintView = new SprintView();
   const sprintStatusBar = new SprintStatusBar();
   const shownNotices: Notice[] = [];
+  const refreshes = new Refreshes();
   const saves: { path: string; triggered: boolean }[] = [];
   // D3: a full check after a save, debounced 2 s, one at a time per project, trusted workspaces only.
   const onSave = new SaveTrigger<Project>(async (project) => {
@@ -188,7 +233,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
   });
   context.subscriptions.push(overview, results, statusBar, countdown, explain, resume, init, skills, skillsInstall,
     sprintView, sprintStatusBar, onSave, today, whereAmI, lastSeen, tasks, tokens, approvals,
-    payloadDocuments, decisions, drift);
+    payloadDocuments, decisions, drift, dimmedDecorations, notificationsReadStore, notificationDetails, notificationsBell, details);
 
   let session: Session | undefined;
   let initProject: Project | undefined;
@@ -214,6 +259,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
   const renderToday = () => {
     clearTimeout(todayTimer);
     todayTimer = setTimeout(() => {
+      notificationsBell.update(session?.projects ?? [], isTrusted());
       void today.update(session?.projects ?? [], isTrusted());
       // P3 and P4 show every project too.
       tasks.update(session?.projects ?? [], isTrusted());
@@ -224,10 +270,24 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
       drift.update(session?.projects ?? [], isTrusted());
     }, 100);
   };
-  context.subscriptions.push({ dispose: () => clearTimeout(todayTimer) });
+  context.subscriptions.push({ dispose: () => clearTimeout(todayTimer) }, notificationsReadStore.onDidChange(() => {
+    notificationsBell.update(session?.projects ?? [], isTrusted());
+    void today.update(session?.projects ?? [], isTrusted());
+  }));
   // P5: the terminals ✍ Sign opened, and the project each belongs to.
   const signingTerminals = new Map<vscode.Terminal, Project>();
+  // E03: the terminals Upgrade CLI opened, and the last post-upgrade contract check result.
+  const upgradeTerminals = new Map<vscode.Terminal, { readonly project: Project; readonly beforeVersion: string }>();
+  let lastContractCheck: ContractCheckResult | undefined;
   const logInfo = (text: string) => log.info(text);
+  const runUpgrade = async (root?: unknown, hooks?: UpgradeHooks): Promise<UpgradeOutcome | undefined> => {
+    if (!isTrusted() || !session) return undefined;
+    const outcome = await upgradeCli(session.projects, session.selection.active, root, hooks, logInfo);
+    if (outcome) {
+      upgradeTerminals.set(outcome.terminal, { project: outcome.project, beforeVersion: outcome.beforeVersion });
+    }
+    return outcome;
+  };
   const sign = async (nonce: unknown, index: unknown, generation: unknown, hooks?: SigningHooks): Promise<SigningOutcome | undefined> => {
     if (!isTrusted() || !session) return undefined;
     const outcome = await signCard(session.projects, approvals, nonce, index, generation, hooks, logInfo);
@@ -241,6 +301,45 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
     ? viewPayload(session.projects, approvals, payloadDocuments, nonce, index, generation, logInfo) : Promise.resolve(undefined);
   const projectAt = (root: unknown) => session?.projects.find((project) => project.root === root);
 
+  const rows = new RowActions({
+    overview: overview.tree, results: results.tree, today: today.tree, tasks: tasks.tree, tokens: tokens.tree,
+    decisions: decisions.tree, drift: drift.tree, skills: skills.tree, sprint: sprintView.tree,
+  }, () => session?.projects ?? [], (project) => session?.sprints.get(project), (project) => session?.selection.select(project),
+  details, resume, context.workspaceState, () => today.update(session?.projects ?? [], isTrusted()), isTrusted);
+  const rowCommands: Record<string, (row: NonNullable<ReturnType<RowActions['resolve']>>) => unknown> = {
+    [OPEN_ROW_COMMAND]: (row) => rows.open(row),
+    'bioSteward.row.resume': (row) => rows.open(row),
+    'bioSteward.row.openText': (row) => rows.open(row, true),
+    'bioSteward.row.copyPath': (row) => rows.useFile(row, 'copy'),
+    'bioSteward.row.reveal': (row) => rows.useFile(row, 'reveal'),
+    'bioSteward.row.openFinding': (row) => rows.openFinding(row),
+    'bioSteward.row.handToAgent': (row) => rows.handToAgent(row),
+    'bioSteward.row.dispatch': (row) => rows.dispatch(row),
+    'bioSteward.row.tokenTask': (row) => rows.openTokenTask(row),
+    'bioSteward.row.models': (row) => rows.showModels(row),
+    'bioSteward.row.milestone': (row) => rows.openMilestone(row),
+    'bioSteward.row.blockers': (row) => rows.showBlockers(row),
+    'bioSteward.row.openDecision': (row) => openDecisions(session?.projects ?? [], row.node),
+    'bioSteward.row.recordDecision': (row) => openDecisions(session?.projects ?? [], row.node, true, true),
+    'bioSteward.row.todayApproval': (row) => rows.todayNext(row),
+    'bioSteward.row.todaySprint': (row) => rows.todayNext(row),
+    'bioSteward.row.milestoneBrief': (row) => rows.handToAgent(row),
+    'bioSteward.row.exchangeOpen': (row) => rows.exchange(row, 'open'),
+    'bioSteward.row.exchangePull': (row) => rows.exchange(row, 'pull'),
+    'bioSteward.row.exchangeRead': (row) => rows.exchange(row, 'read'),
+    'bioSteward.row.exchangeRespond': (row) => rows.exchange(row, 'respond'),
+    'bioSteward.row.sprintLog': (row) => rows.sprint(row, 'log'),
+    'bioSteward.row.sprintHold': (row) => rows.sprint(row, 'hold'),
+    'bioSteward.row.sprintDiff': (row) => rows.sprint(row, 'diff'),
+    'bioSteward.row.next': ({ node }) => {
+      const command = node.command;
+      if (command && ['showLog', 'runCheck', 'checkSkills', 'installSkills', 'openTokenSettings'].includes(command)) {
+        return vscode.commands.executeCommand(COMMANDS[command].command, ...COMMANDS[command].arguments ?? []);
+      }
+      return undefined;
+    },
+  };
+
   const render = () => {
     renderSprint();
     renderToday();
@@ -249,16 +348,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
       overview.tree.set([]);
       void skills.update(undefined);
       void vscode.commands.executeCommand('setContext', 'bioSteward.empty', 'no-folder');
+      void vscode.commands.executeCommand('setContext', 'bioSteward.upgradeAvailable', false);
       return;
     }
     const { state } = project;
     const settings = vscode.workspace.getConfiguration('bioSteward', vscode.Uri.file(project.root));
     const several = (session?.projects.length ?? 0) > 1 ? project.name : undefined;
-    overview.update(state, several);
+    overview.update(state, several, project.root);
     void results.update(state, project.root, several);
     statusBar.update(state, settings.get('gate', 'default'), several);
     countdown.update(state.trusted ? state.timeline : undefined);
     void skills.update(project, several);
+    const upgradeAvailable = Boolean(state.trusted && state.cli.kind === 'ready'
+      && state.upgrade?.kind === 'ready' && state.upgrade.check.upgrade_available && state.upgrade.check.latest_version);
+    void vscode.commands.executeCommand('setContext', 'bioSteward.upgradeAvailable', upgradeAvailable);
     const empty = emptyState(state);
     void vscode.commands.executeCommand('setContext', 'bioSteward.empty',
       empty === 'no-report' && uninitialized.has(project.root) ? 'uninitialized' : empty ?? '');
@@ -283,6 +386,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
       const project = createProject(folder.uri.fsPath);
       const live = new LiveSprint({
         root: folder.uri.fsPath, log,
+        // E04: the full form, when the project's CLI offers `sprint status --format json`.
+        status: (id) => project.sprintStatus(id),
         isTrusted: () => isTrusted() && workspaceRoots().includes(folder.uri.fsPath),
         notify: (notice) => {
           shownNotices.push(notice);
@@ -340,6 +445,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
 
   context.subscriptions.push(
     { dispose: () => { session?.dispose(); initProject?.dispose(); } },
+    ...Object.entries(rowCommands).map(([id, action]) => vscode.commands.registerCommand(id, (input: unknown) => {
+      const row = rows.resolve(input);
+      return row && action(row);
+    })),
     vscode.commands.registerCommand('bioSteward.showLog', () => log.show(true)),
     vscode.commands.registerCommand('bioSteward.runCheck', () => {
       const project = session?.selection.active;
@@ -417,14 +526,39 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
       if (isTrusted() && isRuleId(rule)) await copyText(`steward explain ${rule}`);
     }),
     vscode.commands.registerCommand(RESUME_COMMAND, (root?: unknown) => resume.show(projectAt(root) ?? session?.selection.active)),
-    vscode.commands.registerCommand(TODAY_REFRESH_COMMAND, async () => {
-      if (!isTrusted()) return;
-      await Promise.all((session?.projects ?? []).flatMap((project) => [project.refreshAudit(), project.refreshTimeline()]));
+    // E01: each panel's refresh button runs that panel's commands now, with the panel's progress bar.
+    vscode.commands.registerCommand(TODAY_REFRESH_COMMAND, () => refreshes.run('today', isTrusted(), async () => {
+      await Promise.all((session?.projects ?? []).flatMap((project) => [
+        project.refreshNotifications(), project.refreshAudit(), project.refreshTimeline(), project.refreshNext(),
+      ]));
+      notificationsBell.update(session?.projects ?? [], isTrusted());
       await today.update(session?.projects ?? [], isTrusted());
+    })),
+    vscode.commands.registerCommand(PANELS.overview.refresh, () => refreshes.run('overview', isTrusted(), async () => {
+      const project = session?.selection.active;
+      await Promise.all([project?.runCheck(), project?.refreshTimeline(), project?.refreshUpgrade()]);
+    })),
+    vscode.commands.registerCommand(PANELS.results.refresh, () => refreshes.run('results', isTrusted(), async () => {
+      await session?.selection.active?.runCheck();
+    })),
+    // E03: notifications bell, read/unread actions, details page, and Upgrade CLI.
+    vscode.commands.registerCommand(OPEN_BELL_COMMAND, () =>
+      notificationsBell.openBell(session?.projects ?? [], isTrusted())),
+    vscode.commands.registerCommand(OPEN_NOTIFICATION_DETAILS_COMMAND, (target?: unknown) =>
+      notificationsBell.openDetails(session?.projects ?? [], isTrusted(), target)),
+    vscode.commands.registerCommand(MARK_READ_COMMAND, (target?: unknown) =>
+      notificationsBell.markRead(session?.projects ?? [], isTrusted(), target)),
+    vscode.commands.registerCommand(MARK_UNREAD_COMMAND, (target?: unknown) =>
+      notificationsBell.markUnread(session?.projects ?? [], isTrusted(), target)),
+    vscode.commands.registerCommand(MARK_ALL_READ_COMMAND, (target?: unknown) =>
+      notificationsBell.markAllRead(session?.projects ?? [], isTrusted(), target)),
+    vscode.commands.registerCommand(UPGRADE_CLI_COMMAND, async (root?: unknown) => {
+      await runUpgrade(root);
     }),
     vscode.commands.registerCommand(WHERE_AM_I_COMMAND, async (input?: unknown) => {
       if (!isTrusted() || !session) return undefined;
-      const project = await chooseProject(session.projects, input, whereAmI, 'Bio-STEWARD: Where am I? (most pending first)');
+      const project = rows.resolve(input)?.project
+        ?? await chooseProject(session.projects, input, whereAmI, 'Bio-STEWARD: Where am I? (most pending first)');
       return project && whereAmI.show(project);
     }),
     vscode.commands.registerCommand(COPY_BRIEF_COMMAND, async (input?: unknown) => {
@@ -432,54 +566,77 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
       const project = await chooseProject(session.projects, input, whereAmI, 'Bio-STEWARD: Copy as Agent Brief');
       return copyBrief(project, whereAmI);
     }),
-    vscode.commands.registerCommand(TASKS_REFRESH_COMMAND, async () => {
-      if (!isTrusted()) return;
+    vscode.commands.registerCommand(TASKS_REFRESH_COMMAND, () => refreshes.run('tasks', isTrusted(), async () => {
       await Promise.all((session?.projects ?? []).map((project) => project.refreshTasks()));
       tasks.update(session?.projects ?? [], isTrusted());
-    }),
+    })),
     // A Tasks row's file, checked again when it is clicked (U09).
     vscode.commands.registerCommand(OPEN_TASK_FILE_COMMAND, (input?: unknown) =>
       isTrusted() && session ? openTaskFile(session.projects, input) : undefined),
-    vscode.commands.registerCommand(TOKENS_REFRESH_COMMAND, () => (isTrusted() ? tokens.refresh() : undefined)),
+    // E04: Use this folder writes one agent's log setting (machine scope), then reads the report.
+    vscode.commands.registerCommand(USE_FOLDER_COMMAND, (input?: unknown) =>
+      isTrusted() && session ? useFolder(session.projects, tokens, input) : false),
+    vscode.commands.registerCommand(TOKENS_REFRESH_COMMAND, () => refreshes.run('tokens', isTrusted(), () => tokens.refresh())),
     vscode.commands.registerCommand(START_WINDOW_COMMAND, (first?: unknown, second?: unknown) =>
       isTrusted() && session ? taskWindow('start', session.projects, tokens, first, second) : undefined),
     vscode.commands.registerCommand(DONE_WINDOW_COMMAND, (first?: unknown, second?: unknown) =>
       isTrusted() && session ? taskWindow('done', session.projects, tokens, first, second) : undefined),
-    vscode.commands.registerCommand(APPROVALS_REFRESH_COMMAND, async () => {
-      if (!isTrusted()) return;
+    vscode.commands.registerCommand(APPROVALS_REFRESH_COMMAND, () => refreshes.run('approvals', isTrusted(), async () => {
       await Promise.all((session?.projects ?? []).map((project) => project.refreshApprovals()));
       await approvals.update(session?.projects ?? [], isTrusted());
-    }),
-    // The cards' two links. An agent's executeCommand reaches the same modal; no test hook is reachable here.
+    })),
+    vscode.commands.registerCommand(APPROVAL_DETAILS_COMMAND, (position: unknown, index: unknown, generation: unknown) =>
+      isTrusted() && session ? approvals.showDetails(session.projects, details, position, index, generation) : undefined),
+    // The signing and payload links. An agent's executeCommand reaches the same modal; no test hook is reachable here.
     vscode.commands.registerCommand(VIEW_PAYLOAD_COMMAND, (nonce?: unknown, index?: unknown, generation?: unknown) =>
       showPayload(nonce, index, generation)),
     vscode.commands.registerCommand(SIGN_COMMAND, async (nonce?: unknown, index?: unknown, generation?: unknown) => {
       await sign(nonce, index, generation);
     }),
-    vscode.commands.registerCommand(DECISIONS_REFRESH_COMMAND, async () => {
-      if (!isTrusted()) return;
+    vscode.commands.registerCommand(DECISIONS_REFRESH_COMMAND, () => refreshes.run('decisions', isTrusted(), async () => {
       await Promise.all((session?.projects ?? []).map((project) => project.refreshDecisions()));
       decisions.update(session?.projects ?? [], isTrusted());
-    }),
+    })),
     vscode.commands.registerCommand(OPEN_DECISIONS_COMMAND, (input?: unknown) =>
       isTrusted() && session ? openDecisions(session.projects, input) : undefined),
-    vscode.commands.registerCommand(DRIFT_REFRESH_COMMAND, async () => {
-      if (!isTrusted()) return;
+    vscode.commands.registerCommand(DRIFT_REFRESH_COMMAND, () => refreshes.run('drift', isTrusted(), async () => {
       await Promise.all((session?.projects ?? []).map((project) => project.refreshTimeline()));
       drift.update(session?.projects ?? [], isTrusted());
-    }),
-    // A signing terminal that closes: read the queue again, so a signed payload leaves the list.
+    })),
+    // A signing or upgrade terminal that closes: refresh approvals/notifications, or detect the new CLI & run contract check.
     vscode.window.onDidCloseTerminal((terminal) => {
-      const project = signingTerminals.get(terminal);
-      if (!project) return;
-      signingTerminals.delete(terminal);
-      if (isTrusted() && session?.projects.includes(project)) void project.refreshApprovals();
+      const signing = signingTerminals.get(terminal);
+      if (signing) {
+        signingTerminals.delete(terminal);
+        if (isTrusted() && session?.projects.includes(signing)) {
+          void signing.refreshApprovals();
+          void signing.refreshNotifications();
+        }
+        return;
+      }
+      const upgrade = upgradeTerminals.get(terminal);
+      if (upgrade) {
+        upgradeTerminals.delete(terminal);
+        if (isTrusted() && session?.projects.includes(upgrade.project)) {
+          void runPostUpgradeContractCheck({
+            projects: session.projects,
+            upgradedProject: upgrade.project,
+            beforeVersion: upgrade.beforeVersion,
+            detector,
+            log: logInfo,
+          }).then((result) => {
+            lastContractCheck = result;
+            notificationsBell.update(session?.projects ?? [], isTrusted());
+            render();
+          });
+        }
+      }
     }),
     vscode.commands.registerCommand(COPY_FOR_AGENT_COMMAND, (input?: unknown) => copyForAgent(session?.selection.active, input)),
     vscode.commands.registerCommand(CHECK_AREA_COMMAND, (input?: unknown) => checkArea(session?.selection.active, input)),
     vscode.commands.registerCommand(CHECK_RULE_COMMAND, (input?: unknown) => checkRule(session?.selection.active, input)),
     vscode.commands.registerCommand(CHECK_SKILLS_COMMAND, () => checkArea(session?.selection.active, 'skills')),
-    vscode.commands.registerCommand(REFRESH_SKILLS_COMMAND, () => skills.refresh()),
+    vscode.commands.registerCommand(REFRESH_SKILLS_COMMAND, () => refreshes.run('skills', isTrusted(), () => skills.refresh())),
     vscode.commands.registerCommand(INSTALL_SKILLS_COMMAND, async () => {
       const project = session?.selection.active;
       if (!isTrusted() || !project || skillsInstall.applying) return false;
@@ -531,10 +688,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
       initProject = undefined;
       void build();
     }),
-    vscode.commands.registerCommand(SPRINT_REFRESH_COMMAND, async () => {
+    vscode.commands.registerCommand(SPRINT_REFRESH_COMMAND, () => refreshes.run('sprint', isTrusted(), async () => {
       const project = session?.selection.active;
-      await (project && session?.sprints.get(project))?.refresh();
-    }),
+      await (project && session?.sprints.get(project))?.refreshNow();
+    })),
     vscode.commands.registerCommand(SPRINT_COPY_ORDER_COMMAND, (node?: unknown) => {
       const project = session?.selection.active;
       return copyOrderCommand(project && session?.sprints.get(project), node);
@@ -555,6 +712,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
         render();
       }
       if (event.affectsConfiguration('bioSteward.tokens') && isTrusted()) void tokens.refresh();
+      if (event.affectsConfiguration('bioSteward.notifications.toasts')) {
+        notificationsBell.update(session?.projects ?? [], isTrusted());
+      }
     }),
   );
 
@@ -611,6 +771,41 @@ export async function activate(context: vscode.ExtensionContext): Promise<TestAp
       },
       notices: shownNotices,
     },
+    refreshes: refreshes.records,
+    notifications: {
+      readStore: notificationsReadStore,
+      bell: notificationsBell,
+      details: notificationDetails,
+      openBell: () => notificationsBell.openBell(current().projects, isTrusted()),
+      closeBell: () => notificationsBell.closeBell(),
+      openDetails: (target) => notificationsBell.openDetails(current().projects, isTrusted(), target),
+      markRead: (target) => notificationsBell.markRead(current().projects, isTrusted(), target),
+      markUnread: (target) => notificationsBell.markUnread(current().projects, isTrusted(), target),
+      markAllRead: (target) => notificationsBell.markAllRead(current().projects, isTrusted(), target),
+    },
+    upgrade: {
+      run: (root, hooks) => runUpgrade(root, hooks),
+      contractCheck: async (project, beforeVersion) => {
+        const target = project ?? current().selection.active;
+        if (!target) throw new Error('no project');
+        const before = beforeVersion ?? (target.state.cli.kind === 'ready' ? target.state.cli.version : 'unknown');
+        const result = await runPostUpgradeContractCheck({
+          projects: current().projects,
+          upgradedProject: target,
+          beforeVersion: before,
+          detector,
+          log: logInfo,
+          notify: false,
+        });
+        lastContractCheck = result;
+        notificationsBell.update(current().projects, isTrusted());
+        render();
+        return result;
+      },
+      get lastContractCheck() {
+        return lastContractCheck;
+      },
+    },
     clipboard: lastCopy,
     saves,
     onSave,
@@ -625,7 +820,7 @@ export function deactivate(): void {
 // Markdown preview at the panel's section. It works offline and before the guide is published.
 const HELP_SECTIONS = {
   overview: 'overview', results: 'results', skills: 'agent-skills', sprint: 'sprint', today: 'today', whereAmI: 'where-am-i',
-  tasks: 'tasks', tokens: 'tokens', approvals: 'approvals', decisions: 'decisions', drift: 'drift',
+  tasks: 'tasks', tokens: 'tokens', approvals: 'approvals', decisions: 'decisions', drift: 'milestones-and-drift',
 } as const;
 
 export function panelHelpUri(extensionUri: vscode.Uri, panel: keyof typeof HELP_SECTIONS): vscode.Uri {

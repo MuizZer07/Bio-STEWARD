@@ -4,20 +4,39 @@ Bio-STEWARD shows what the `steward` CLI found in your project. It does not chec
 model and it uses no network. Every panel reads what the CLI prints (the report that **Run Check** produces, or
 another of its outputs), or a file the CLI or you wrote. Nothing runs in a workspace you have not trusted.
 
-| Panel | Answers | Reads |
-|---|---|---|
-| **Today** | what waits, and for whom? | `steward audit progress`, `steward timeline`, the session handoff |
-| **Approvals** | what waits for my signature? | `steward authorize pending --all-projects` |
-| **Tasks** | which tasks are open? | the task files' `Status:` lines |
-| **Tokens** | what did each task cost? | `steward tokens report --json` |
-| **Decisions** | where are the decisions written? | `steward.toml` (it opens the log) |
-| **Drift** | which target needs attention? | `steward timeline --json` |
-| **Overview**, **Results** | may the project move on, and why not? | the report of **Run Check** |
-| **Agent Skills** | do my agents read the same rules? | the skill folders and rule R-60 |
-| **Sprint** | what are the agents doing now? | the sprint file and its ledger |
+The panels are grouped by the job they help with, in one Bio-STEWARD container:
 
-Today, Approvals, Tasks, Decisions and Drift are **reduced** forms in this version: each shows only what the
-installed CLI (0.20.6) already prints, and says so on its first row. Their full forms come with a newer CLI.
+| Group | Panel | Answers | Reads |
+|---|---|---|---|
+| **Now** | **Today** | what needs me, and what changed since I looked? | `steward notifications`, `steward next` (older CLI: `steward audit progress`, `steward timeline`, the session handoff) |
+| **Now** | **Approvals** | what waits for my signature? | `steward authorize pending --all-projects` (text, and `--format json` for the details) |
+| **Quality** | **Overview**, **Results** | is this project's work checkable, and may it move on? | the report of **Run Check** |
+| **Work** | **Tasks** | which tasks are open, and what changed last? | `steward task board` (older CLI: the task files' `Status:` lines) |
+| **Work** | **Sprint** | what are the agents doing now? | the sprint file and its ledger, and `steward sprint status` |
+| **Work** | **Tokens** | what did each task cost? | `steward tokens report` |
+| **Direction** | **Milestones and Drift** | am I on plan? | `steward timeline` |
+| **Direction** | **Decisions** | why did we decide what we did? | `steward decisions` and the log `steward.toml` names |
+| **Agents** | **Agent Skills** | do my agents work by this project's rules? | the skill folders and rule R-60 |
+
+With steward 0.21 or newer each panel shows its **full form**, from the versioned documents the CLI publishes. With
+an older CLI each panel shows what that CLI offers, and a row says what needs a newer one. This help belongs to
+extension 0.3.0, tested with steward 0.22.0.
+
+**Every panel has a refresh button** (⟳) in its title bar. It runs that panel's CLI commands again at once, without
+waiting for the panel's own timers, and shows a progress bar in the panel while they run.
+
+**Newest first.** Every list puts the newest entry on top: by its date (the latest change), then by its ID, highest
+first (`T10` comes before `T9`). Milestones are listed with the latest due date first; the countdown in the status
+bar still names the nearest one. The dates and IDs are the CLI's (or a file's); the order is only how the list is
+shown.
+
+Click a Markdown file to preview it or another file to open it in the editor. Markdown rows offer **Open as Text**
+and **Copy Path**. Other file rows offer **Reveal in Explorer**. Click a record to open its read-only details, with
+its source, what it means and what to do next. Hover a row to see its inline buttons. More actions are available in
+the row's context menu.
+
+**Hand to Agent** copies up to 16 KiB of CLI text and reports the number of bytes copied and any truncation.
+Paste the brief into your agent when you are ready.
 
 Statuses always come with a word:
 
@@ -29,29 +48,67 @@ Statuses always come with a word:
 | ? | UNKNOWN | the check could not decide (a tool is missing, a file cannot be read) |
 | – | NOT APPLICABLE | the rule does not apply: its area is not set up in this project |
 
-## Today
+## Now
+
+### Today
+
+Today shows what waits for you and what your agents are on, so each session starts where the work is.
 
 **What it is:** what is waiting, for this project or for every open project. It answers: where did I leave off,
-what is due next, and what waits for you. This is the **reduced** form: it is built from what the installed CLI
-(0.20.6) already prints, and each row names its source. The full form arrives with `steward next`, a newer CLI.
+what is due next, and what waits for you. Each row names its source; the first row, **Sources**, lists them.
+
+- **Notifications** sits at the top of Today, fed by `steward notifications --format json` (CLI upgrades, open exchange
+  items, sprint tasks finished, failed or waiting for an order, approvals waiting, gates turned not eligible, and
+  milestones at risk or late). Only which items you have read is kept, locally on this machine, keyed by each item's
+  ID and content hash, so the same item is not news twice and comes back as unread only when the CLI reports a change
+  to it. Expanding **Notifications** (or opening the status-bar bell) marks every item it showed as read and drops the
+  unread count. Read items stay in the list, dimmed, below unread ones, newest first in each group; they never count
+  again and never toast again. Each row has **Mark Read** / **Mark Unread**, the list has **Mark All Read**, and
+  clicking a row opens its read-only details page with the CLI's next command. System toasts appear only for the three
+  urgent kinds (a gate turned not eligible, an approval waiting, or a sprint task failed); turn them off with
+  `bioSteward.notifications.toasts`. *Source: `steward notifications`.*
+
+**With steward 0.21 or newer** (the full form), every row comes from `steward next`:
+- **Resume**: your last session handoff, how old it is, and whether it is committed; open it for its *Next* and *Open
+  decisions* lines. Click it to read the handoff as written.
+- **Next milestone**: the next milestone, its days and state, and what blocks it (rules, tasks, exchange items,
+  signatures), each with the command that moves it.
+- **Waiting on you** (signatures, decisions, exchange items, sprint tasks waiting for your order) and **Waiting on
+  agents** (sprint tasks running, ordered, finished or failed). **Newest first:** by time, then the highest ID. Hover
+  a row for its source and its next step, the exact CLI command.
+- **Needs tidying**: how many stale tasks, stale pages, leftovers and the like `steward tidy` would list. Agents name
+  them and ask before archiving anything.
+- The CLI's notes (a peer it could not check, for example).
+- With several projects open, the project with the most waiting on you comes first, then the most waiting on agents.
+
+**With an older CLI**, Today is composed from these sources instead:
 
 - **Resume** opens your last session handoff (`development/HANDOFF.md` unless `steward.toml` names another file),
-  exactly as written. *Source: the session handoff.*
+  in the Markdown preview. **Open as Text** shows the source. *Source: the session handoff.*
 - **Next milestone** is the countdown of the status bar: the soonest milestone without an outcome, its days and its
-  state (on track, at risk, late, …). Click it for every milestone. *Source: `steward timeline`.*
+  state (on track, at risk, late, …). Click it for details, or use **Show What Blocks This Milestone**.
+  *Source: `steward timeline`.*
 - **Signatures waiting**, **Exchange items open here**, **This project's own requests still open**, **Sprints with
   open tasks** and **Milestones** are the lists of the "Pending" section of `steward audit progress`, item by item as
-  the CLI wrote them. A signature is something only you can give: you sign in a terminal (`steward authorize
-  pending` lists them). *Source: `steward audit progress`.*
+  the CLI wrote them. Items with IDs come highest ID first, milestones latest due first; signatures keep the CLI's
+  order (it gives them no date). A signature is something only you can give: you sign in a terminal (`steward
+  authorize pending` lists them). *Source: `steward audit progress`.*
+- A signature row opens Approvals from its action. A sprint row opens Sprint or copies the order for the sole
+  waiting task. Exchange rows offer **Open Exchange Item**, **Mark Read**, **Respond…** for a received item, and
+  **Copy Pull Command** for an item on a peer. Read markers are local to this workspace. The response opens as an
+  editable draft and the pull command is for you to run.
 - With several projects open, each project has its own block, and their rows are never mixed. Projects are ordered by
   the counts audit progress reports: signatures waiting first, then exchange items open, then your own open requests,
   then sprints with open tasks (more comes first; ties keep the workspace order). This is a plain order of counts,
   not a judgement of urgency.
 
-**Use it:** first thing in a session, to see what only you can do. Buttons: **Where am I?**, **Copy as Agent
-Brief**, **Refresh Today**.
+If `steward next` gives no readable answer, a row says so and the panel shows these sources. What waits on agents
+and what needs tidying need steward 0.21 or newer: **Upgrade CLI**.
 
-## Where am I?
+**Use it:** first thing in a session, to see what only you can do. Buttons: **Where am I?**, **Copy as Agent
+Brief**, **Mark All Read**, **Refresh**.
+
+### Where am I?
 
 **What it is:** a one-page reset for a project you come back to. It is shown by itself, once, when you open a
 project again after more than 3 days (the settings `bioSteward.whereAmI.showOnReopen`, on by default, and
@@ -67,19 +124,20 @@ Each part of the page names where it comes from:
 | Gate | the last `steward check` report of this session, with its freshness |
 | You left off | the session handoff, quoted as written |
 | Next target | `steward timeline` |
-| Waiting on you, waiting on others, sprints, milestones | `steward audit progress` |
-
-"Since then", recent decisions, drift and "needs tidying" are not in the reduced form; they come with `steward next`.
+| Waiting on you, waiting on others, sprints, milestones | `steward audit progress` (older CLI) |
+| Waiting on you, waiting on agents, needs tidying, notes | `steward next` (steward 0.21 or newer), each with its next step |
 
 **Copy as Agent Brief** copies the same page for a new agent session, with the handoff cut to its first 40 lines.
 The page is read-only, and making it runs only read commands.
 
-## Approvals
+### Approvals
+
+Approvals lists what your agents prepared that only you can sign, with the exact text you approve.
 
 **What it is:** what waits for **your signature**, in this project and in the peers its `[exchange]` table names. An
-agent can prepare a payload (`steward authorize prepare`) but never sign it: only you can, with your own key. This is
-the **reduced** form: it is built from `steward authorize pending --all-projects` (CLI 0.20.6 has no JSON form for it
-yet), and each payload line becomes a **card**. Every card also shows that line **exactly as the CLI printed it**.
+agent can prepare a payload (`steward authorize prepare`) but never sign it: only you can, with your own key. The
+panel is built from the text of `steward authorize pending --all-projects`, and each payload line becomes a
+**card**, newest first as the CLI prints them. Every card also shows that line **exactly as the CLI printed it**.
 
 Each card shows:
 - the action, with an icon (💳 spend, 🔓 unseal, ✏️ amend, ❄️ freeze, ⚐ waive, ⚖️ policy change, ⚓ anchor, 📌 pin), the
@@ -91,7 +149,8 @@ Each card shows:
 - **✍ Sign** on a *waiting* payload whose queue line matches its file; a signed one shows **✓ Signed** with its tag,
   an expired one says so.
 
-A payload of a peer lives in the peer's checkout: its card has no buttons. Open that project to view and sign it.
+Click the action name to open the approval's read-only Markdown details. For a peer payload, open its project to
+review the exact payload and sign.
 
 A card is **display only** (View, but no ✍ Sign, and the reason) when the queue line cannot be tied to the file
 without doubt: a summary over several lines, another queue line with the same nonce prefix (a peer's, for example),
@@ -122,19 +181,82 @@ dialog, or typing a different name, runs nothing and opens no terminal. A comman
 dialog and nothing else. With several projects open, each has its own block, in the Today order. The panel's badge
 counts the waiting payloads.
 
-Not in the reduced form: the scope, budget, object hash and who asked, read from the CLI. They come with
-`authorize pending` as JSON in a newer CLI. Signing one card alone (`authorize sign NONCE --expect-sha256 HASH`, a
-request to the CLI) comes later; until then the CLI asks about each waiting payload in turn.
+**With steward 0.21 or newer**, each card also shows the payload's scope, budget, object, who asked, the peer, the
+baseline, the payload's SHA-256 as the CLI computed it and its signed tag, from `steward authorize pending
+--all-projects --format json` (matched to the card by project and nonce). These are shown only; ✍ Sign still binds
+to the queue line and the file as above. Signing one card alone (`authorize sign NONCE --expect-sha256 HASH`, a request to the CLI)
+comes later; until then the CLI asks about each waiting payload in turn.
 
 **Use it:** at the end of the day, to look at each request and sign what you mean to approve.
 
-## Tasks
+## Quality
 
-**What it is:** every task file of the project, not only sprint tasks. This is the **reduced** form: the installed
-CLI (0.20.6) does not print the task board yet, so the panel reads the files themselves and says so.
+### Overview
+
+Overview shows whether your agents' work passes this project's checks and may move on.
+
+**What it is:** the verdict for this project, on one screen.
+
+- **steward 0.22.0 · full mode** names the CLI the extension found and what it can do with it. *Full* means the CLI
+  publishes its machine interface (`steward interface`); *limited* is an older CLI without it (0.20.x).
+- **Upgrade CLI** appears when `steward upgrade --check --format json` finds a newer version from a local release
+  notice (no network call by the extension). Clicking it shows the exact `steward upgrade --repo ROOT --to VERSION`
+  command and the installer the CLI detected in a modal dialog. Only after you confirm does a visible terminal run
+  `steward upgrade --to VERSION`, where the CLI asks `[y/N]` before running the installer. When the terminal closes,
+  Bio-STEWARD re-detects the CLI and runs its contract check (interface, notifications, upgrade check and report
+  schema).
+- **Report** says how fresh the verdict is. *fresh* means made just now and nothing has changed since. *stale* means
+  a project file changed: run the check again. *unknown* means the extension cannot tell (for example, a report from
+  an earlier session).
+- **Gate** is the question "may this project move on (merge, release, submit)?". **ELIGIBLE** means every result
+  the gate requires passed or does not apply. **NOT ELIGIBLE** lists the **blocking** results; fix those first.
+  **Waived** lists results someone signed off on.
+- **Counts** and **Worst status** sum up every result.
+- **Coverage** says which areas are set up and which were not checked. A green gate covers only what was checked; it
+  never means the science is right.
+
+**Use it:** after each agent turn, glance at the gate. Click a gate or blocking result for its details. Use
+**Explain Rule**, **Open the Finding File**, **Hand to Agent** or **Run Check for Rule** on a result.
+Buttons: **Run Check**, **Resume** (your last session handoff), **Copy for Agent** (a short summary to paste to your
+agent) and **Refresh**, which runs `steward check` again.
+
+### Results
+
+Results lists every check result, so you can hand one problem at a time to an agent.
+
+**What it is:** every individual result, one row per rule and subject. Group the rows by **status** (problems
+first), by **gate**, or by **file**.
+
+- Open a row for the rule's reason, its details (the codes it reported), the files it looked at, and the gates it
+  blocks.
+- **Explain Rule** describes the rule. **Hand to Agent** copies its `steward check --rule … --summary` output,
+  **Run Check for Rule** evaluates it again, and **Open the Finding File** opens the file at the reported location.
+- A result that names a file also appears in VS Code's **Problems** panel (FAIL as an error, INCOMPLETE as a
+  warning), at the file and the line when the CLI gives one.
+- **Refresh** runs `steward check` again.
+
+**Use it:** to work through the problems one by one, or to hand a single rule to your agent.
+
+## Work
+
+### Tasks
+
+Tasks lists every task your agents work on, the latest change first.
+
+**What it is:** every task of the project, not only sprint tasks.
+
+**With steward 0.21 or newer** (the full form), the rows come from `steward task board --format json`, and the first
+row says **Tasks · steward task board**. Each row is `ID · file name` with the task's status **in the CLI's words**
+(the status without its qualifier; `(none)` when the file has none), *closed* or *archived* as the CLI decides it.
+Open tasks come first, then **Closed (n)** and **Archived (n)**; in each, the task file changed last comes first,
+then the highest ID. If the board gives no readable answer, a row says so and the panel lists the files as below.
+
+**With an older CLI**, the panel reads the files themselves and says so on its first row, **Task files**:
 
 - Each row is a task file, by name. Next to it is the line that holds its `**Status:**` label, **exactly as written**,
   marked *read from the file*: not checked, not reworded. A file without a Status line shows nothing there.
+- **Newest first:** the file changed last comes first (its modification time), then the highest ID (the file's
+  `**ID:**` line, or its name).
 - Files are found as the CLI lists them: never through a link and never in `.git`. Clicking a row checks the file
   again before it opens.
 - Which files count as tasks comes from the `[tasks]` table of `steward.toml` (its `specs`, minus its `archive` and
@@ -146,35 +268,79 @@ CLI (0.20.6) does not print the task board yet, so the panel reads the files the
   default statuses are used for the grouping only.
 - The **Start Task Window…** list offers the IDs of the files' `**ID:**` lines, also read from the files; **Another
   task ID…** lets you type one.
-- Click a row to open the file. Right-click it for **Start Task Window…**, which counts the tokens of that task
-  (see Tokens).
+- Click a row to preview the task Markdown. **Hand to Agent** uses `steward task brief --for codex`.
+  The row menu offers **Start Task Window…**, **Done Task Window…** and **Dispatch with Codex…**. Dispatch shows
+  the exact review command and asks before copying it for you to run.
 - With several projects open, each has its own block, in the Today order.
 
-Not in the reduced form: each task's window, owner and implementer, and "stale" marks. They come with the task
-board as JSON in a newer CLI.
+A task's tokens and windows are in **Tokens**; what is stale is under **Needs tidying** in Today.
 
 **Use it:** to see what is open across the project at a glance, and to open a task's file.
 
-## Tokens
+### Sprint
 
-**What it is:** how many tokens your agents used, **per task window** and per model, read by `steward tokens
-report --json` from the agents' own log files on this machine. Nothing leaves the machine, and the extension calls no
-model.
+Sprint shows what each agent of a running sprint is doing and which of its checks passed.
 
-- **Set it up once.** The CLI reads only the logs it is given. Add your agents' log files or folders to your user
-  settings: `bioSteward.tokens.claudeLogs` (Claude Code, usually `~/.claude/projects/<this project's folder>`),
-  `bioSteward.tokens.codexLogs` (Codex, `~/.codex/sessions`), `bioSteward.tokens.geminiLogs` (Gemini CLI,
-  `~/.gemini/tmp/<this project's hash>`). A folder gives its newest `.jsonl` and `.json` files, at most 50. A
-  repository cannot set these. Until one is set, the panel says **No agent logs selected**; click it to open the
-  settings.
-- **Task windows.** A window is the time between `steward task start ID` and `steward task done ID`. Tokens used in
-  that time count for that task. **Start Task Window…** and **Done Task Window…** (title bar, a Tokens row, or a Tasks
-  row) run those commands: the extension first shows the exact command line and runs it only when you confirm. The
-  CLI records the time in `.steward/task-tokens.jsonl`. Before any window exists, the CLI reports **all activity**.
-- Each task row shows its tokens and the CLI's status (*available*, *partial*: some records were missing or matched
-  more than one task, *unavailable*: no counts in the window). Open it for each agent and model (input, output, cache
-  read and write) and the files read most. Costs appear only when `[spend]` prices the model.
-- **Total** is the sum of the rows, added up by the extension; rows without counts add nothing and are named.
+**What it is:** a live view of a running sprint. A sprint is a list of agent tasks that `steward sprint` starts one
+by one, when you give the order.
+
+- Each task shows its state: *planned*, *ready* (waiting for your order), *running*, *checking*, *done*, *failed*,
+  *held* or *skipped*. It also shows how long it has run against its time limit, and, when it ends, each acceptance
+  command with its exit code. **The task is done only when those commands pass, never because the agent says so.**
+- **Newest first:** the task whose ledger entry is the latest comes first, then the highest ID, as `steward sprint
+  status` prints them. With several sprints, the one with the latest ledger entry comes first.
+- A state marked *derived* was worked out from the plan (for example, "ready" because the tasks it waited for are
+  done); the rest come straight from the sprint's ledger.
+- Click a sprint, task, event or check for its details. **Show Run Log** opens the log referenced by the ledger.
+  **Copy Order Command** and **Copy Hold Command** put a command on the clipboard for you to run. For a completed
+  task, **Show Diff Range** displays a comparison command when the ledger contains both revisions.
+- *incomplete* means a line of the ledger could not be read, so the view may be behind. It sends no "finished"
+  notification from such a view.
+- **With steward 0.21 or newer**, each task also shows what `steward sprint status --format json` reads from git:
+  its current step (the last tool call in its log), its **Commits** (newest first), its **Changed files**, what is
+  still **Uncommitted**, and its task and run logs. The view itself still runs no git: the CLI does, at most every 10
+  seconds while the ledger changes.
+- **Refresh** reads the sprint file and the ledger again at once (otherwise at most once a second), and asks the CLI
+  for the status again.
+
+**Use it:** while agents work, to see what is running, what waits for you, and what passed.
+
+### Tokens
+
+Tokens shows what each agent task cost, counted from the agents' own logs on this machine.
+
+**What it is:** how many tokens your agents used, **per task** and per model, read by `steward tokens report` from
+the agents' own log files on this machine (with steward 0.21 or newer, its versioned document, `--format json`).
+Nothing leaves the machine, and the extension calls no model.
+
+- **Two inputs.** A task's tokens are the usage logged in the agents' logs during that task's windows. When one is
+  missing, the panel's first row says which, in one sentence, and clicking it opens the fix.
+- **The logs, in one click.** The CLI reads only the logs it is given, from three user settings:
+  `bioSteward.tokens.claudeLogs` (Claude Code), `bioSteward.tokens.codexLogs` (Codex) and
+  `bioSteward.tokens.geminiLogs` (Gemini CLI). Where a setting is empty, the panel names that agent's usual folder for
+  this project and offers **Use this folder**: `~/.claude/projects/<this project's path, with each character other
+  than a letter or a digit as ->` for Claude Code, `~/.codex/sessions` for Codex, and `~/.gemini/tmp/<the SHA-256 of
+  this project's path>` for Gemini CLI. The folder is worked out from names only: **nothing is read before you
+  click**. The click writes that one setting in your user settings (machine scope; a repository cannot set it), then
+  reads the report. You can also edit the settings yourself (**Agent log settings**); a folder gives its newest
+  `.jsonl` and `.json` files, at most 50. These folders follow the agents' current log layouts, which may change.
+- **Windows from the records.** With steward 0.22, each sprint task's run is a window (from its sprint ledger: from
+  *running* to *done*, *failed* or skipped), and so is each `steward run` (the run ledger), with no step by you. The
+  agents ledger and the windows you start and close by hand count too. A window is also the time between
+  `steward task start ID` and `steward task done ID`: **Start Task Window…** and **Done Task Window…** (title bar, a Tokens
+  row, or a Tasks row) run those commands: the extension first shows the exact command line and runs it only when you
+  confirm. The CLI records the time in `.steward/task-tokens.jsonl`. Before any window exists, the CLI reports **all
+  activity**.
+- **Each task** shows its total, the estimated cost where the CLI gives one (when `[spend]` prices every model of
+  the task), and the CLI's status (*available*, *partial*: some records were missing or matched more than one task,
+  *unavailable*: no counts in its windows). Hover it for what the total covers: its windows and their records, and
+  the logs read. Open it for its tokens **by model** (input, output, cache read, cache write, and the model's
+  estimated cost where given), its **Windows** (newest first, each with its record), and the files read most.
+- **Order:** newest first: the task whose latest window started last comes first, then the highest label.
+- **Total** is the sum of the tasks' totals, each the CLI's, added up by the extension, with the estimated cost of
+  the tasks the CLI priced; tasks without counts add nothing and are named.
+- **Row actions.** **Show the Per-Model Split** opens the CLI's input, output, cache read, cache write and available
+  cost; **Open the Task** previews the matching task file.
 - **Sources** lists the logs the CLI read, by its own names ("claude log 1"): it never prints their paths. The rows
   show what the CLI prints: counts, model names and the relative paths of files the agents read.
 - **Shared activity.** The logs are this machine's, the same for every open project, and the CLI matches records to a
@@ -183,40 +349,20 @@ model.
 - A file is passed to the CLI only if, when the CLI starts, it is still inside the file or folder you named and
   reached without a link.
 
-Not yet: totals per sprint and per day (they need a newer CLI).
+Totals per sprint and per day come with the token trends of a later release.
 
-**Use it:** start a window when an agent picks up a task, close it when the task is done, and see what the task cost.
+**Use it:** let the sprint record the windows (or start one when an agent picks up a task by hand), and see what
+each task cost.
 
-## Decisions
+## Direction
 
-**What it is:** where the project's owner decisions are written down: its **decisions log**. This is the **reduced**
-form: it names the log and opens it, nothing more. The installed CLI (0.20.6) has no command that lists the
-decisions, so the panel does not read or list the entries.
+### Milestones and Drift
 
-- The row is the decisions log, as `steward.toml` names it: `[integrity] decisions` (a path, a list or globs). Without
-  an `[integrity]` table, the CLI uses `DECISIONS.md` in the `[paths] records` folder, which is `development` unless
-  you set it, so the default is `development/DECISIONS.md`.
-- **Open DECISIONS.md** (title bar, or a project's row) opens the log in the editor, **as it is**. Click a row to
-  open that log. With several logs, the first one that exists opens; when that is not the first one configured
-  (the one the CLI's single-path commands use), a row says so.
-- Logs are found as the CLI lists project files: never through a link and never in `.git`, and a log is checked
-  again when it opens. A glob that matches nothing is named; if the search stops at its limit, a row says so.
-- A log that is named but missing shows *not found*. The extension does not create it: `steward init` writes one,
-  or you start it.
-- The extension never writes a decision. You write it in the log, in your own words; the log is append-only (the
-  rule R-38 checks that earlier entries are not changed).
-- With several projects open, each has its own block, in the Today order.
+Milestones and Drift shows whether the work your agents do keeps to the plan, the latest target first.
 
-Not in the reduced form: open decisions first, then the log, newest first and searchable, and **Record decision…**
-(the log opened at a dated, started entry). They come with `steward decisions --format json` in a newer CLI.
-
-**Use it:** to read what was decided before you change a plan, and to write down a new decision.
-
-## Drift
-
-**What it is:** whether the project is keeping to its plan. This is the **reduced** form: **the timeline states
-only**. Each row is a milestone of `development/milestones.toml` with its state **in the CLI's own words**, as
-`steward timeline --json` gives it, and its days left or ago. The extension computes nothing.
+**What it is:** whether the project is keeping to its plan. Each row is a milestone of `development/milestones.toml`
+with its state **in the CLI's own words**, as `steward timeline --json` gives it, and its days left or ago. The
+extension computes nothing.
 
 | State (the CLI's word) | Means |
 |---|---|
@@ -227,51 +373,67 @@ only**. Each row is a milestone of `development/milestones.toml` with its state 
 | *ready* | nothing is open and the due time is ahead |
 | *met*, *moved*, *dropped* | the outcome recorded in `milestones.toml` |
 
-- The rows keep the CLI's order (soonest due first). Hover a row for its due date, internal deadline, open work and
-  what blocks it, as the CLI reports it. Click it to open `development/milestones.toml`.
+- **Newest first:** the latest due date comes first. The countdown in the status bar still names the nearest
+  milestone without an outcome.
+- Click a row for its due date, internal deadline, open work and outcome. **Open the Milestones File** opens
+  `development/milestones.toml`. **Show What Blocks This Milestone** displays the CLI's blocker details.
+  **Hand Blockers to Agent** copies the project-wide text from `steward next --brief` (CLI 0.21 or newer).
 - With several projects open, each has its own block, in the Today order, with a count of each state.
 - Dates change only in `milestones.toml`, with a decision in the decisions log.
 
-Not in the reduced form: drift itself (dates that moved and by how much, tasks outside any milestone, work started
-out of order, changes without a decision). It comes with drift in `steward timeline --format json` in a newer CLI.
+**With steward 0.21 or newer**, the panel reads `steward timeline --format json` and adds its drift fields after the
+milestones, one group each, in the CLI's words:
+- **Moved dates:** each milestone whose due date moved, from its first due date to the current one, by how many days
+  and how many times, and whether a decision records the move (from the git history of `milestones.toml`). The
+  latest due first.
+- **Scope:** tasks no milestone names, tasks a milestone names that have no file, dropped tasks, and roadmap items
+  with no task.
+- **Order:** a later milestone whose work started while an earlier one is still open.
+- **Changes without a decision:** plan changes in the history with no recorded decision, newest first.
+
+A note says when the history is shallow or partial.
 
 **Use it:** to see which target needs attention first.
 
-## Overview
+### Decisions
 
-**What it is:** the verdict for this project, on one screen.
+Decisions keeps the owner's decisions one click away, so you and your agents work from the same record.
 
-- **steward 0.20.6 · limited mode** names the CLI the extension found and what it can do with it. "Limited" is
-  normal on 0.20.6: richer views arrive with a newer CLI.
-- **Report** says how fresh the verdict is. *fresh* means made just now and nothing has changed since. *stale* means
-  a project file changed: run the check again. *unknown* means the extension cannot tell (for example, a report from
-  an earlier session).
-- **Gate** is the question "may this project move on (merge, release, submit)?". **ELIGIBLE** means every result
-  the gate requires passed or does not apply. **NOT ELIGIBLE** lists the **blocking** results; fix those first.
-  **Waived** lists results someone signed off on.
-- **Counts** and **Worst status** sum up every result.
-- **Coverage** says which areas are set up and which were not checked. A green gate covers only what was checked; it
-  never means the science is right.
+**What it is:** where the project's owner decisions are written down: its **decisions log**. The panel names the log
+and opens it. With steward 0.21 or newer, it also lists what `steward decisions --format json` reads (see below).
 
-**Use it:** after each agent turn, glance at the gate. Click a blocking result to see the file and the rule.
-Buttons: **Run Check**, **Resume** (your last session handoff), and **Copy for Agent** (a short summary to paste to
-your agent).
+- The row is the decisions log, as `steward.toml` names it: `[integrity] decisions` (a path, a list or globs). Without
+  an `[integrity]` table, the CLI uses `DECISIONS.md` in the `[paths] records` folder, which is `development` unless
+  you set it, so the default is `development/DECISIONS.md`. Several logs keep the configured order.
+- **Open DECISIONS.md** (title bar or project row) previews the log. Click a file row to preview that log. With several logs, the first one that exists opens; when that is not the first one configured
+  (the one the CLI's single-path commands use), a row says so.
+- Logs are found as the CLI lists project files: never through a link and never in `.git`, and a log is checked
+  again when it opens. A glob that matches nothing is named; if the search stops at its limit, a row says so.
+- A log that is named but missing shows *not found*. The extension does not create it: `steward init` writes one,
+  or you start it.
+- **Record Decision…** opens the log at the end and starts a dated entry. Fill in the verbatim quote, decision and
+  consequences. R-38 checks that earlier entries are preserved.
+- With several projects open, each has its own block, in the Today order.
 
-## Results
+**With steward 0.21 or newer**, two groups follow the logs:
+- **Open decisions (n):** the questions still open in the records (the index page and the handoff), each with its
+  options.
+- **Decisions (n):** every dated decision in the log, **newest first** (the latest date; on one date, the entry
+  written later first), with its decision line; hover for the whole entry and its place (file and line). Click one to
+  open its log.
 
-**What it is:** every individual result, one row per rule and subject. Group the rows by **status** (problems
-first), by **gate**, or by **file**.
+**Record decision…** opens the log at a dated, started entry.
 
-- Open a row for the rule's reason, its details (the codes it reported), the files it looked at, and the gates it
-  blocks.
-- Right-click a result: **Explain Rule** shows what the rule checks, why, what a PASS does *not* mean, and how to
-  fix it. **Copy for Agent** copies just that rule's summary. **Run Check for Rule** re-checks only that rule.
-- A result that names a file also appears in VS Code's **Problems** panel (FAIL as an error, INCOMPLETE as a
-  warning), at the file and the line when the CLI gives one.
+**Use it:** to read what was decided before you change a plan, and to write down a new decision.
 
-**Use it:** to work through the problems one by one, or to hand a single rule to your agent.
+## Agents
 
-## Agent Skills
+### Agent Skills
+
+Agent Skills shows whether every agent in this project reads the same working rules.
+
+Click a folder, skill or finding to see its details. The R-60 finding offers rule explanation, a scoped re-check
+and a CLI brief for your agent.
 
 **What it is:** Agent Skills are instruction files (`SKILL.md`) that coding agents such as Claude Code or Codex
 read. They teach an agent this project's working rules: how to run checks, write a task, review a paper, keep a
@@ -284,31 +446,18 @@ example `.claude/skills` for Claude Code and `.agents/skills` for others.
   replacing the copy with a link (the CLI's rule R-60 reports this).
 - **Install Skills** puts the skills into the folders you choose. It previews what it will create first, and it never
   overwrites a file.
+- **Copy as Agent Brief** (the agent brief of Where am I?) copies a bounded orientation for a new agent session.
+- **Refresh** lists the skill folders again; **Check Skills** runs the CLI's R-60.
 
 **Use it:** once per project, so your agents work by the same rules. Check it again if an agent behaves oddly.
-
-## Sprint
-
-**What it is:** a live view of a running sprint. A sprint is a list of agent tasks that `steward sprint` starts one
-by one, when you give the order.
-
-- Each task shows its state: *planned*, *ready* (waiting for your order), *running*, *checking*, *done*, *failed*,
-  *held* or *skipped*. It also shows how long it has run against its time limit, and, when it ends, each acceptance
-  command with its exit code. **The task is done only when those commands pass, never because the agent says so.**
-- A state marked *derived* was worked out from the plan (for example, "ready" because the tasks it waited for are
-  done); the rest come straight from the sprint's ledger.
-- **Copy Order Command** copies `steward sprint go …` for a task that is waiting. You run it; the extension never
-  starts an agent.
-- *incomplete* means a line of the ledger could not be read, so the view may be behind. It sends no "finished"
-  notification from such a view.
-
-**Use it:** while agents work, to see what is running, what waits for you, and what passed.
 
 ## Status bar
 
 The shield item shows one gate (`bioSteward.gate`, default `default`), whether it is ELIGIBLE, the number of
-blocking results and the freshness. Click it to open the Overview. A second item counts down to the next milestone
-of `steward timeline`. A third appears while a sprint runs.
+blocking results and the freshness. Click it to open the Overview. A second item counts down to the nearest
+milestone of `steward timeline`. A third appears while a sprint runs. The **bell** item shows the unread notification
+count from `steward notifications --format json` across open projects; clicking it opens the notifications list and
+marks every item it showed as read.
 
 ## Where to read more
 - The user guide: `docs/guides/vscode.md` in the Bio-STEWARD repository (and the project site).

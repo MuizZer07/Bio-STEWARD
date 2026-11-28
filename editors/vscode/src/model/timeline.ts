@@ -4,6 +4,7 @@
 // project's records. Nothing is estimated here. Pure: no `vscode` import.
 import Ajv from 'ajv';
 import { parseJson } from '../cli/output';
+import type { TimelineDrift } from './full';
 import { literal } from './views';
 
 export interface MilestoneRow {
@@ -63,7 +64,8 @@ export function parseTimeline(stdout: string): TimelineDocument | undefined {
 export type TimelineState =
   | { readonly kind: 'none' }
   | { readonly kind: 'loading' }
-  | { readonly kind: 'ready'; readonly rows: readonly MilestoneRow[] }
+  // `drift`: the drift fields, when the CLI gave the versioned document (`timeline --format json`, E04).
+  | { readonly kind: 'ready'; readonly rows: readonly MilestoneRow[]; readonly drift?: TimelineDrift }
   | { readonly kind: 'not-configured' | 'invalid' | 'unreadable' | 'failed' };
 
 // The next milestone: the soonest one without a recorded outcome (met, moved or dropped). The CLI sorts the rows.

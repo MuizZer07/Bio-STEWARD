@@ -2,7 +2,7 @@
 
 - **ID:** … (unique, e.g. `ABC-042`)
 - **Status:** proposed
-- **GO reference:** … (the decision that asks for it)
+- **GO reference:** … (the `development/DECISIONS.md` entry giving the human go-ahead for this task)
 - **Branch:** … (and the base it is compared with)
 - **Owner:** … · **Approver:** …
 - **Reviewer:** the agent you dispatch

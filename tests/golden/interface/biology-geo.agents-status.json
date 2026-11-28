@@ -1,0 +1,83 @@
+{
+  "agents": [
+    {
+      "agent": "claude-code",
+      "executable": "claude",
+      "found": null,
+      "installed": false,
+      "last": {
+        "kind": "observed",
+        "message": null,
+        "reset": null,
+        "seq": 1,
+        "source": null,
+        "state": "missing",
+        "time": "2026-11-27T00:00:00Z"
+      },
+      "model": null,
+      "rank": null,
+      "reset_known": null,
+      "role": "master",
+      "signed_in": null,
+      "state": "missing",
+      "until": null,
+      "version": null
+    },
+    {
+      "agent": "codex",
+      "executable": "codex",
+      "found": "PATH",
+      "installed": true,
+      "last": {
+        "kind": "ending",
+        "message": "You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 3:04 PM.",
+        "reset": "2026-11-27T15:04:00Z",
+        "seq": 4,
+        "source": ".steward/sprints/example/T1.log",
+        "state": "limited",
+        "time": "2026-11-27T00:00:00Z"
+      },
+      "model": null,
+      "rank": 1,
+      "reset_known": true,
+      "role": "worker",
+      "signed_in": false,
+      "state": "limited",
+      "until": "2026-11-27T15:04:00Z",
+      "version": "0.125.0"
+    },
+    {
+      "agent": "antigravity",
+      "executable": "agy",
+      "found": "known folder",
+      "installed": true,
+      "last": {
+        "kind": "observed",
+        "message": null,
+        "reset": null,
+        "seq": 3,
+        "source": null,
+        "state": "available",
+        "time": "2026-11-27T00:00:00Z"
+      },
+      "model": "gemini-4-neon-high",
+      "rank": 2,
+      "reset_known": null,
+      "role": "worker",
+      "signed_in": null,
+      "state": "available",
+      "until": null,
+      "version": "1.5.18"
+    }
+  ],
+  "configured": true,
+  "ledger": ".steward/agents/availability.jsonl",
+  "master": "claude-code",
+  "now": "2026-11-27T13:00:00Z",
+  "on_limit": "next",
+  "schema": "steward.agents_status/0.1",
+  "workers": [
+    "codex",
+    "antigravity"
+  ]
+}

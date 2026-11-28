@@ -1,0 +1,484 @@
+{
+  "commands": {
+    "agents list": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.agents_list/0.1"
+    },
+    "audit progress": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.progress_audit/0.1"
+    },
+    "authorize keys": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.authorize_keys/0.1"
+    },
+    "authorize list": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.authorize_list/0.1"
+    },
+    "authorize pending": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.authorize_pending/0.1"
+    },
+    "benchmark results": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.benchmark_results/0.1"
+    },
+    "benchmark splits": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.benchmark_splits/0.1"
+    },
+    "channel status": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.channel_status/0.1"
+    },
+    "check": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.report/0.1"
+    },
+    "check --digest-only": {
+      "argv": [
+        "--digest-only",
+        "--against",
+        "FILE",
+        "--format",
+        "json"
+      ],
+      "schema": "steward.digest/0.1"
+    },
+    "decisions": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.decisions/0.1"
+    },
+    "diff impact": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.diff_impact/0.1"
+    },
+    "diff run": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.diff_run/0.1"
+    },
+    "diff runs": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.diff_runs/0.1"
+    },
+    "exchange status": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.exchange_status/0.1"
+    },
+    "explain": {
+      "argv": [
+        "--all",
+        "--format",
+        "json"
+      ],
+      "schema": "steward.explain/0.1"
+    },
+    "init": {
+      "argv": [
+        "--dry-run",
+        "--format",
+        "json"
+      ],
+      "schema": "steward.init_plan/0.1"
+    },
+    "integrity status": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.integrity_status/0.1"
+    },
+    "interface": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.interface/1"
+    },
+    "issues inbox": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.issues_inbox/0.1"
+    },
+    "licence inventory": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.licence_inventory/0.1"
+    },
+    "licence notices": {
+      "argv": [
+        "--format",
+        "cyclonedx"
+      ],
+      "schema": "CycloneDX/1.5"
+    },
+    "next": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.next/0.1"
+    },
+    "notifications": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.notifications/0.1"
+    },
+    "paper citations": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.paper_citations/0.1"
+    },
+    "paper displays": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.paper_displays/0.1"
+    },
+    "paper manifest": {
+      "argv": [],
+      "schema": "steward.submission_manifest/0.1"
+    },
+    "paper values": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.paper_values/0.1"
+    },
+    "pins status": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.pins_status/0.1"
+    },
+    "release status": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.release_status/0.1"
+    },
+    "research list": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.research_list/0.1"
+    },
+    "session start": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.session_start/0.1"
+    },
+    "shards plan": {
+      "argv": [
+        "--shards",
+        "N",
+        "--cost",
+        "FILE"
+      ],
+      "schema": "steward.shards/0.1"
+    },
+    "skills list": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.skills/0.1"
+    },
+    "spend status": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.spend_status/0.1"
+    },
+    "sprint status": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.sprint_status/0.1"
+    },
+    "storage audit": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.storage_audit/0.1"
+    },
+    "storage scan": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.storage_scan/0.1"
+    },
+    "storage verify": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.storage_verify/0.1"
+    },
+    "study list": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.study_list/0.1"
+    },
+    "study show": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.study_show/0.1"
+    },
+    "talk plan": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.talk_plan/0.1"
+    },
+    "talk prefs": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.talk_prefs/0.1"
+    },
+    "task board": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.task_board/0.1"
+    },
+    "tidy": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "schema": "steward.tidy/0.1"
+    },
+    "timeline": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.timeline/0.1"
+    },
+    "tokens check": {
+      "argv": [
+        "--claude-hook"
+      ],
+      "schema": null
+    },
+    "tokens report": {
+      "argv": [
+        "--format",
+        "json"
+      ],
+      "legacy_argv": [
+        "--json"
+      ],
+      "schema": "steward.tokens_report/0.1"
+    },
+    "upgrade --check": {
+      "argv": [
+        "--check",
+        "--format",
+        "json"
+      ],
+      "schema": "steward.upgrade/0.1"
+    }
+  },
+  "error_schema": "steward.error/0.1",
+  "exit_codes": {
+    "0": "Success",
+    "1": "Failed check or negative command outcome",
+    "124": "Run limit reached",
+    "130": "Interrupted",
+    "2": "Incomplete check or comparison",
+    "3": "Unknown check outcome",
+    "64": "Invalid usage or an invalid configuration",
+    "65": "Invalid data or refused operation",
+    "70": "Internal error",
+    "73": "Could not create the requested files",
+    "75": "Run slot unavailable",
+    "77": "Operation refused by the project policy",
+    "78": "Not configured: no steward.toml (a steward.error/0.1 document with --format json)"
+  },
+  "interface_version": 1,
+  "schema": "steward.interface/1",
+  "schema_files": {
+    "steward.agents_list/0.1": "steward.agents_list-0.1.schema.json",
+    "steward.artifacts/0.1": "steward.artifacts-0.1.schema.json",
+    "steward.authorize_keys/0.1": "steward.authorize_keys-0.1.schema.json",
+    "steward.authorize_list/0.1": "steward.authorize_list-0.1.schema.json",
+    "steward.authorize_pending/0.1": "steward.authorize_pending-0.1.schema.json",
+    "steward.benchmark_results/0.1": "steward.benchmark_results-0.1.schema.json",
+    "steward.benchmark_splits/0.1": "steward.benchmark_splits-0.1.schema.json",
+    "steward.channel_status/0.1": "steward.channel_status-0.1.schema.json",
+    "steward.claims/0.1": "steward.claims-0.1.schema.json",
+    "steward.contract/0.1": "steward.contract-0.1.schema.json",
+    "steward.datasets/0.1": "steward.datasets-0.1.schema.json",
+    "steward.decisions/0.1": "steward.decisions-0.1.schema.json",
+    "steward.diff_impact/0.1": "steward.diff_impact-0.1.schema.json",
+    "steward.diff_run/0.1": "steward.diff_run-0.1.schema.json",
+    "steward.diff_runs/0.1": "steward.diff_runs-0.1.schema.json",
+    "steward.digest/0.1": "steward.digest-0.1.schema.json",
+    "steward.displays/0.1": "steward.displays-0.1.schema.json",
+    "steward.error/0.1": "steward.error-0.1.schema.json",
+    "steward.exchange_status/0.1": "steward.exchange_status-0.1.schema.json",
+    "steward.explain/0.1": "steward.explain-0.1.schema.json",
+    "steward.findings/0.1": "steward.findings-0.1.schema.json",
+    "steward.init_plan/0.1": "steward.init_plan-0.1.schema.json",
+    "steward.integrity_status/0.1": "steward.integrity_status-0.1.schema.json",
+    "steward.interface/1": "steward.interface-1.schema.json",
+    "steward.issues_inbox/0.1": "steward.issues_inbox-0.1.schema.json",
+    "steward.last_error/0.1": "steward.last_error-0.1.schema.json",
+    "steward.licence_inventory/0.1": "steward.licence_inventory-0.1.schema.json",
+    "steward.milestones/0.1": "steward.milestones-0.1.schema.json",
+    "steward.next/0.1": "steward.next-0.1.schema.json",
+    "steward.notifications/0.1": "steward.notifications-0.1.schema.json",
+    "steward.paper_citations/0.1": "steward.paper_citations-0.1.schema.json",
+    "steward.paper_displays/0.1": "steward.paper_displays-0.1.schema.json",
+    "steward.paper_spec/0.1": "steward.paper_spec-0.1.schema.json",
+    "steward.paper_values/0.1": "steward.paper_values-0.1.schema.json",
+    "steward.pins_status/0.1": "steward.pins_status-0.1.schema.json",
+    "steward.presentation_prefs/0.1": "steward.presentation_prefs-0.1.schema.json",
+    "steward.prior_work/0.1": "steward.prior_work-0.1.schema.json",
+    "steward.progress_audit/0.1": "steward.progress_audit-0.1.schema.json",
+    "steward.release_status/0.1": "steward.release_status-0.1.schema.json",
+    "steward.report/0.1": "steward.report-0.1.schema.json",
+    "steward.research_list/0.1": "steward.research_list-0.1.schema.json",
+    "steward.session_start/0.1": "steward.session_start-0.1.schema.json",
+    "steward.shards/0.1": "steward.shards-0.1.schema.json",
+    "steward.skills/0.1": "steward.skills-0.1.schema.json",
+    "steward.spend_status/0.1": "steward.spend_status-0.1.schema.json",
+    "steward.sprint/0.1": "steward.sprint-0.1.schema.json",
+    "steward.sprint_status/0.1": "steward.sprint_status-0.1.schema.json",
+    "steward.storage_audit/0.1": "steward.storage_audit-0.1.schema.json",
+    "steward.storage_scan/0.1": "steward.storage_scan-0.1.schema.json",
+    "steward.storage_verify/0.1": "steward.storage_verify-0.1.schema.json",
+    "steward.study_list/0.1": "steward.study_list-0.1.schema.json",
+    "steward.study_show/0.1": "steward.study_show-0.1.schema.json",
+    "steward.submission_manifest/0.1": "steward.submission_manifest-0.1.schema.json",
+    "steward.talk/0.1": "steward.talk-0.1.schema.json",
+    "steward.talk_plan/0.1": "steward.talk_plan-0.1.schema.json",
+    "steward.talk_prefs/0.1": "steward.talk_prefs-0.1.schema.json",
+    "steward.task_board/0.1": "steward.task_board-0.1.schema.json",
+    "steward.tidy/0.1": "steward.tidy-0.1.schema.json",
+    "steward.timeline/0.1": "steward.timeline-0.1.schema.json",
+    "steward.tokens_report/0.1": "steward.tokens_report-0.1.schema.json",
+    "steward.toml/0.2": "steward.toml-0.2.schema.json",
+    "steward.upgrade/0.1": "steward.upgrade-0.1.schema.json",
+    "steward.values/0.1": "steward.values-0.1.schema.json",
+    "steward.venue/0.1": "steward.venue-0.1.schema.json"
+  },
+  "tool_version": "0.22.0"
+}

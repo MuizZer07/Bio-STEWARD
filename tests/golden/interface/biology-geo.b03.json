@@ -1,0 +1,101 @@
+{
+  "check": {
+    "results": [
+      {
+        "area": "studies",
+        "details": [
+          {
+            "code": "R-75.reference_mismatch",
+            "message": "GRCh38 (fixture.chrom.sizes): contig 'chr1' has header length 249250621, reference length 248956422",
+            "path": "fixture.vcf",
+            "row": 2
+          },
+          {
+            "code": "R-75.reference_mismatch",
+            "message": "GRCh38 (fixture.chrom.sizes): contig 'chr2' interval end 242193530 exceeds reference length 242193529",
+            "path": "fixture.bed",
+            "row": 1
+          }
+        ],
+        "evidence": [
+          {
+            "path": "fixture.chrom.sizes",
+            "sha256": "1f9896f59d6c6261d9fbf1e00ff3d208875aefeac7f76df5ba700fbd5e715b00"
+          }
+        ],
+        "name": "studies.records",
+        "reason": "genome reference preflight failed",
+        "rule": "R-75",
+        "rule_version": 1,
+        "status": "FAIL",
+        "subject": "development/studies/reference-fixture.toml"
+      }
+    ],
+    "schema": "steward.report/0.1"
+  },
+  "study show": {
+    "check": "FAIL",
+    "path": "development/studies/reference-fixture.toml",
+    "schema": "steward.study_show/0.1",
+    "study": {
+      "depends_on": [],
+      "id": "reference-fixture",
+      "inputs": [
+        {
+          "accession": null,
+          "files": [
+            {
+              "md5": null,
+              "path": "fixture.vcf",
+              "sha256": "b649307b7794a4cdfe4c647447ea04c08b109a93a158b014c91df6dd06d1a52f",
+              "size": null,
+              "url": null
+            },
+            {
+              "md5": null,
+              "path": "fixture.sam",
+              "sha256": "dc334947cc1bae4248e553e042eef2c303f2426e872d41c76054c09f5d8990f3",
+              "size": null,
+              "url": null
+            },
+            {
+              "md5": null,
+              "path": "fixture.bed",
+              "sha256": "0779b436eecef9df6456c011b56ecfe9f45b1aabb087a1bf9849cfe293d24042",
+              "size": null,
+              "url": null
+            }
+          ],
+          "id": "fixture",
+          "references": null,
+          "retrieved": null,
+          "source": "local",
+          "url": null
+        }
+      ],
+      "kind": "study",
+      "notes": null,
+      "papers": [],
+      "plan": null,
+      "plan_sha256": null,
+      "references": {
+        "annotation": null,
+        "chromosome_naming": null,
+        "chromosome_sizes": "fixture.chrom.sizes",
+        "coordinate_base": null,
+        "databases": {},
+        "genome": "GRCh38",
+        "id_namespace": null,
+        "mapping": null,
+        "organism": null,
+        "taxon": null
+      },
+      "results": [],
+      "samples": null,
+      "schema": "steward.study/1",
+      "status": "active",
+      "title": "Reference fixture",
+      "tools": []
+    }
+  }
+}

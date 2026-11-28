@@ -126,7 +126,21 @@ steward sprint recheck day1 T2     # a failed task whose work is fixed on its br
 steward sprint add day1 T13        # a task written into the file after the sprint opened
 steward sprint reload day1         # use an edit of the sprint file made while a task ran
 steward sprint stop day1 [--now]   # --now also stops the running tasks (each run records its interruption)
+steward sprint accept day1 T1      # 0.23.0: a worker's task in review, verified by the master: done
+steward sprint rework day1 T1 --note "…"  # 0.23.0: send it back (to the same agent, or --to master)
 ```
+
+**Delegated tasks (0.23.0).** With `[delegation]` in `steward.toml`, `agent = "auto"` gives a task to the first
+available worker, and a worker that cannot run (a usage limit, not signed in, not installed, a sandbox that did not
+start) hands it to the next one on the same branch (**redelegated**), or to the master, or makes it wait until the
+earliest reset time (**waiting**), as `on_limit` says. A task that names a worker (`agent = "codex"` or
+`"antigravity"`) moves the same way when that worker cannot run, and a Codex run stopped by a limit has its partial
+work committed first. A worker's task whose done commands pass ends in **review**
+with a brief for the master, until `sprint accept` or `sprint rework`. See
+[Delegate to other agents](delegation.md).
+
+![A delegated task: a worker that cannot run hands it to the next worker or the master; a passing task waits in review for accept or rework](../assets/delegation-flow.svg)
+
 Each task runs in `.steward/sprints/<sprint>/<task>` (or under `worktree_root`) on the branch `sprint/<sprint>/<task>`.
 When its run ends, its `done` commands run there: all exit 0 and nothing uncommitted → **done**; otherwise **failed**
 (an uncommitted change is named by its path), and what waits for it is **blocked**. Nothing starts outside the

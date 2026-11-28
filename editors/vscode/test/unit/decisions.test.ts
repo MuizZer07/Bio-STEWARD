@@ -5,16 +5,16 @@ import { dirname, join } from 'node:path';
 import { unlinkedFile } from '../../src/cli/paths';
 import { findDecisionLogs } from '../../src/decisionsFiles';
 import {
-  DECISIONS_REDUCED_NOTE, decisionsNodes, decisionsSettings, DEFAULT_DECISIONS, expandLogs, firstLog, type DecisionsState,
+  DECISIONS_SOURCE_NOTE, decisionsNodes, decisionsSettings, DEFAULT_DECISIONS, expandLogs, firstLog, type DecisionsState,
 } from '../../src/model/decisions';
 import type { ViewNode } from '../../src/model/views';
 
-// P6 Decisions, reduced form (task U05; RELEASE_vscode_0.2.0_SPEC §3): Open DECISIONS.md only. The log is the one
+// P6 Decisions (task U05; RELEASE_vscode_0.2.0_SPEC §3): Open DECISIONS.md only. The log is the one
 // steward.toml names, or the CLI 0.20.6 default; its entries are never read.
 
 const walk = (node: ViewNode): ViewNode[] => [node, ...(node.children ?? []).flatMap(walk)];
 
-describe('Decisions (U05, reduced form)', () => {
+describe('Decisions (U05)', () => {
   describe('which file is the decisions log (CLI 0.20.6: IntegritySection.decisions, session.decisions_log)', () => {
     const patterns = (toml: string) => {
       const read = decisionsSettings(toml);
@@ -177,12 +177,12 @@ describe('Decisions (U05, reduced form)', () => {
       kind: 'ready', settings: { source, patterns: logs.map((log) => log.pattern ?? log.path) }, logs, unmatched: [], more: 0,
     });
 
-    it('is labelled reduced, and each log row opens that file as it is (Open DECISIONS.md only)', () => {
+    it('names its source, and each log row opens that file as it is', () => {
       const nodes = decisionsNodes([{ root: '/p', name: 'p', decisions: ready([{ path: DEFAULT_DECISIONS, exists: true }]) }]);
-      assert.equal(nodes[0].label, 'Reduced form');
-      assert.equal(nodes[0].description, 'Open DECISIONS.md only');
-      assert.equal(nodes[0].tooltip, DECISIONS_REDUCED_NOTE);
-      assert.match(DECISIONS_REDUCED_NOTE, /never writes a decision/);
+      assert.equal(nodes[0].label, 'Decisions log');
+      assert.equal(nodes[0].description, 'named by steward.toml');
+      assert.equal(nodes[0].tooltip, DECISIONS_SOURCE_NOTE);
+      assert.match(DECISIONS_SOURCE_NOTE, /never writes a decision/);
       const [, log] = nodes;
       assert.equal(log.kind, 'decisions-log');
       assert.equal(log.label, DEFAULT_DECISIONS);

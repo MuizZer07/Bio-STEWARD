@@ -11,9 +11,11 @@ path = "results/de.tsv"
 format = "tsv"
 columns = { gene = "hgnc", contrast = "text", rank = "integer" }
 id_column = "gene"
+hgnc_table = "references/hgnc.tsv"
 p_value = "pvalue"
 adjusted_p_value = "padj"
 log_fold_change = "log2FoldChange"
+log_base = 2
 na_values = ["NA", ""]
 ```
 
@@ -21,18 +23,32 @@ Declare a separate file per contrast if each gene should occur once within a con
 `id_column` requires a value on every row and flags repeated values. The `columns`
 map names columns and their types. Recognized types are `text`, `integer`,
 `number`, `boolean` (literal `true` or `false`), `ensembl`, `entrez` and
-`hgnc`. Column names are case sensitive.
+`hgnc` and `gene_symbol`. Column names are case sensitive.
 
 Ensembl checks gene ID syntax, including species prefixes and optional version
-suffixes. Entrez checks positive decimal IDs without leading zeros. HGNC checks
+suffixes. Use either versioned or unversioned IDs consistently within each
+declared Ensembl column. Entrez checks positive decimal IDs without leading zeros. HGNC checks
 symbol syntax, including forms such as `C12orf57`, and flags date-like forms such
 as `2-Sep` and `1-Mar`. Recover suspected conversions from the original export.
-Identifier checks use local patterns with no database lookup.
+Declare a local `hgnc_table` TSV to catch previous or withdrawn symbols in
+`hgnc` columns. It needs `symbol`, `prev_symbol` and `status` headers. Use
+pipe-separated previous symbols on `Approved` rows and include any withdrawn
+entries you want checked. An approved current symbol takes precedence if it
+also occurs as a previous symbol. Keep the reference snapshot with the analysis.
+
+For a species casing check, declare `columns = { gene = "gene_symbol" }` and
+`study = "study-id"` in the contract. The study's `[references]` supplies
+`organism` or `taxon`. The local patterns check human symbols such as `TP53` and
+mouse symbols such as `Trp53`. These are spelling and casing checks.
 
 The two p-value fields name columns whose numeric values must be in [0, 1].
 When both have values on a row, the adjusted p-value must be at least the raw
-p-value. The log fold change column requires finite numbers. These checks use
-the values in the file and perform no statistical analysis.
+p-value. An exact zero makes the check INCOMPLETE and may indicate underflow.
+The check fails when every row has a valid raw and adjusted value and each
+pair is numerically identical. The log fold change column requires finite
+numbers. Declare its `log_base` as a positive number other than 1, or use
+`log_base = "e"` for natural logarithms. Existing contracts may omit
+`log_base`. The declaration records the intended scale for reviewers.
 
 Missing-value tokens are matched exactly across the table. By default they
 are an empty cell, `NA`, `N/A`, `NaN`, `nan`, `NULL` and `null`. Set
@@ -75,5 +91,7 @@ row or column exists, for example if a file or a declared header is missing.
 Files are streamed. Memory grows with the unique IDs and reported findings.
 
 ---
+
+2026-11-27 · B01 implementation · Codex, version unknown · OpenAI · exact model ID unknown · checks use local data and declared references.
 
 2026-11-25 · STW-012 implementation · Codex Work, version unknown · OpenAI · exact model ID unknown · local syntax and declared checks.

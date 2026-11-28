@@ -201,6 +201,7 @@ NEXT = {
     "R-85": "name every accession of the cited studies in the paper's data-availability statement",
     "R-87": "run a stranger test on the coming release: steward stranger-test brief --tag TAG --for AGENT",
     "R-88": "run steward tidy, then ask the owner whether to archive, delete or keep each item",
+    "R-89": "install the agent named, or run steward agents setup to write a [delegation] of the installed agents",
     "R-84": "keep both recorded outputs and run steward compare record with the shadow stage name",
     "R-86": "check the weights and training studies, then record a current evaluation run and use its metric values",
     "R-56": "remove the forbidden import or dependency named, or move it to an allowed group",
@@ -218,6 +219,7 @@ NEXT = {
 def recommendations(results: list[dict[str, Any]]) -> list[str]:
     out = []
     for r in results:
+        out += [f"R-75 {d['path']} — {d['message']}" for d in r["details"] if d.get("code") == "R-75.sample_imbalance"]
         out += [f"Recommended: {d['message']}" for d in r["details"] if str(d.get("code", "")).endswith(".recommended")]
         out += [f"R-53 (advisory): {d['message']}" for d in r["details"] if d.get("code") == "R-53.undelivered"]
     return sorted(set(out))
@@ -250,6 +252,8 @@ def kits_line(results: list[dict[str, Any]], areas: dict[str, Any] | None = None
 
 
 CODE_NEXT = {  # 0.20.1 (STW-033): a hint for the case, where the rule's general hint would not fit
+    "R-75.sample_confounding": "review the sample counts and which condition contrasts the design can estimate",
+    "R-07.controlled_access": "keep the accession in a private record",
     "R-75.none": "steward study new ID --title \"…\" --kind reanalysis, then steward study add-input ID …",
     "R-75.file_changed": "restore the recorded file (git checkout -- PATH), or accept its new bytes on purpose: "
                          "steward study fingerprint ID --accept PATH (then recheck the papers that cite it)",

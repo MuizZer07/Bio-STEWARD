@@ -1,0 +1,48 @@
+{
+  "board": "development/BOARD.md",
+  "schema": "steward.task_board/0.1",
+  "tasks": [
+    {
+      "archived": false,
+      "closed": false,
+      "id": "GEO-001",
+      "path": "development/tasks/GEO-001-load-series.md",
+      "status": "in progress"
+    },
+    {
+      "archived": false,
+      "closed": true,
+      "id": "GEO-002",
+      "path": "development/tasks/GEO-002-normalise.md",
+      "status": "done"
+    },
+    {
+      "archived": false,
+      "closed": false,
+      "id": "GEO-003",
+      "path": "development/tasks/GEO-003-annotate.md",
+      "status": "blocked — waiting on the annotation release"
+    },
+    {
+      "archived": false,
+      "closed": false,
+      "id": "GEO-004",
+      "path": "development/tasks/GEO-004-figures.md",
+      "status": "in review"
+    },
+    {
+      "archived": false,
+      "closed": false,
+      "id": "GEO-005",
+      "path": "development/tasks/GEO-005-methods.md",
+      "status": "GO recorded"
+    },
+    {
+      "archived": false,
+      "closed": false,
+      "id": "GEO-006",
+      "path": "development/tasks/GEO-006-notes.md",
+      "status": "(none)"
+    }
+  ]
+}

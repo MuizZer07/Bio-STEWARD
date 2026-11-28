@@ -9,7 +9,8 @@
 - **Upgrading a pinned dependency:** the `dependency-upgrade` skill and R-66.
 - **Release notices:** `steward exchange announce vX.Y.Z` tells each declared consumer, with the changelog section,
   its known issues and upgrade notes ([multi-project governance](multi-project.md)).
-- An independent review is recorded before a release (R-43; the `red-team-review` skill).
+- An independent review is recorded before a release (R-43; the `red-team-review` skill). When `review_required` is
+  off, `steward check` surfaces this recommendation for `confirmatory` projects only, not `exploratory` ones.
 
 ## Review waivers in gates
 

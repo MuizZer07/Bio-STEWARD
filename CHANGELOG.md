@@ -2,6 +2,111 @@
 
 Pre-release. Not published on PyPI. Versions follow semantic versioning once released.
 
+## 0.23.0 (2026-11-27): automatic delegation, then the biology checks
+Per Muiz, 2026-11-27: "go ahead with S2"; "Steward also needs to be responsible for task delegation more frequently
+… for my development claude is master". Per development/design/RELEASE_v0.23.0_SPEC.md (sprint `2026-11-28-s2`,
+D01 – D03, B01 – B03, R01). A project names one master agent and its workers; a task given to `auto` goes to the
+first worker that can run, moves to the next one on the same branch when a usage limit or a missing sign-in stops it,
+and waits in review until the master accepts it. The biology checks gain controlled-access accessions, sample
+confounding, gene identifiers and p-value sanity, analysis environments, and a contig preflight of VCF, SAM and BED
+files against a declared genome. Every result code has a one-line description in `steward explain`. No command opens
+a network connection unless asked. Read the upgrade notes below: `steward check` gains one rule (R-89), and existing
+study records and data contracts can show new findings.
+
+### Added
+- **Delegation configuration** (D01): `[delegation]` in `steward.toml` with `master`, `workers` (in order),
+ `on_limit = "next" | "master" | "wait"` and `[delegation.models]`; the agents are `claude-code`, `codex` and
+ `antigravity`. A worker named twice, or a master that is also a worker, fails R-01. See
+ [Delegate to other agents](docs/guides/delegation.md).
+- **`steward agents setup [--yes] [--master NAME]`** (D01): finds the installed agent CLIs on PATH and in their known
+ install folders (for example `~/.gemini/bin/agy`), reads each one's version and, where the agent has a local status
+ command, whether it is signed in. It passes no prompt and opens no connection. It shows the `[delegation]` it would
+ write as a diff and writes it after you confirm (or with `--yes`); without a terminal and without `--yes` it prints
+ the diff only. It also brings the AGENTS block of `AGENTS.md` up to date (D03). `steward init` offers it in its text
+ output when an agent CLI is found and there is no `[delegation]`.
+- **`steward agents status [--format json]`** (D01; `steward.agents_status/0.1`): each agent as available, limited
+ until a time, signed out or missing, and which one is the master. It reads the availability ledger
+ `.steward/agents/availability.jsonl` (hash-chained, local) and PATH; it runs no agent.
+- **"Cannot run" kept apart from a task failure** (D01): one table per agent of the endings that mean a worker cannot
+ run (a usage or rate limit with its reset time when the agent prints one, not signed in, not installed, a sandbox
+ that did not start). Only the end of a log and its error events are read. A limit with no printed reset time counts
+ for one hour.
+- **R-89 `delegation.installed`** (D01, advisory): with `[delegation]`, each agent it names is installed; INCOMPLETE
+ with `R-89.missing` otherwise; NOT_APPLICABLE without `[delegation]`.
+- **`agent = "auto"` and `steward task dispatch TASK --to auto`** (D02): the first available worker in `workers` takes
+ the task. `steward sprint check` prints the order it will try and who can run now.
+- **Re-delegation** (D02, D02b): when a worker cannot run, the supervisor records `redelegated` (the worker, the
+ reason, the reset time) in the sprint ledger and the availability ledger, and starts the task again with the next
+ available worker in the same worktree and branch, keeping the earlier commits. When no worker can run it follows
+ `on_limit`: the master, or `waiting` until the earliest reset time (shown in `sprint status` and `steward next`).
+ A limited worker is skipped until its reset time passes. With `[delegation]`, a task that names a worker moves the
+ same way. A Codex run stopped by a limit has its partial work committed first, with a message that says so.
+- **The master's review** (D02): with `[delegation]`, a worker's task whose `done` commands pass ends in `review`,
+ with a brief at `.steward/sprints/<sprint>/<task>.review.md` (the diff summary, the commits newest first, each check
+ with its output, the task records' deviations, any re-delegation). `steward sprint accept ID TASK` marks it done;
+ `steward sprint rework ID TASK --note … [--to same|master]` sends it back. Tasks run by the master end in `done` as
+ before. Merging stays the master's step.
+- **Attempts in the agents ledger and the tokens report** (D02): each finished attempt of a delegated sprint task is
+ recorded with its agent, provider, model and outcome; `steward tokens report` lists each task's `attempts` (newest
+ first) with the tokens inside each one. See [Track tokens per task](docs/guides/tokens.md).
+- **The skills and the AGENTS block** (D03): `using-steward` and `task-lifecycle` say when the master delegates (a
+ self-contained, specified subtask with its own acceptance commands), how, and what the master keeps (review,
+ merging, anything that needs a signature). The AGENTS block names the project's master and workers. The guide
+ [Delegate to other agents](docs/guides/delegation.md) has a figure of the flow. Every kit's word budget still holds.
+- **Controlled-access accessions** (B01): with privacy checks configured, R-07 fails on dbGaP (`phs…`) and EGA
+ (`EGAD…`, `EGAS…`) accession forms in scanned text and PDF text, with the accession left out of the finding
+ (`R-07.controlled_access`).
+- **Sample confounding** (B01): R-75 cross-tabulates `condition` by `batch` (or the columns named by
+ `condition_column` and `batch_column`) and by each of `[samples] covariates`. Complete confounding fails
+ (`R-75.sample_confounding`); a condition share that differs by 80 percentage points or more across a factor's levels
+ is advisory (`R-75.sample_imbalance`), shown in `--summary` and `--quiet`. See
+ [Work with public data](docs/guides/public-data.md).
+- **Identifiers and statistics in data contracts** (B01): a local `hgnc_table` finds previous and withdrawn HGNC
+ symbols; an Ensembl column must not mix versioned and unversioned IDs (`R-83.mixed_ensembl_versions`); a
+ `gene_symbol` column is checked for human or mouse casing against the linked study's organism; an exact-zero p-value
+ is INCOMPLETE; adjusted p-values identical to raw ones on every row fail (`R-83.adjusted_equals_raw`); an optional
+ `log_base` records the fold-change scale. See [Data contracts](docs/guides/data-contracts.md).
+- **Analysis environments** (B01): `steward run` records the sha256 of a root `renv.lock` or `conda-lock.yml`; a
+ study's Bioconductor tool entry must give a major.minor release.
+- **Reference preflight** (B03): with `genome` and `chromosome_sizes` in a study's `[references]`, R-75 checks VCF
+ `##contig` and SAM `@SQ` names and lengths, and each BED interval's contig and bounds, against the sizes file
+ (gzip and BGZF included). A mismatch fails with the file, the row and both lengths (`R-75.reference_mismatch`); a
+ file with nothing to compare is INCOMPLETE. Read limits: 1 MiB per line, 8 MiB per sizes file, 256 MiB per input.
+- **Every result code explained** (B02): `steward explain` and `steward explain --all --format json` give every code a
+ one-line description where it had no fix of its own.
+- **An `analysis-review` brief template** (B02): `steward task template analysis-review` for scripts, notebooks,
+ pipelines, sample sheets, tables, figures and statistics; `steward task brief` warns about more unfilled slots.
+- **First-contact words** (B02): `steward init`, its `--help`, `steward.toml` and the quick start explain the
+ `exploratory` and `confirmatory` profiles; the templates and guides explain a GO reference.
+- A figure of sample confounding in the public-data guide, and a flowchart of the reference preflight (R01).
+
+### Changed
+- `steward check` reports R-89 (one more result; NOT_APPLICABLE without `[delegation]`).
+- `steward explain`'s code list corrects `R-40.derived_binary` to `R-40.derived_binary64` and adds five codes it had
+ missed (`R-53.deferred_stale`, `R-78.contamination_risk`, `R-78.id_conflict`, `R-78.prompts_not_intact`,
+ `R-78.undated_cases`).
+- The red-team review recommendation (`R-43.recommended`) appears for `confirmatory` projects only.
+- `steward sprint status`, `steward next` and `steward tokens report --format json` gain optional fields and new
+ values (`auto`, `delegation`, `attempts`, `task_review`, `task_limited`); their schemas change by additions only.
+
+### Upgrade notes (from 0.22.0)
+- **Without `[delegation]`, sprints and dispatch behave as in 0.22.0**, with one exception: a Codex sprint run stopped
+ by a limit now has its partial work committed on its branch, so a `go --retry` finds it there.
+- **With `[delegation]`, a worker's passing task ends in `review`, not `done`.** A script or a sprint that waits for
+ `done` must run `steward sprint accept ID TASK` (or read `review` as the end of the worker's part). A task that names
+ a worker moves to the next one when it cannot run.
+- **The check report gains R-89.** `steward check --json` and `--format json` hold one more rule result than in 0.22.0
+ (NOT_APPLICABLE until `[delegation]` exists); the other results are unchanged. A script that counts results or
+ compares a saved report byte for byte sees the difference.
+- **`steward explain --format json`** now gives a string `fix` for codes that had `null`; its schema is unchanged.
+- **New findings in existing records.** With privacy checks configured, a dbGaP or EGA accession in a scanned file
+ now FAILs R-07: keep it in a private record. A sample sheet whose condition is completely confounded with its batch
+ now FAILs R-75. A study's Bioconductor version that is not major.minor now fails its record's validation. In a data
+ contract, an exact-zero p-value is INCOMPLETE, adjusted p-values equal to raw ones on every row FAIL, and an Ensembl
+ column that mixes versioned and unversioned IDs FAILs. The HGNC, casing and reference checks run only when their new
+ declarations are added.
+- An agents ledger that already used the labels `claude-code` or `antigravity` is now read by `steward tokens report`.
+
 ## 0.22.0 (2026-11-27): requests from the adopting projects, token windows, newest first
 Per Muiz, 2026-11-27: "then start S1 after publishing"; "add the pulled exchange items in this"; "make sure the token
 counts work"; "all tasks, milestones and everything should be latest first order". Per

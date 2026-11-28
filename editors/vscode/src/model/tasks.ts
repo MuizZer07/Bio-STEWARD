@@ -1,8 +1,9 @@
-// P3 Tasks in its reduced form (RELEASE_vscode_0.2.0_SPEC §3, AC-P3; design v0.6 §3).
+// P3 Tasks (RELEASE_vscode_0.2.0_SPEC §3, AC-P3; design v0.6 §3; RELEASE_vscode_0.3.0_SPEC E01).
 //
-// The full form reads the task board as JSON (STW-050, C9), which CLI 0.20.6 does not print. The reduced form lists
-// the task files by name and shows each one's `**Status:**` line exactly as written, labelled "read from the file":
-// the one explicit format read in 0.2.0. A file without a Status line shows nothing in its place.
+// The panel lists the task files by name and shows each one's `**Status:**` line exactly as written, labelled "read
+// from the file". A file without a Status line shows nothing in its place. Reading the task board as JSON
+// (`steward task board --format json`, CLI 0.21 and later) is task E04. Newest first (E01): each group is ordered by
+// the file's latest change (its modification time), then by its ID line, highest first.
 //
 // What counts as a task file, and which statuses are closed, comes from the `[tasks]` table of steward.toml, with
 // the CLI's defaults when it is absent (CLI 0.20.6 `TasksSection`). The status value is found with the pattern the
@@ -10,6 +11,8 @@
 // rule: the value's configured status (or the value itself) is one of `closed` (`process._status`). That decides
 // only a display grouping (open first), labelled as such; R-57 itself is not applicable without `[tasks]`. What is
 // shown is the physical line that holds the label, unchanged (U09, AC-P3). Pure: no `vscode` import.
+import { fullProblem, type BoardDocument, type BoardTask, type FullRead } from './full';
+import { newestFirst } from './order';
 import { parseToml, TomlDateTime, TomlError, type TomlTable, type TomlValue } from './toml';
 import type { ViewNode } from './views';
 
@@ -20,9 +23,10 @@ export const DEFAULT_CLOSED: readonly string[] = Object.freeze(['done']);
 export const MAX_TASK_FILES = 500;
 
 export const READ_FROM_FILE = 'read from the file';
-export const TASKS_REDUCED_NOTE = 'Reduced form (CLI 0.20.6): the task files, each with its Status line as written ' +
-  '(read from the file, not from the CLI). Open tasks come first. The full form, with each task\'s window, owner, ' +
-  'implementer and stale marks, needs the task board as JSON (the cockpit CLI).';
+export const TASKS_SOURCE_NOTE = 'The task files, each with its Status line as written (read from the file, not ' +
+  'from the CLI). Open tasks come first; in each group the latest change comes first, then the highest ID. Each ' +
+  'task\'s status in the CLI\'s words, closed and archived, needs steward 0.21 or newer (`steward task board ' +
+  '--format json`): Upgrade CLI.';
 
 // ── steward.toml [tasks] ─────────────────────────────────────────────────────────────────────────────────────
 
@@ -185,6 +189,8 @@ export interface TaskFile {
   // The value the CLI's R-57 pattern takes from it (for the open / closed grouping only).
   readonly value?: string;
   readonly id?: string;
+  // The file's latest change (its modification time, ISO 8601), for the newest-first order.
+  readonly changed?: string;
   // The file could not be read (too large, not UTF-8, gone).
   readonly unreadable?: string;
 }
@@ -201,13 +207,64 @@ export interface TasksInput {
   readonly root: string;
   readonly name: string;
   readonly tasks?: TaskListState | { readonly kind: 'loading' };
+  // E04: `steward task board --format json`, when the CLI offers it; the full form.
+  readonly board?: FullRead<BoardDocument>;
+}
+
+// ── P3 full form: the CLI's task board (E04) ────────────────────────────────────────────────────────────────
+
+export const BOARD_SOURCE = 'steward task board';
+export const BOARD_NOTE = 'The tasks steward task board reads from the project\'s task records: each one\'s status, ' +
+  'and whether it is closed or archived, in the CLI\'s words. Open tasks come first; in each group the latest change ' +
+  '(of the task file) comes first, then the highest ID.';
+
+// Open, closed and archived, each newest first: the file's latest change (from the task files listing, where it has
+// the file), then the ID, highest first.
+export function orderBoard(board: BoardDocument, tasks?: TasksInput['tasks']):
+  { open: BoardTask[]; closed: BoardTask[]; archived: BoardTask[] } {
+  const changed = new Map(tasks?.kind === 'ready' ? tasks.files.map((file) => [file.path, file.changed]) : []);
+  const sorted = newestFirst(board.tasks, (task) => changed.get(task.path), (task) => task.id);
+  return {
+    open: sorted.filter((task) => !task.closed && !task.archived),
+    closed: sorted.filter((task) => task.closed && !task.archived),
+    archived: sorted.filter((task) => task.archived),
+  };
+}
+
+function boardNode(root: string, task: BoardTask, prefix: string): ViewNode {
+  return {
+    id: `${prefix}/${task.path}`, kind: 'task-file', label: `${task.id} · ${basename(task.path)}`,
+    description: `${task.status}${task.closed ? ' · closed' : ''}${task.archived ? ' · archived' : ''}`,
+    tooltip: `${task.path}\nStatus: ${task.status}\nFrom ${BOARD_SOURCE}. Click to open the task file.`,
+    icon: { codicon: task.closed ? 'pass' : 'tasklist', tone: task.closed ? 'passed' : undefined },
+    command: 'openTaskFile', path: `${root}/${task.path}`, root, code: task.id,
+  };
+}
+
+function boardNodes(input: TasksInput, board: BoardDocument, prefix: string): ViewNode[] {
+  if (!board.tasks.length) {
+    return [{ id: `${prefix}/none`, kind: 'task-note', label: 'No tasks', description: `${BOARD_SOURCE} lists none`,
+      tooltip: board.board ? `The board ${board.board} lists no task files.` : 'No task files match the [tasks] specs.' }];
+  }
+  const { open, closed, archived } = orderBoard(board, input.tasks);
+  const group = (key: string, label: string, rows: readonly BoardTask[], icon: string): ViewNode => ({
+    id: `${prefix}/${key}`, kind: 'task-group', label: `${label} (${rows.length})`, description: BOARD_SOURCE,
+    tooltip: `${label} tasks, as ${BOARD_SOURCE} reports them, newest first.`, icon: { codicon: icon }, expanded: false,
+    children: rows.map((task) => boardNode(input.root, task, `${prefix}/${key}`)),
+  });
+  return [
+    ...open.map((task) => boardNode(input.root, task, `${prefix}/open`)),
+    ...(closed.length ? [group('closed', 'Closed', closed, 'pass')] : []),
+    ...(archived.length ? [group('archived', 'Archived', archived, 'archive')] : []),
+  ];
 }
 
 const basename = (path: string) => path.slice(path.lastIndexOf('/') + 1);
 
-// Open first (every file not closed, by path), then the closed ones in their own group (by path).
+// Open first, then the closed ones in their own group; in each, newest first: the latest change, then the ID (the
+// file's ID line, or its name), highest first.
 export function orderTasks(files: readonly TaskFile[], settings: TaskSettings): { open: TaskFile[]; closed: TaskFile[] } {
-  const sorted = [...files].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  const sorted = newestFirst(files, (file) => file.changed, (file) => file.id ?? basename(file.path));
   return {
     open: sorted.filter((file) => !isClosed(file.value, settings)),
     closed: sorted.filter((file) => isClosed(file.value, settings)),
@@ -235,6 +292,16 @@ function sourceText(settings: TaskSettings): string {
 }
 
 function projectNodes(input: TasksInput, prefix: string): ViewNode[] {
+  if (input.board?.kind === 'ready') return boardNodes(input, input.board.doc, prefix);
+  // The CLI offers the board, but this read gave nothing: say so, and list the task files.
+  const boardProblem: ViewNode[] = input.board && input.board.kind !== 'none' && input.board.kind !== 'loading'
+    ? [{ id: `${prefix}/board`, kind: 'task-note', label: fullProblem(input.board.kind, BOARD_SOURCE),
+      description: 'showing the task files', icon: { codicon: 'warning', tone: 'warning' } }]
+    : [];
+  return [...boardProblem, ...fileNodes(input, prefix)];
+}
+
+function fileNodes(input: TasksInput, prefix: string): ViewNode[] {
   const { tasks } = input;
   if (!tasks || tasks.kind === 'loading') {
     return [{ id: `${prefix}/loading`, kind: 'task-note', label: 'Task files', description: 'not read yet',
@@ -275,7 +342,11 @@ function projectNodes(input: TasksInput, prefix: string): ViewNode[] {
   return nodes;
 }
 
-function summary(tasks: TasksInput['tasks']): string {
+function summary(tasks: TasksInput['tasks'], board?: TasksInput['board']): string {
+  if (board?.kind === 'ready') {
+    const { open, closed, archived } = orderBoard(board.doc, tasks);
+    return `${open.length} open · ${closed.length} closed${archived.length ? ` · ${archived.length} archived` : ''}`;
+  }
   if (!tasks || tasks.kind === 'loading') return 'not read yet';
   if (tasks.kind !== 'ready') return 'not listed';
   const { open, closed } = orderTasks(tasks.files, tasks.settings);
@@ -285,13 +356,17 @@ function summary(tasks: TasksInput['tasks']): string {
 // One project: the note, then its files. Several: one block per project, in the order given (the Today order).
 export function tasksNodes(inputs: readonly TasksInput[]): ViewNode[] {
   if (!inputs.length) return [];
-  const note: ViewNode = {
-    id: 'tasks/reduced', kind: 'task-note', label: 'Reduced form', description: `Status lines ${READ_FROM_FILE}`,
-    tooltip: TASKS_REDUCED_NOTE, icon: { codicon: 'info', tone: 'info' },
+  const full = inputs.every((input) => input.board?.kind === 'ready');
+  const note: ViewNode = full ? {
+    id: 'tasks/source', kind: 'task-note', label: 'Tasks', description: `${BOARD_SOURCE} · latest change first`,
+    tooltip: BOARD_NOTE, icon: { codicon: 'info', tone: 'info' },
+  } : {
+    id: 'tasks/source', kind: 'task-note', label: 'Task files', description: `Status lines ${READ_FROM_FILE} · latest change first`,
+    tooltip: TASKS_SOURCE_NOTE, icon: { codicon: 'info', tone: 'info' },
   };
   if (inputs.length === 1) return [note, ...projectNodes(inputs[0], `tasks/${inputs[0].root}`)];
   return [note, ...inputs.map((input): ViewNode => ({
-    id: `tasks/${input.root}`, kind: 'task-project', label: input.name, description: summary(input.tasks),
+    id: `tasks/${input.root}`, kind: 'task-project', label: input.name, description: summary(input.tasks, input.board),
     tooltip: input.tasks?.kind === 'ready' ? `${input.root}\n${sourceText(input.tasks.settings)}` : input.root,
     icon: { codicon: 'folder' }, expanded: true, children: projectNodes(input, `tasks/${input.root}`),
   }))];

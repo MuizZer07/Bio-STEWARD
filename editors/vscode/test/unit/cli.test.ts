@@ -89,6 +89,11 @@ describe('CLI layer', () => {
     assert.deepEqual(commands.timeline().args, ['timeline', '--json']);
     assert.deepEqual(commands.auditProgress().args, ['audit', 'progress', '--json']);
     assert.deepEqual(commands.exchangeStatus().args, ['exchange', 'status', '--json']);
+    assert.deepEqual(commands.notifications().args, ['notifications', '--format', 'json']);
+    assert.equal(commands.notifications().confirmation, false);
+    assert.deepEqual(commands.upgradeCheck().args, ['upgrade', '--check', '--format', 'json']);
+    assert.equal(commands.upgradeCheck().confirmation, false);
+    assert.equal(commands.upgradeCheck().args.includes('--online'), false, 'extension never passes --online');
     const preview = commands.init({ goals: ['agents', 'paper'], agentsMd: true, paper: true, skills: ['.agents/skills'],
       kits: ['core', 'paper'], templates: ['prior-work'], preview: 'text' });
     assert.deepEqual(preview.args, ['init', '--for', 'agents', '--for', 'paper', '--agents-md', '--skills',
@@ -102,14 +107,15 @@ describe('CLI layer', () => {
       'authorize sign', 'authorize sign-pending', 'authorize anchor', 'authorize pin', 'unseal', 'seal', 'spend record',
       'freeze', 'amend apply', 'release publish', 'release go-public', 'release ack', 'sprint start', 'sprint go',
       'sprint hold', 'sprint skip', 'task dispatch', 'run', 'stage run', 'data fetch', 'storage clean', 'channel use',
-      'hooks install', 'exchange respond', 'exchange announce',
+      'hooks install', 'exchange respond', 'exchange announce', 'upgrade --to 0.23.0', 'exchange pull',
     ];
     const cli = await stub('throw new Error("must not execute");');
     const runner = new CliRunner({ cli, root, isTrusted: () => true });
     const builders = Object.keys(commands);
     assert.deepEqual(builders.sort(), [
-      'auditProgress', 'authorizePending', 'check', 'exchangeStatus', 'explain', 'init', 'interface', 'report', 'skillsList', 'taskDone',
-      'taskStart', 'timeline', 'tokensReport', 'version',
+      'auditProgress', 'authorizePending', 'authorizePendingJson', 'check', 'decisions', 'exchangeStatus', 'explain',
+      'init', 'interface', 'next', 'nextBrief', 'notifications', 'report', 'skillsList', 'sprintStatus', 'taskBoard',
+      'taskBrief', 'taskDone', 'taskStart', 'timeline', 'timelineFull', 'tokensReport', 'upgradeCheck', 'version',
     ]);
     for (const name of denied) {
       assert.equal(Object.hasOwn(commands, name), false, name);
@@ -326,7 +332,9 @@ describe('CLI layer', () => {
     assert.equal(full.mode, 'full');
     assert.equal(full.newerThanTested, true);
     assert.deepEqual(full.capabilities, { checkReport: true, explainJson: true, digest: false,
-      initPreviewJson: false, skillsInventory: false });
+      initPreviewJson: false, skillsInventory: false, next: false, taskBoard: false, pendingJson: false, decisionsJson: false,
+      timelineJson: false, sprintStatusJson: false, tokensJson: false,
+      notifications: false, upgradeCheck: false, nextBrief: false });
     assert.equal(interfaceCalls, 2);
     answer = completed('{"schema":"steward.interface/1","json_commands":"explain"}');
     assert.equal((await detector.detect({ ...runner, cliPath: '/another/steward' })).mode, 'unreadable');
@@ -334,6 +342,25 @@ describe('CLI layer', () => {
     version = '0.22.0';
     answer = completed(JSON.stringify({ schema: 'steward.interface/2', interface: 2, tool_version: version }));
     assert.equal((await detector.detect(runner)).mode, 'newer-interface');
+    // The document CLI 0.21 and later publish: interface_version and a commands map (words -> JSON argv).
+    version = '0.22.1';
+    answer = completed(JSON.stringify({ schema: 'steward.interface/1', interface_version: 1, tool_version: version,
+      commands: { check: { argv: ['--format', 'json'] }, 'check --digest-only': { argv: ['--against', 'FILE'] },
+        explain: { argv: ['--all', '--format', 'json'] }, init: { argv: ['--dry-run', '--format', 'json'] },
+        'skills list': { argv: ['--format', 'json'] }, next: { argv: ['--format', 'json'] },
+        notifications: { argv: ['--format', 'json'] },
+        'upgrade --check': { argv: ['--check', '--format', 'json'] } }, exit_codes: {} }));
+    const published = await detector.detect(runner);
+    assert.equal(published.mode, 'full');
+    assert.deepEqual(published.capabilities, { checkReport: true, explainJson: true, digest: true,
+      initPreviewJson: true, skillsInventory: true, next: true, taskBoard: false, pendingJson: false, decisionsJson: false,
+      timelineJson: false, sprintStatusJson: false, tokensJson: false,
+      notifications: true, upgradeCheck: true, nextBrief: true });
+    // Clearing the cache forces a fresh interface probe (used after Upgrade CLI).
+    const beforeClear = interfaceCalls;
+    detector.clear();
+    assert.equal((await detector.detect(runner)).mode, 'full');
+    assert.equal(interfaceCalls, beforeClear + 1);
   });
 
   // The pinned CLI from `npm run cli:install` runs by default whenever it is there (rule G2). BIO_STEWARD_TEST_CLI
@@ -350,7 +377,8 @@ describe('CLI layer', () => {
       const { bioSteward } = JSON.parse(await readFile(manifestPath, 'utf8')) as { bioSteward: typeof versions };
       const runner = new CliRunner({ cli: installedCli, root, isTrusted: () => true, registry: 'disable' });
       const detected = await new FeatureDetector(bioSteward).detect(runner);
-      assert.equal(detected.mode, 'limited');
+      // CLI 0.22.0 publishes `steward interface` (steward.interface/1 with its commands map).
+      assert.equal(detected.mode, 'full');
       assert.equal(detected.version, bioSteward.testedWithCli);
       console.log(`    Installed CLI verified: steward ${detected.version}`);
       const preview = await runner.run(commands.init({ preview: 'text' }));
@@ -373,6 +401,14 @@ describe('CLI layer', () => {
       assert.equal(timeline.kind, 'completed');
       assert.equal(timeline.exitCode, 0, timeline.stderr);
       assert.ok(Array.isArray(JSON.parse(timeline.stdout).milestones));
+      const notifications = await runner.run(commands.notifications());
+      assert.equal(notifications.kind, 'completed');
+      assert.equal(notifications.exitCode, 0, notifications.stderr);
+      assert.equal(JSON.parse(notifications.stdout).schema, 'steward.notifications/0.1');
+      const upgrade = await runner.run(commands.upgradeCheck());
+      assert.equal(upgrade.kind, 'completed');
+      assert.equal(upgrade.exitCode, 0, upgrade.stderr);
+      assert.equal(JSON.parse(upgrade.stdout).schema, 'steward.upgrade/0.1');
     });
   }
 });

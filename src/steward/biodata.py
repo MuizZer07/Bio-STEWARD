@@ -23,7 +23,9 @@ import re
 import urllib.parse
 import urllib.request
 import zlib
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
+from fractions import Fraction
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
 
@@ -426,6 +428,63 @@ def matrix_samples(data: bytes, path: str, skip: int = 1) -> list[str]:
     return []
 
 
+def _design_factors(sheet: Any, header: dict[str, int]) -> tuple[str, list[str], list[str]]:
+    condition = sheet.condition_column or "condition"
+    batch = sheet.batch_column or "batch"
+    factors = list(sheet.covariates)
+    if sheet.batch_column or (batch in header and batch not in {condition, sheet.id_column}):
+        factors.insert(0, batch)
+    if condition not in header and not (sheet.condition_column or sheet.batch_column or sheet.covariates):
+        factors = []
+    required = [condition, *factors] if factors or sheet.condition_column else []
+    return condition, [f for f in factors if f in header], required
+
+
+def _design_finding(path: str, condition: str, factor: str, counts: Counter[tuple[str, str]]) -> dict[str, Any] | None:
+    levels: dict[str, Counter[str]] = defaultdict(Counter)
+    by_condition: dict[str, set[str]] = defaultdict(set)
+    for (group, level), count in counts.items():
+        levels[level][group] = count
+        by_condition[group].add(level)
+    if len(levels) < 2 or len(by_condition) < 2:
+        return None
+
+    # In an additive design, contrasts across disconnected groups cannot separate condition and factor.
+    pending = [next(iter(by_condition))]
+    reached_groups: set[str] = set(pending)
+    reached_levels: set[str] = set()
+    while pending:
+        for level in by_condition[pending.pop()] - reached_levels:
+            reached_levels.add(level)
+            new_groups = levels[level].keys() - reached_groups
+            reached_groups.update(new_groups)
+            pending.extend(new_groups)
+
+    if len(reached_groups) < len(by_condition):
+        code = "R-75.sample_confounding"
+        message = "Complete confounding prevents separating some condition contrasts from this factor."
+    else:
+        totals = {level: sum(groups.values()) for level, groups in levels.items()}
+        # Within a factor, compare each condition's smallest and largest shares across the levels.
+        for group in by_condition:
+            shares = [Fraction(levels[level][group], totals[level]) for level in by_condition[group]]
+            smallest = min(shares) if len(shares) == len(levels) else 0
+            if max(shares) - smallest >= Fraction(4, 5):
+                break
+        else:
+            return None
+        code = "R-75.sample_imbalance"
+        message = "Advisory: a condition's share differs by at least 80 percentage points across factor levels."
+    groups = sorted(by_condition)
+    table = ", ".join(
+        f"{level!r}: " + ", ".join(f"{group!r}={n}" for group, n in sorted(levels[level].items()))
+        for level in sorted(levels)
+    )
+    return {"code": code, "path": path, "value": factor,
+            "message": f"{message} {condition} columns {', '.join(map(repr, groups))}. {factor} rows {table}. "
+                       "Unlisted cells have zero samples."}
+
+
 def check_samples(sheet: Any, read: Callable[[str], bytes]) -> list[dict[str, Any]]:
     """Findings (details with `code`, and `path`, `row`, `value` where they apply) for one study's sample sheet."""
     out: list[dict[str, Any]] = []
@@ -437,11 +496,15 @@ def check_samples(sheet: Any, read: Callable[[str], bytes]) -> list[dict[str, An
         return [{"code": "R-75.samples_no_id", "path": sheet.path, "value": sheet.id_column,
                  "message": f"no column {sheet.id_column!r} (columns: {', '.join(head[:12])})"}]
     col = {h: i for i, h in enumerate(head)}
-    for f in sheet.required:
+    condition, factors, design_required = _design_factors(sheet, col)
+    required = [*sheet.required, *(f for f in design_required if f not in sheet.required)]
+    for f in required:
         if f not in col:
             out.append({"code": "R-75.sample_field_missing", "path": sheet.path, "value": f,
                         "message": f"required column {f!r} is absent"})
     ids: dict[str, int] = {}
+    counts: dict[str, Counter[tuple[str, str]]] = {factor: Counter() for factor in factors}
+    missing_design: set[str] = set()
     for n, r in enumerate(rows[1:], start=2):
         if not any(c.strip() for c in r):
             continue
@@ -453,8 +516,16 @@ def check_samples(sheet: Any, read: Callable[[str], bytes]) -> list[dict[str, An
         if sid in ids:
             out.append({"code": "R-75.sample_duplicate", "path": sheet.path, "row": n, "value": sid,
                         "message": f"row {n}: {sid} also on row {ids[sid]}"})
+        else:
+            group = cell(condition)
+            for factor in factors:
+                level = cell(factor)
+                if group.lower() in MISSING or level.lower() in MISSING:
+                    missing_design.add(factor)
+                else:
+                    counts[factor][group, level] += 1
         ids.setdefault(sid, n)
-        for f in sheet.required:
+        for f in required:
             if f in col and cell(f).lower() in MISSING:
                 out.append({"code": "R-75.sample_value_missing", "path": sheet.path, "row": n, "value": f,
                             "message": f"row {n} ({sid}): {f} is empty or a missing-value marker"})
@@ -463,6 +534,9 @@ def check_samples(sheet: Any, read: Callable[[str], bytes]) -> list[dict[str, An
             if f in col and v.lower() not in MISSING and v not in allowed:
                 out.append({"code": "R-75.sample_value_not_allowed", "path": sheet.path, "row": n, "value": f,
                             "message": f"row {n} ({sid}): {f} = {v!r} is not one of {', '.join(allowed)}"})
+    for factor in factors:
+        if factor not in missing_design and (finding := _design_finding(sheet.path, condition, factor, counts[factor])):
+            out.append(finding)
     from .records import RecordRefused
 
     for mx in sheet.matrix:

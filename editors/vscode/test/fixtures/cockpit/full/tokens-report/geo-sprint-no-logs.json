@@ -1,0 +1,189 @@
+{
+  "currency": "USD",
+  "issues": [],
+  "schema": "steward.tokens_report/0.1",
+  "sources": {
+    "claude": {
+      "files": [],
+      "status": "unavailable"
+    },
+    "codex": {
+      "files": [],
+      "status": "unavailable"
+    },
+    "gemini": {
+      "files": [],
+      "status": "unavailable"
+    }
+  },
+  "tasks": [
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T01",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T20:20:47+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T20:15:00+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T02",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T20:41:40+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T20:33:48+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T03",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T20:56:44+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T20:47:48+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T04",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T21:13:18+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T20:58:14+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T05",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T21:24:42+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T21:15:49+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T06",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T21:45:33+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T21:27:31+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T07",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T21:59:03+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T21:48:09+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T08",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T22:19:36+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T22:00:53+00:00"
+        }
+      ]
+    }
+  ]
+}

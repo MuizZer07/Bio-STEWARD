@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 380" width="100%" role="img" aria-label="Delegation flow: an auto task starts on worker 1. If the worker is limited, signed out, missing or cannot start its sandbox, steward records redelegated and hands the task to the next worker on the same branch, or follows on_limit to the master or a wait until the reset time. A worker's passing task enters review until the master accepts it as done or asks for rework. A task run by the master ends in done. Steward never merges.">
+  <style>
+    .bg { fill: #f6f8fb; } .box { fill: #ffffff; stroke: #c7cfdc; stroke-width: 1.5; } .ink { fill: #1d2330; }
+    .muted { fill: #5b6475; } .line { stroke: #8792a6; stroke-width: 1.6; fill: none; }
+    .done { fill: #e3f4e8; stroke: #3d9a5b; stroke-width: 1.5; } .fail { fill: #fbe7e7; stroke: #c44b4b; stroke-width: 1.5; }
+    .run { fill: #e6eefb; stroke: #4a72c4; stroke-width: 1.5; } .wait { fill: #fef6e0; stroke: #d49b2a; stroke-width: 1.5; }
+    .arrow { fill: #8792a6; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0f1219; } .box { fill: #171b25; stroke: #3a4254; } .ink { fill: #e6e9ef; } .muted { fill: #9aa3b5; }
+      .line { stroke: #6b768b; } .arrow { fill: #6b768b; }
+      .done { fill: #13301d; stroke: #4caf6e; } .fail { fill: #3a1818; stroke: #d06060; }
+      .run { fill: #172440; stroke: #5b86d6; } .wait { fill: #362b12; stroke: #e0ad3e; }
+    }
+    text { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 15px; }
+    .small { font-size: 12.5px; }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="arrow"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="960" height="380" rx="14"/>
+
+  <!-- row 1: main flow -->
+  <rect class="box" x="24" y="54" width="108" height="46" rx="10"/><text class="ink" x="78" y="82" text-anchor="middle">auto task</text>
+  <rect class="run" x="180" y="54" width="128" height="46" rx="10"/><text class="ink" x="244" y="82" text-anchor="middle">worker 1</text>
+  <rect class="wait" x="598" y="54" width="134" height="46" rx="10"/><text class="ink" x="665" y="82" text-anchor="middle">review</text>
+  <rect class="done" x="812" y="54" width="124" height="46" rx="10"/><text class="ink" x="874" y="82" text-anchor="middle">done</text>
+
+  <!-- row 2: limited and next worker -->
+  <rect class="fail" x="160" y="168" width="168" height="46" rx="10"/><text class="ink" x="244" y="196" text-anchor="middle">limited / cannot run</text>
+  <rect class="run" x="424" y="168" width="132" height="46" rx="10"/><text class="ink" x="490" y="196" text-anchor="middle">next worker</text>
+
+  <!-- row 3: master fallback -->
+  <rect class="box" x="424" y="266" width="132" height="46" rx="10"/><text class="ink" x="490" y="294" text-anchor="middle">master</text>
+
+  <!-- arrows -->
+  <path class="line" d="M132,77 H178" marker-end="url(#a)"/>
+  <path class="line" d="M308,77 H596" marker-end="url(#a)"/>
+  <text class="muted small" x="452" y="67" text-anchor="middle">done commands pass</text>
+  <path class="line" d="M732,77 H810" marker-end="url(#a)"/>
+  <text class="muted small" x="771" y="67" text-anchor="middle">accept</text>
+
+  <!-- rework loop -->
+  <path class="line" d="M665,54 V26 H244 V52" marker-end="url(#a)"/>
+  <text class="muted small" x="454" y="20" text-anchor="middle">sprint rework --note (same agent, or --to master)</text>
+
+  <!-- worker -> limited -->
+  <path class="line" d="M244,100 V166" marker-end="url(#a)"/>
+  <text class="muted small" x="254" y="138">limit · signed out · missing · sandbox</text>
+
+  <!-- limited -> next worker -->
+  <path class="line" d="M328,191 H422" marker-end="url(#a)"/>
+  <text class="muted small" x="375" y="182" text-anchor="middle">redelegated</text>
+  <text class="muted small" x="490" y="229" text-anchor="middle">same branch, commits kept</text>
+
+  <!-- next worker -> review -->
+  <path class="line" d="M556,191 H665 V102" marker-end="url(#a)"/>
+  <text class="muted small" x="673" y="150">done commands pass</text>
+
+  <!-- limited -> master -->
+  <path class="line" d="M244,214 V289 H422" marker-end="url(#a)"/>
+  <text class="muted small" x="254" y="280">no worker can run (on_limit)</text>
+  <text class="muted small" x="254" y="306">or on_limit = wait until reset</text>
+
+  <!-- master -> done -->
+  <path class="line" d="M556,289 H874 V102" marker-end="url(#a)"/>
+  <text class="muted small" x="715" y="280" text-anchor="middle">done commands pass (master ran it)</text>
+
+  <!-- footer notes -->
+  <text class="muted small" x="24" y="346">Availability ledger: .steward/agents/availability.jsonl · Review brief: .steward/sprints/&lt;id&gt;/&lt;task&gt;.review.md</text>
+  <text class="muted small" x="24" y="366">Steward never merges; the master reviews, accepts and merges, and keeps work that needs a signature.</text>
+</svg>

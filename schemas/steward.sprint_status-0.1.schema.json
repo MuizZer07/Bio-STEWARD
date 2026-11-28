@@ -26,6 +26,121 @@
       "title": "Limits",
       "type": "object"
     },
+    "SprintAttempt": {
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Agent"
+        },
+        "ended": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ended"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Model"
+        },
+        "outcome": {
+          "anyOf": [
+            {
+              "enum": [
+                "redelegated",
+                "review",
+                "done",
+                "failed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Outcome"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reason"
+        },
+        "reset": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reset"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "enum": [
+                "worker",
+                "master"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Role"
+        },
+        "started": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Started"
+        }
+      },
+      "required": [
+        "agent",
+        "model",
+        "role",
+        "started",
+        "ended",
+        "outcome",
+        "reason",
+        "reset"
+      ],
+      "title": "SprintAttempt",
+      "type": "object"
+    },
     "SprintCheck": {
       "additionalProperties": false,
       "properties": {
@@ -75,6 +190,76 @@
       "title": "SprintCommit",
       "type": "object"
     },
+    "SprintDelegation": {
+      "additionalProperties": false,
+      "description": "0.23.0 (STW-061 D02): who ran a delegated task, a wait for a reset time, the review brief, and every attempt\n(newest first).",
+      "properties": {
+        "agent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Agent"
+        },
+        "attempts": {
+          "items": {
+            "$ref": "#/$defs/SprintAttempt"
+          },
+          "title": "Attempts",
+          "type": "array"
+        },
+        "review": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Review"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "enum": [
+                "worker",
+                "master"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Role"
+        },
+        "until": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Until"
+        }
+      },
+      "required": [
+        "role",
+        "agent",
+        "until",
+        "review",
+        "attempts"
+      ],
+      "title": "SprintDelegation",
+      "type": "object"
+    },
     "SprintStep": {
       "additionalProperties": false,
       "properties": {
@@ -109,7 +294,8 @@
             "claude-code",
             "codex",
             "antigravity",
-            "shell"
+            "shell",
+            "auto"
           ],
           "title": "Agent",
           "type": "string"
@@ -156,6 +342,9 @@
           },
           "title": "Commits",
           "type": "array"
+        },
+        "delegation": {
+          "$ref": "#/$defs/SprintDelegation"
         },
         "ended": {
           "anyOf": [

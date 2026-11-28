@@ -10,7 +10,7 @@
       "python": "fixture"
     },
     "tool": "steward",
-    "tool_version": "0.20.6"
+    "tool_version": "0.22.0"
   },
   "schema": "steward.report/0.1",
   "verdict": {
@@ -56,7 +56,8 @@
           "storage",
           "studies",
           "talk",
-          "tasks"
+          "tasks",
+          "tidy"
         ],
         "nothing_recorded": []
       },
@@ -470,17 +471,28 @@
             "rule": "R-87",
             "status": "UNKNOWN",
             "subject": "."
+          },
+          {
+            "rule": "R-88",
+            "status": "UNKNOWN",
+            "subject": "."
           }
         ],
         "eligible": false,
         "evaluated": true,
-        "evaluated_count": 81,
+        "evaluated_count": 82,
         "name": "default",
         "not_applicable_count": 0,
         "pass_count": 0,
         "reason": "blocking results",
-        "required_count": 81,
+        "required_count": 82,
         "waived": []
+      }
+    ],
+    "inputs": [
+      {
+        "path": "steward.toml",
+        "sha256": "f2108623d5771a64943ff1fa42851ed4a589bd455ae2dfc7f59acc3ae9c041fa"
       }
     ],
     "inputs_digest": "sha256:f7cec5438cb24d48c0dda5f02e62d0c3ac13ac59c58bae6bce005e6ed369f1be",
@@ -488,6 +500,7 @@
     "repo_id": "unknown",
     "results": [
       {
+        "area": "config",
         "details": [
           {
             "code": "schema",
@@ -509,6 +522,7 @@
         "subject": "steward.toml"
       },
       {
+        "area": "contract",
         "details": [],
         "evidence": [],
         "name": "contract.valid",
@@ -519,6 +533,7 @@
         "subject": "."
       },
       {
+        "area": "contract",
         "details": [],
         "evidence": [],
         "name": "contract.consistent",
@@ -529,6 +544,7 @@
         "subject": "."
       },
       {
+        "area": "contract",
         "details": [],
         "evidence": [],
         "name": "contract.required",
@@ -539,6 +555,7 @@
         "subject": "."
       },
       {
+        "area": "prior-work",
         "details": [],
         "evidence": [],
         "name": "prior_work.valid",
@@ -549,6 +566,7 @@
         "subject": "."
       },
       {
+        "area": "prior-work",
         "details": [],
         "evidence": [],
         "name": "prior_work.required",
@@ -559,6 +577,7 @@
         "subject": "."
       },
       {
+        "area": "privacy",
         "details": [],
         "evidence": [],
         "name": "privacy.denylist",
@@ -569,6 +588,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.spec_valid",
@@ -579,6 +599,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.placeholders",
@@ -589,6 +610,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.values",
@@ -599,6 +621,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.displays",
@@ -609,6 +632,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.build",
@@ -619,6 +643,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.venue",
@@ -629,6 +654,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.citations",
@@ -639,6 +665,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.consistency",
@@ -649,6 +676,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.plan_valid",
@@ -659,6 +687,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.stage_confirmed",
@@ -669,6 +698,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.claim_ceiling",
@@ -679,6 +709,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.values",
@@ -689,6 +720,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.limitations",
@@ -699,6 +731,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.structure",
@@ -709,6 +742,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.figures",
@@ -719,6 +753,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.visual",
@@ -729,6 +764,7 @@
         "subject": "."
       },
       {
+        "area": "talk",
         "details": [],
         "evidence": [],
         "name": "talk.language",
@@ -739,6 +775,7 @@
         "subject": "."
       },
       {
+        "area": "run",
         "details": [],
         "evidence": [],
         "name": "ledger.integrity",
@@ -749,6 +786,7 @@
         "subject": "."
       },
       {
+        "area": "run",
         "details": [],
         "evidence": [],
         "name": "run.records",
@@ -759,6 +797,7 @@
         "subject": "."
       },
       {
+        "area": "policy",
         "details": [],
         "evidence": [],
         "name": "policy.baseline",
@@ -769,6 +808,7 @@
         "subject": "."
       },
       {
+        "area": "spend",
         "details": [],
         "evidence": [],
         "name": "spend.ledger",
@@ -779,6 +819,7 @@
         "subject": "."
       },
       {
+        "area": "integrity",
         "details": [],
         "evidence": [],
         "name": "integrity.frozen",
@@ -789,6 +830,7 @@
         "subject": "."
       },
       {
+        "area": "integrity",
         "details": [],
         "evidence": [],
         "name": "integrity.datasets",
@@ -799,6 +841,7 @@
         "subject": "."
       },
       {
+        "area": "integrity",
         "details": [],
         "evidence": [],
         "name": "integrity.sealed_use",
@@ -809,6 +852,7 @@
         "subject": "."
       },
       {
+        "area": "integrity",
         "details": [],
         "evidence": [],
         "name": "integrity.decisions",
@@ -819,6 +863,7 @@
         "subject": "."
       },
       {
+        "area": "integrity",
         "details": [],
         "evidence": [],
         "name": "integrity.contract_frozen",
@@ -829,6 +874,7 @@
         "subject": "."
       },
       {
+        "area": "evidence",
         "details": [],
         "evidence": [],
         "name": "evidence.claims",
@@ -839,6 +885,7 @@
         "subject": "."
       },
       {
+        "area": "evidence",
         "details": [],
         "evidence": [],
         "name": "prior_work.links",
@@ -849,6 +896,7 @@
         "subject": "."
       },
       {
+        "area": "release",
         "details": [],
         "evidence": [],
         "name": "release.integrity",
@@ -859,6 +907,7 @@
         "subject": "."
       },
       {
+        "area": "release",
         "details": [],
         "evidence": [],
         "name": "release.review",
@@ -869,6 +918,7 @@
         "subject": "."
       },
       {
+        "area": "release",
         "details": [],
         "evidence": [],
         "name": "release.fingerprint",
@@ -879,6 +929,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.splits",
@@ -889,6 +940,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.datasets",
@@ -899,6 +951,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.results",
@@ -909,6 +962,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.comparison",
@@ -919,6 +973,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.leakage",
@@ -929,6 +984,7 @@
         "subject": "."
       },
       {
+        "area": "storage",
         "details": [],
         "evidence": [],
         "name": "storage.artifacts",
@@ -939,6 +995,7 @@
         "subject": "."
       },
       {
+        "area": "governance",
         "details": [],
         "evidence": [],
         "name": "governance.constitution",
@@ -949,6 +1006,7 @@
         "subject": "."
       },
       {
+        "area": "repro",
         "details": [],
         "evidence": [],
         "name": "repro.current",
@@ -959,6 +1017,7 @@
         "subject": "."
       },
       {
+        "area": "governance",
         "details": [],
         "evidence": [],
         "name": "exchange.items",
@@ -969,6 +1028,7 @@
         "subject": "."
       },
       {
+        "area": "governance",
         "details": [],
         "evidence": [],
         "name": "exchange.inbox",
@@ -979,6 +1039,7 @@
         "subject": "."
       },
       {
+        "area": "session",
         "details": [],
         "evidence": [],
         "name": "session.handoff",
@@ -989,6 +1050,7 @@
         "subject": "."
       },
       {
+        "area": "boundary",
         "details": [],
         "evidence": [],
         "name": "boundary.imports",
@@ -999,6 +1061,7 @@
         "subject": "."
       },
       {
+        "area": "tasks",
         "details": [],
         "evidence": [],
         "name": "tasks.board",
@@ -1009,6 +1072,7 @@
         "subject": "."
       },
       {
+        "area": "changelog",
         "details": [],
         "evidence": [],
         "name": "changelog.unreleased",
@@ -1019,6 +1083,7 @@
         "subject": "."
       },
       {
+        "area": "branches",
         "details": [],
         "evidence": [],
         "name": "branches.model",
@@ -1029,6 +1094,7 @@
         "subject": "."
       },
       {
+        "area": "skills",
         "details": [],
         "evidence": [],
         "name": "skills.copies",
@@ -1039,6 +1105,7 @@
         "subject": "."
       },
       {
+        "area": "files",
         "details": [],
         "evidence": [],
         "name": "files.conflict_markers",
@@ -1049,6 +1116,7 @@
         "subject": "."
       },
       {
+        "area": "agents",
         "details": [],
         "evidence": [],
         "name": "agents.ledger",
@@ -1059,6 +1127,7 @@
         "subject": "."
       },
       {
+        "area": "frozen",
         "details": [],
         "evidence": [],
         "name": "frozen.sets",
@@ -1069,6 +1138,7 @@
         "subject": "."
       },
       {
+        "area": "containers",
         "details": [],
         "evidence": [],
         "name": "containers.context",
@@ -1079,6 +1149,7 @@
         "subject": "."
       },
       {
+        "area": "containers",
         "details": [],
         "evidence": [],
         "name": "containers.compose",
@@ -1089,6 +1160,7 @@
         "subject": "."
       },
       {
+        "area": "dependencies",
         "details": [],
         "evidence": [],
         "name": "dependencies.parity",
@@ -1099,6 +1171,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.power",
@@ -1109,6 +1182,7 @@
         "subject": "."
       },
       {
+        "area": "stages",
         "details": [],
         "evidence": [],
         "name": "stages.records",
@@ -1119,6 +1193,7 @@
         "subject": "."
       },
       {
+        "area": "docs",
         "details": [],
         "evidence": [],
         "name": "docs.current",
@@ -1129,6 +1204,7 @@
         "subject": "."
       },
       {
+        "area": "milestones",
         "details": [],
         "evidence": [],
         "name": "milestones.valid",
@@ -1139,6 +1215,7 @@
         "subject": "."
       },
       {
+        "area": "sprints",
         "details": [],
         "evidence": [],
         "name": "sprint.valid",
@@ -1149,6 +1226,7 @@
         "subject": "."
       },
       {
+        "area": "sprints",
         "details": [],
         "evidence": [],
         "name": "sprint.closed",
@@ -1159,6 +1237,7 @@
         "subject": "."
       },
       {
+        "area": "pins",
         "details": [],
         "evidence": [],
         "name": "pins.records",
@@ -1169,6 +1248,7 @@
         "subject": "."
       },
       {
+        "area": "pins",
         "details": [],
         "evidence": [],
         "name": "pins.retirement",
@@ -1179,6 +1259,7 @@
         "subject": "."
       },
       {
+        "area": "studies",
         "details": [],
         "evidence": [],
         "name": "studies.records",
@@ -1189,6 +1270,7 @@
         "subject": "."
       },
       {
+        "area": "research",
         "details": [],
         "evidence": [],
         "name": "research.records",
@@ -1199,6 +1281,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.citations_verified",
@@ -1209,6 +1292,7 @@
         "subject": "."
       },
       {
+        "area": "benchmark",
         "details": [],
         "evidence": [],
         "name": "benchmark.llm_eval",
@@ -1219,6 +1303,7 @@
         "subject": "."
       },
       {
+        "area": "licence",
         "details": [],
         "evidence": [],
         "name": "licence.declared",
@@ -1229,6 +1314,7 @@
         "subject": "."
       },
       {
+        "area": "licence",
         "details": [],
         "evidence": [],
         "name": "licence.dependencies",
@@ -1239,6 +1325,7 @@
         "subject": "."
       },
       {
+        "area": "licence",
         "details": [],
         "evidence": [],
         "name": "licence.code",
@@ -1249,6 +1336,7 @@
         "subject": "."
       },
       {
+        "area": "licence",
         "details": [],
         "evidence": [],
         "name": "licence.provenance",
@@ -1259,6 +1347,7 @@
         "subject": "."
       },
       {
+        "area": "data",
         "details": [],
         "evidence": [],
         "name": "data.contracts",
@@ -1269,6 +1358,7 @@
         "subject": "."
       },
       {
+        "area": "compare",
         "details": [],
         "evidence": [],
         "name": "compare.shadow",
@@ -1279,6 +1369,7 @@
         "subject": "."
       },
       {
+        "area": "paper",
         "details": [],
         "evidence": [],
         "name": "paper.data_availability",
@@ -1289,6 +1380,7 @@
         "subject": "."
       },
       {
+        "area": "models",
         "details": [],
         "evidence": [],
         "name": "model.records",
@@ -1299,6 +1391,7 @@
         "subject": "."
       },
       {
+        "area": "release",
         "details": [],
         "evidence": [],
         "name": "release.stranger_test",
@@ -1307,17 +1400,34 @@
         "rule_version": 1,
         "status": "UNKNOWN",
         "subject": "."
+      },
+      {
+        "area": "tidy",
+        "details": [],
+        "evidence": [],
+        "name": "tidy.stale",
+        "reason": "not evaluated: config is not valid (R-01)",
+        "rule": "R-88",
+        "rule_version": 1,
+        "status": "UNKNOWN",
+        "subject": "."
       }
     ],
+    "scope": {
+      "areas": [],
+      "full": true,
+      "rule": null
+    },
     "summary": {
       "counts": {
         "FAIL": 1,
         "INCOMPLETE": 0,
         "NOT_APPLICABLE": 0,
         "PASS": 0,
-        "UNKNOWN": 80
+        "UNKNOWN": 81
       },
       "worst": "FAIL"
-    }
+    },
+    "tree_digest": "sha256:dd7044149fc50f99bd18de32ca9c742799d3ec02495e5c0b8744ab86c3f9df9b"
   }
 }

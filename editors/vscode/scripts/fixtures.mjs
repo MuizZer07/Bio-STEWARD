@@ -6,9 +6,10 @@
 //
 // Sources (rule G2, findings F3 and F4):
 //   - the program installed by `npm run cli:install` (.cli/), which must report `steward <testedWithCli>`;
-//   - the public repository at tag v<testedWithCli>, cloned once into .cli/release-v<version>/: the report schema
-//     (schemas/steward.report-0.1.schema.json, copied byte for byte) and examples/toy-expression-benchmark
-//     (`git archive`), which the wheel does not contain;
+//   - the release tag v<testedWithCli>: the report schema (schemas/steward.report-0.1.schema.json, copied byte for
+//     byte) and examples/toy-expression-benchmark (`git archive`), which the wheel does not contain. The tag is read
+//     from the enclosing git repository when it has it (scripts/release-source.mjs: no network); otherwise the
+//     public repository is cloned once at that tag into .cli/release-v<version>/;
 //   - `steward example biology` for the GEO example.
 // The checkout's own src/, schemas/ and examples/ are never read.
 //
@@ -34,8 +35,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
+import { localTag, REPOSITORY } from './release-source.mjs';
 
-const REPOSITORY = 'https://github.com/MuizZer07/Bio-STEWARD';
 const SCHEMA_PATH = 'schemas/steward.report-0.1.schema.json';
 const TOY_PATH = 'examples/toy-expression-benchmark';
 // The bounded reader's limit (src/cli/output.ts, design §5 "default limit 20 MB").
@@ -61,6 +62,7 @@ const GIT_ENV = {
 // from its due time as of COCKPIT_NOW; a prepared payload's nonce is random, so each queued payload is renamed to a
 // fixed nonce (its file name and its nonce line, the two places the CLI reads it from) before anything lists it.
 const COCKPIT_NOW = '2026-11-27T00:00:00Z';
+const VOLATILE_TIME = '2000-01-01T00:00:00Z';
 const COCKPIT_NORMALISED = {
   days_left: `each milestones[].days_left (timeline) and pending.milestones[].days_left (audit progress) is ` +
     `(due - ${COCKPIT_NOW}) in days, rounded to 0.1 as the CLI rounds it; the CLI measures it from its own clock. ` +
@@ -68,7 +70,18 @@ const COCKPIT_NORMALISED = {
   nonce: 'each payload `steward authorize prepare` queued in .steward/pending/ is renamed to the nonce ' +
     'sha256("fixture-nonce:<workspace>:<label>")[:32] (file name and nonce line) before it is listed',
   paths: 'the scratch folder is replaced by <workspace> or <inputs> in argv; no output names it',
+  volatile: `full/next: the time of each waiting entry whose source is a file written with the time of the run (an ` +
+    `exchange item, a queued payload) is ${VOLATILE_TIME}; full/authorize-pending: each baseline (the peer's is a ` +
+    `commit made after such a file) is ${'0'.repeat(40)} and each payload_sha256 (the payload holds the baseline) is ` +
+    `${'0'.repeat(64)}; full/timeline: each drift change's commit (the example's first commit differs from run to ` +
+    `run) is ${'0'.repeat(40)}`,
 };
+const volatileTimes = (doc) => [...doc.waiting_on_human, ...doc.waiting_on_agents]
+  .filter((row) => row.time !== null && VOLATILE(row.source)).map((row) => ['time', row.time, VOLATILE_TIME]);
+const volatileBaselines = (doc) => doc.items.flatMap((item) => [['baseline', item.baseline, '0'.repeat(40)],
+  ['payload_sha256', item.payload_sha256, '0'.repeat(64)]]);
+const volatileCommits = (doc) => doc.drift.changes.filter((change) => change.commit !== null)
+  .map((change) => ['commit', change.commit, '0'.repeat(40)]);
 // The peer gets its own repo_id, so the two projects of --all-projects are two repositories.
 const PEER_REPO_ID = '00000000-0000-4000-8000-000000000001';
 
@@ -114,8 +127,18 @@ function checkCli() {
   console.log(`fixtures: using ${got} (${steward})`);
 }
 
+// The release tree: the enclosing repository's tag when it has one (no network), else a clone of the public tag.
+// Either way the files are the tag's, so the fixtures do not depend on which was used.
+let release;
 function releaseSource() {
   const tag = `v${version}`;
+  if (release) return release;
+  const local = localTag(extensionRoot, version);
+  if (local) {
+    console.log(`fixtures: reading ${tag} from the local repository ${local.repository} (no network)`);
+    release = { tag, commit: local.commit, cwd: local.repository, ref: local.ref };
+    return release;
+  }
   if (!existsSync(join(releaseDir, '.git'))) {
     rmSync(releaseDir, { recursive: true, force: true });
     console.log(`fixtures: cloning ${REPOSITORY} at ${tag} into ${releaseDir}`);
@@ -124,11 +147,13 @@ function releaseSource() {
   const commit = git(releaseDir, ['rev-parse', 'HEAD']).trim();
   const tagged = git(releaseDir, ['rev-parse', `refs/tags/${tag}^{commit}`]).trim();
   if (commit !== tagged) fail(`${releaseDir} is not at ${tag}; remove it and run again`);
-  return { tag, commit };
+  release = { tag, commit, cwd: releaseDir, ref: 'HEAD' };
+  return release;
 }
 
 function releaseFile(path) {
-  return execFileSync('git', ['show', `HEAD:${path}`], { cwd: releaseDir, maxBuffer: 64 * 1024 * 1024 });
+  const { cwd, ref } = releaseSource();
+  return execFileSync('git', ['show', `${ref}:${path}`], { cwd, maxBuffer: 64 * 1024 * 1024 });
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -152,8 +177,9 @@ function baseGeo(dest) {
 
 function baseToy(dest) {
   mkdirSync(dest, { recursive: true });
-  const tar = execFileSync('git', ['archive', '--format=tar', `HEAD:${TOY_PATH}`],
-    { cwd: releaseDir, maxBuffer: 64 * 1024 * 1024 });
+  const { cwd, ref } = releaseSource();
+  const tar = execFileSync('git', ['archive', '--format=tar', `${ref}:${TOY_PATH}`],
+    { cwd, maxBuffer: 64 * 1024 * 1024 });
   execFileSync('tar', ['-x', '-f', '-', '-C', dest], { input: tar });
   git(dest, ['init', '--quiet', '--initial-branch=main']);
   commitAll(dest, 'toy-expression-benchmark from the release tag');
@@ -298,6 +324,38 @@ function seedCockpitPeer(dir) {
   prepare(dir, 'geo-cockpit-peer', 'waiting', { expires: '2099-01-01T00:00:00Z', summary: 'Spend for the peer rerun' });
 }
 
+// E04: a decisions log with three dated entries (two on one day) and an open question with options, as a user
+// writes one, so `steward decisions --format json` has entries and open decisions to report.
+const DECISIONS = `# Decisions
+
+## 2000-02-01: Use the series as published
+- **Decision:** analyse GSE7621 as deposited, without re-normalising.
+- **Consequences:** the methods cite the deposited processing.
+
+## 2000-03-01: Kick-off approved
+- **Decision:** start the reanalysis.
+
+## 2000-03-01: Report effect sizes
+- **Decision:** every table reports effect sizes with intervals.
+`;
+// The open questions `steward decisions` reads (the index page and the handoff), and the handoff `steward next`
+// resumes from.
+const INDEX = `# Index
+
+## Open decisions
+- Which annotation release to pin?
+  - the 2000 release
+  - the newest release
+`;
+const HANDOFF = `# Handoff
+
+## Next
+- Finish GEO-001 and hand GEO-004 to review.
+
+## Open decisions
+- none
+`;
+
 function seedCockpit(dir) {
   const peer = join(dirname(dir), 'geo-cockpit-peer');
   if (!existsSync(join(peer, 'exchange', 'outbox', 'PEER-REQ-001.md'))) fail('geo-cockpit needs geo-cockpit-peer first');
@@ -308,13 +366,44 @@ function seedCockpit(dir) {
   for (const task of TASK_FILES) write(dir, task.path, taskFile(task));
   write(dir, 'development/BOARD.md', BOARD);
   write(dir, 'development/milestones.toml', MILESTONES);
+  write(dir, 'development/DECISIONS.md', DECISIONS);
+  write(dir, 'development/INDEX.md', INDEX);
+  write(dir, 'development/HANDOFF.md', HANDOFF);
   commitAll(dir, 'fixtures: exchange, policy and task tables; task files; milestones');
+  // E04: a due date moved in a later commit with no decision recorded, so the drift fields have a moved date and a
+  // change to report (the commit dates are fixed, so the history is the same on every run).
+  edit(dir, 'development/milestones.toml', (text) => text.replace('due = 2099-06-01T00:00:00Z', 'due = 2099-07-01T00:00:00Z'));
+  commitAll(dir, 'fixtures: the internal review moves a month');
   stewardOk(dir, ['exchange', 'init']);
   stewardOk(dir, ['exchange', 'new', 'question', '--to', 'PEER', '--title', 'Which annotation release do you use?']);
   stewardOk(dir, ['exchange', 'receive', join(peer, 'exchange', 'outbox', 'PEER-REQ-001.md')]);
   prepare(dir, 'geo-cockpit', 'waiting', { expires: '2099-01-01T00:00:00Z', summary: 'Spend for the model comparison' });
   prepare(dir, 'geo-cockpit', 'expired', { expires: '2000-01-02T00:00:00Z', summary: 'Spend for the first rerun' });
   stewardOk(dir, ['sprint', 'plan', 'fixture-sprint', '--from', 'board', '--start', '2099-01-05T09:00:00+00:00']);
+}
+
+// E04, token counts that work: the recorded sprint of test/recorded/sprint/ (its ledger byte for byte; it carries
+// the repo_id of the repository it ran in, so the copy takes that repo_id), and a price table for one of the two
+// stand-in models, so one model has an estimated cost and the other has none. The sprint file's window end is moved
+// to 2099 in this copy only, so `sprint status` reports the same window state on every day the script runs (the
+// ledger, which the token windows come from, is not changed).
+const RECORDED_SPRINT = 'test/recorded/sprint/2026-11-27-vscode-0.1';
+const RECORDED_SPRINT_ID = '2026-11-27-vscode-0.1';
+const RECORDED_REPO_ID = '35efd4fd-c6ff-4f9e-ad04-9fe868a9b7fa';
+const PRICES = '\n[spend]\ncap = 100\ncurrency = "USD"\n\n[spend.prices.claude-fixture]\ninput_per_1k = 0.003\n' +
+  'output_per_1k = 0.015\ncache_read_per_1k = 0.0003\ncache_write_per_1k = 0.00375\n' +
+  'source = "stand-in prices written by scripts/fixtures.mjs"\nretrieved = "2000-01-01"\n';
+
+function seedSprint(dir) {
+  edit(dir, 'steward.toml', (text) => text.replace(`repo_id = "${FIXED_REPO_ID}"`, `repo_id = "${RECORDED_REPO_ID}"`));
+  append(dir, 'steward.toml', PRICES);
+  const ledger = readFileSync(join(extensionRoot, `${RECORDED_SPRINT}.jsonl`));
+  if (!ledger.includes(`"repo_id":"${RECORDED_REPO_ID}"`)) fail('the recorded sprint ledger has another repo_id');
+  write(dir, `development/sprints/${RECORDED_SPRINT_ID}.jsonl`, ledger);
+  const plan = readFileSync(join(extensionRoot, `${RECORDED_SPRINT}.toml`), 'utf8');
+  const moved = plan.replace('end = 2026-12-11T18:00:00-05:00', 'end = 2099-12-11T18:00:00-05:00');
+  if (moved === plan) fail('the recorded sprint file has another window end');
+  write(dir, `development/sprints/${RECORDED_SPRINT_ID}.toml`, moved);
 }
 
 // Files that hold the day or the time the CLI ran (the exchange ledger and item dates), or a commit made after
@@ -376,6 +465,14 @@ const WORKSPACES = {
     seed: seedCockpit,
     commit: 'fixtures: the cockpit records',
     volatile: VOLATILE,
+  },
+  // E04
+  'geo-sprint': {
+    base: 'geo',
+    about: 'the recorded sprint 2026-11-27-vscode-0.1 (T01 - T08: done, failed, retried) with its ledger byte for byte, ' +
+      'the repo_id it ran under, the window end moved to 2099, and a price for the stand-in model claude-fixture',
+    seed: seedSprint,
+    commit: 'fixtures: the recorded sprint',
   },
 };
 
@@ -506,6 +603,22 @@ const COCKPIT_INPUTS = {
     { type: 'user', sessionId: 'fixture-session', timestamp: '2000-01-01T10:00:01Z',
       message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'toolu_fixture_1', content: 'x'.repeat(300) }] } },
   ].map((row) => `${JSON.stringify(row)}\n`).join(''),
+  // E04: stand-in Claude Code logs for the recorded sprint. Each answer falls inside one task's window of its ledger
+  // (T01 20:15:00 - 20:20:47, T02 20:33:48 - 20:41:40, T04 20:58:14 - 21:13:18, all 2026-11-26 UTC): two in T01, two
+  // models in T02 (one priced, one not), one in T04, and one at 20:25:00, inside no window, which no task counts.
+  'claude-sprint.jsonl': [
+    ['s-t01', '2026-11-26T20:16:00Z', 'claude-fixture', 1200, 300, 5000, 400],
+    ['s-t01', '2026-11-26T20:18:30Z', 'claude-fixture', 800, 150, 6000, 0],
+    ['s-gap', '2026-11-26T20:25:00Z', 'claude-fixture', 999, 99, 0, 0],
+    ['s-t02', '2026-11-26T20:35:00Z', 'claude-fixture', 2000, 500, 10000, 1000],
+    ['s-t02', '2026-11-26T20:36:00Z', 'claude-fixture-small', 400, 60, 0, 0],
+    ['s-t04', '2026-11-26T21:00:00Z', 'claude-fixture', 3000, 700, 20000, 2000],
+  ].map(([session, timestamp, model, input, output, read, write], i) => `${JSON.stringify({
+    type: 'assistant', sessionId: session, timestamp,
+    message: { id: `msg_sprint_${i + 1}`, model, role: 'assistant',
+      usage: { input_tokens: input, output_tokens: output, cache_read_input_tokens: read, cache_creation_input_tokens: write },
+      content: [{ type: 'text', text: 'stand-in answer' }] },
+  })}\n`).join(''),
 };
 
 // Each output: the workspace, the arguments after `steward` (an { input } is a file of COCKPIT_INPUTS), and whether
@@ -534,6 +647,37 @@ const COCKPIT = {
   'authorize-pending/geo-cockpit-all-projects': { workspace: 'geo-cockpit', format: 'text',
     argv: ['authorize', 'pending', '--all-projects'],
     about: 'P5 reduced across projects: this queue, a peer without a checkout (skipped), the peer\'s waiting payload' },
+  // E04: the full forms, from the documents CLI 0.21 / 0.22 publish (`steward interface`). `--now` fixes the clock of
+  // the commands that take it, so their times hold on every run.
+  'full/interface': { workspace: 'geo', argv: ['interface', '--format', 'json'], format: 'json',
+    about: 'the interface the extension detects the full forms from' },
+  'full/next/geo': { workspace: 'geo', argv: ['next', '--format', 'json', '--now', COCKPIT_NOW], format: 'json',
+    about: 'Today full, nothing waiting' },
+  'full/next/geo-cockpit': { workspace: 'geo-cockpit', argv: ['next', '--format', 'json', '--now', COCKPIT_NOW],
+    format: 'json', volatile: volatileTimes, about: 'Today full: the next milestone and its blockers, signatures, exchange items, an open ' +
+      'decision, a planned sprint, needs tidying' },
+  'full/task-board/geo-cockpit': { workspace: 'geo-cockpit', argv: ['task', 'board', '--format', 'json'], format: 'json',
+    about: 'Tasks full: the board the CLI reads, with each task\'s status, closed and archived' },
+  'full/authorize-pending/geo-cockpit-all-projects': { workspace: 'geo-cockpit', format: 'json',
+    argv: ['authorize', 'pending', '--all-projects', '--format', 'json'], volatile: volatileBaselines,
+    about: 'Approvals full: a waiting and an expired payload here, the peer\'s waiting payload, a skipped peer' },
+  'full/decisions/geo-cockpit': { workspace: 'geo-cockpit', argv: ['decisions', '--format', 'json'], format: 'json',
+    about: 'Decisions full: three dated entries (two on one day) and an open question with options' },
+  'full/timeline/geo-cockpit': { workspace: 'geo-cockpit', format: 'json',
+    argv: ['timeline', '--format', 'json', '--now', COCKPIT_NOW], volatile: volatileCommits,
+    about: 'Milestones and Drift full: the milestones and the drift fields (moved dates, scope, order, changes)' },
+  'full/sprint-status/geo-cockpit': { workspace: 'geo-cockpit', format: 'json',
+    argv: ['sprint', 'status', 'fixture-sprint', '--format', 'json'],
+    about: 'Sprint full: a planned sprint whose window has not opened' },
+  'full/sprint-status/geo-sprint': { workspace: 'geo-sprint', format: 'json',
+    argv: ['sprint', 'status', RECORDED_SPRINT_ID, '--format', 'json'],
+    about: 'Sprint full: the recorded sprint, every task done or failed' },
+  'full/tokens-report/geo-sprint-no-logs': { workspace: 'geo-sprint', format: 'json',
+    argv: ['tokens', 'report', '--format', 'json'],
+    about: 'Tokens: the windows of the recorded sprint, read from its ledger, with no agent log given' },
+  'full/tokens-report/geo-sprint': { workspace: 'geo-sprint', format: 'json',
+    argv: ['tokens', 'report', '--format', 'json', '--claude', { input: 'claude-sprint.jsonl' }],
+    about: 'Tokens: the recorded sprint\'s windows and the stand-in Claude Code log: totals, models, a cost' },
 };
 
 const roundDays = (due) => Math.round(((Date.parse(due) - Date.parse(COCKPIT_NOW)) / 86400000) * 10) / 10;
@@ -551,10 +695,13 @@ function runCockpit(root, inputsDir, name, dues) {
   const spec = COCKPIT[name];
   const workspace = join(root, spec.workspace);
   const argv = spec.argv.map((a) => (typeof a === 'string' ? a : join(inputsDir, a.input)));
-  const result = stewardIn(workspace, [...argv, '--repo', workspace]);
+  // `steward interface` takes no --repo (it describes the program, not a project); it runs from the workspace.
+  const repo = spec.argv[0] === 'interface' ? [] : ['--repo'];
+  const result = stewardIn(workspace, [...argv, ...repo, ...(repo.length ? [workspace] : [])]);
   const entry = {
     workspace: spec.workspace,
-    argv: [...spec.argv.map((a) => (typeof a === 'string' ? a : `<inputs>/${a.input}`)), '--repo', '<workspace>'],
+    argv: [...spec.argv.map((a) => (typeof a === 'string' ? a : `<inputs>/${a.input}`)), ...repo,
+      ...(repo.length ? ['<workspace>'] : [])],
     exit_code: result.status, format: spec.format, about: spec.about,
   };
   if (result.status !== 0) fail(`${name}: steward ${entry.argv.join(' ')} exited ${result.status}: ${result.stderr}`);
@@ -577,6 +724,15 @@ function runCockpit(root, inputsDir, name, dues) {
       text = normaliseDays(text, values);
       entry.normalised = ['days_left'];
     }
+    // E04 (COCKPIT_NORMALISED.volatile): values read from a file written with the time of the run, replaced in the
+    // CLI's own text so every other byte stays as it printed it.
+    const volatile = [...new Map((spec.volatile?.(doc) ?? []).map((row) => [JSON.stringify(row), row])).values()];
+    for (const [key, value, fixed] of volatile) {
+      const from = `"${key}": ${JSON.stringify(value)}`;
+      if (!text.includes(from)) fail(`${name}: no ${from} to normalise`);
+      text = text.replaceAll(from, `"${key}": ${JSON.stringify(fixed)}`);
+    }
+    if (volatile.length) entry.normalised = [...new Set([...(entry.normalised ?? []), ...volatile.map(([key]) => key)])];
     JSON.parse(text);
   }
   entry.file = `cockpit/${name}.${spec.format === 'json' ? 'json' : 'txt'}`;

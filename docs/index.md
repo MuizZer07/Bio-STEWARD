@@ -31,7 +31,7 @@ is something your agent can do for you; the commands are shown so you can check 
 
 ## Install
 ```bash
-pipx install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.22.0"   # a development tool, pinned to a tag
+pipx install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.23.0"   # a development tool, pinned to a tag
 steward init --skills .agents/skills                                       # configuration, templates and skills
 steward check --summary
 ```
@@ -63,8 +63,8 @@ It is never a runtime dependency of your project.
 
     ---
 
-    Runs under limits, signed approvals agents cannot forge, spend guards, sprints and briefs for dispatching work to
-    other agents.
+    Runs under limits, signed approvals agents cannot forge, spend guards, sprints and automatic
+    [delegation to other agents](guides/delegation.md).
 
     [:octicons-arrow-right-24: Single-project governance](guides/single-project.md)
 
@@ -91,6 +91,7 @@ It is never a runtime dependency of your project.
 | 🧭 | decisions, reviews and dead ends lost in a chat | research records, R-76 |
 
 ## Where next
+- [Delegate to other agents](guides/delegation.md): set up a master and workers, with automatic fallback on usage limits.
 - [Recipes](recipes.md): the common jobs, step by step.
 - [Quick start](quickstart.md), then the [worked example](worked-example.md).
 - [Works with](works-with.md): skill libraries, workflow engines, data versioning.

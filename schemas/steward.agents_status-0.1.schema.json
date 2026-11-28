@@ -1,0 +1,325 @@
+{
+  "$defs": {
+    "AgentAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "enum": [
+            "claude-code",
+            "codex",
+            "antigravity"
+          ],
+          "title": "Agent",
+          "type": "string"
+        },
+        "executable": {
+          "title": "Executable",
+          "type": "string"
+        },
+        "found": {
+          "anyOf": [
+            {
+              "enum": [
+                "PATH",
+                "known folder"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Found"
+        },
+        "installed": {
+          "title": "Installed",
+          "type": "boolean"
+        },
+        "last": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AgentLastRecord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Model"
+        },
+        "rank": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rank"
+        },
+        "reset_known": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reset Known"
+        },
+        "role": {
+          "enum": [
+            "master",
+            "worker",
+            "unassigned"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "signed_in": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Signed In"
+        },
+        "state": {
+          "enum": [
+            "available",
+            "limited",
+            "signed_out",
+            "missing"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "until": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Until"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Version"
+        }
+      },
+      "required": [
+        "agent",
+        "executable",
+        "role",
+        "rank",
+        "installed",
+        "found",
+        "model",
+        "state",
+        "until",
+        "reset_known",
+        "version",
+        "signed_in",
+        "last"
+      ],
+      "title": "AgentAvailability",
+      "type": "object"
+    },
+    "AgentLastRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "anyOf": [
+            {
+              "enum": [
+                "ending",
+                "observed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Kind"
+        },
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Message"
+        },
+        "reset": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reset"
+        },
+        "seq": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Seq"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "State"
+        },
+        "time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Time"
+        }
+      },
+      "required": [
+        "kind",
+        "state",
+        "reset",
+        "message",
+        "source",
+        "time",
+        "seq"
+      ],
+      "title": "AgentLastRecord",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The delegation ([delegation] in steward.toml) and each agent's availability: missing when its CLI is not on\nPATH or in its install folder; limited until `until` when the availability ledger's newest record for it is a\nlimit whose reset has not passed (`reset_known` false: no reset time was printed, so it counts for an hour from\nthe record); signed out when that record says so; otherwise available. `last` is that newest record; `version`\nand `signed_in` come from the newest record `steward agents setup` made. Order: the master, then the workers in\ntheir order, then the other agents in a fixed order (claude-code, codex, antigravity). Nothing is run.",
+  "properties": {
+    "agents": {
+      "items": {
+        "$ref": "#/$defs/AgentAvailability"
+      },
+      "title": "Agents",
+      "type": "array"
+    },
+    "configured": {
+      "title": "Configured",
+      "type": "boolean"
+    },
+    "ledger": {
+      "title": "Ledger",
+      "type": "string"
+    },
+    "master": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Master"
+    },
+    "now": {
+      "title": "Now",
+      "type": "string"
+    },
+    "on_limit": {
+      "anyOf": [
+        {
+          "enum": [
+            "next",
+            "master",
+            "wait"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "On Limit"
+    },
+    "schema": {
+      "const": "steward.agents_status/0.1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "workers": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Workers",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "ledger",
+    "now",
+    "configured",
+    "master",
+    "workers",
+    "on_limit",
+    "agents"
+  ],
+  "title": "AgentsStatus",
+  "type": "object"
+}

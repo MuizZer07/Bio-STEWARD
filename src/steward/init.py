@@ -91,11 +91,88 @@ def project_name(root: Path) -> str:
 
 OPTIONAL_TEMPLATES = {"contract": "benchmark.contract.toml", "prior-work": "prior_work.prior.toml"}
 
+PROFILE_NOTES = {
+    "exploratory": "profile exploratory: rules report, few demand; switch to confirmatory in steward.toml when ready "
+                   "to require a benchmark contract and prior-work record",
+    "confirmatory": "profile confirmatory: requires a benchmark contract and prior-work record, and recommends an "
+                    "independent release review",
+}
+
 
 def skills_block(root: Path, skills: list[Path]) -> str:
     rel = [os.path.relpath(d, root).replace(os.sep, "/") for d in skills]
     return (f'\n[skills]                      # one canonical copy; the other harness directories link to it\n'
             f'canonical = "{rel[0]}"\ncopies = [{", ".join(chr(34) + r + chr(34) for r in rel[1:])}]\n')
+
+
+def _configured_skills(root: Path) -> list[str]:
+    """[canonical, *copies] from steward.toml [skills] when copies are configured, else []."""
+    cfg = root / "steward.toml"
+    if cfg.is_symlink() or not cfg.is_file():
+        return []
+    try:
+        import tomllib
+
+        data = tomllib.loads(cfg.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    s = data.get("skills")
+    if not isinstance(s, dict) or not isinstance(s.get("canonical"), str) or not s["canonical"].strip():
+        return []
+    copies = [c.strip() for c in s.get("copies", []) if isinstance(c, str) and c.strip()]
+    return [s["canonical"].strip(), *copies] if copies else []
+
+
+def _configured_delegation(root: Path) -> tuple[str, list[str]] | None:
+    """(master, workers) from steward.toml [delegation], or None when absent or unreadable."""
+    cfg = root / "steward.toml"
+    if cfg.is_symlink() or not cfg.is_file():
+        return None
+    try:
+        import tomllib
+
+        data = tomllib.loads(cfg.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    d = data.get("delegation")
+    if not isinstance(d, dict) or not isinstance(d.get("master"), str) or not d["master"].strip():
+        return None
+    workers = [w.strip() for w in d.get("workers", []) if isinstance(w, str) and w.strip()]
+    return d["master"].strip(), workers
+
+
+def render_agents_block(root: Path, skills: list[Path] | None = None,
+                        delegation: tuple[str, list[str]] | None = None) -> str:
+    """The delimited steward block for AGENTS.md: the base template, plus the [skills] copy note and the
+    [delegation] master/workers note when configured."""
+    agents_text = template("agents_block.md").rstrip()
+    rel = ([os.path.relpath(d, root).replace(os.sep, "/") for d in skills]
+           if skills and len(skills) > 1 else _configured_skills(root))
+    if len(rel) > 1:
+        agents_text += (f"\n- Skills: the one copy is in `{rel[0]}`; "
+                        + ", ".join(f"`{r}`" for r in rel[1:]) + " link to it. Edit only the copy.")
+    info = delegation if delegation is not None else _configured_delegation(root)
+    if info is not None:
+        master, workers = info
+        w = f"; workers: {', '.join(f'`{x}`' for x in workers)}" if workers else ""
+        agents_text += f"\n- Delegation: master is `{master}` (reviews, merges, keeps signed work){w}."
+    return _block(AG_BEGIN, AG_END, agents_text)
+
+
+def sync_agents_block(root: Path) -> bool:
+    """Update the delimited steward block in an existing AGENTS.md (never creating or touching one without
+    markers, and never following a link). Returns True when AGENTS.md changed."""
+    from .fsutil import safe_write
+
+    ag = root / "AGENTS.md"
+    if ag.is_symlink() or not ag.is_file():
+        return False
+    text = ag.read_text(encoding="utf-8")
+    new = _replace_block(text, AG_BEGIN, AG_END, render_agents_block(root))
+    if new is None or new == text:
+        return False
+    safe_write(root, "AGENTS.md", new.encode("utf-8"))
+    return True
 
 
 def plan(root: Path, profile: str, agents_md: bool, skills: list[Path] | Path | None, paper: str | None = None,
@@ -119,7 +196,7 @@ def plan(root: Path, profile: str, agents_md: bool, skills: list[Path] | Path | 
             repo_id=str(uuid.uuid4()), project=json.dumps(project or project_name(root)), profile=profile,
             paper_block=(paper_block(paper) if paper is not None else "") + (talk_block(talk, paper) if talk else ""),
         ) + (skills_block(root, skills) if several else "")
-        acts.append(Action("create", "steward.toml", f"profile {profile}", text))
+        acts.append(Action("create", "steward.toml", PROFILE_NOTES.get(profile, f"profile {profile}"), text))
     if talk is not None:
         for fname in ("talk.toml", "slides.tex"):
             rel = f"talks/{talk}/{fname}"
@@ -149,12 +226,7 @@ def plan(root: Path, profile: str, agents_md: bool, skills: list[Path] | Path | 
         acts.append(Action("unchanged", ".gitignore", "steward block current") if new == text
                     else Action("update", ".gitignore", "steward block", new))
 
-    agents_text = template("agents_block.md")
-    if several:
-        rel = [os.path.relpath(d, root).replace(os.sep, "/") for d in skills]
-        agents_text = agents_text.rstrip() + (f"\n- Skills: the one copy is in `{rel[0]}`; "
-                                              + ", ".join(f"`{r}`" for r in rel[1:]) + " link to it. Edit only the copy.\n")
-    ag_block = _block(AG_BEGIN, AG_END, agents_text)
+    ag_block = render_agents_block(root, skills)
     ag = root / "AGENTS.md"
     if not ag.exists():
         acts.append(Action("create", "AGENTS.md", "steward block", "# Agent instructions\n\n" + ag_block))

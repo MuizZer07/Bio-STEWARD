@@ -7,8 +7,8 @@ computational-biology repository against its declared rules. This extension show
 your repository (the gate verdict, every result, the files they name and the rule behind each one) inside VS Code,
 and, in its **cockpit** panels, what waits for you: signatures, open tasks, token costs, decisions and deadlines.
 
-> **Pre-release build (0.0.x).** Not on the Marketplace yet: install the `.vsix` with **Extensions: Install from
-> VSIX…**. The first public release is 0.1.0.
+> **0.3.0, the MVP, tested with CLI 0.22.0.** Not on the Marketplace: install the `.vsix` with **Extensions: Install
+> from VSIX…**. It is sideloaded in the adopting projects until the Marketplace step after v1.0.
 
 | | |
 |---|---|
@@ -26,15 +26,15 @@ and, in its **cockpit** panels, what waits for you: signatures, open tasks, toke
 
 | Needs | |
 |---|---|
-| The CLI | the `bio-steward` package, **0.20.6 or newer** (tested with 0.20.6). The extension uses the `steward` program you installed and never installs, changes or replaces it |
+| The CLI | the `bio-steward` package, **0.20.6 or newer** (tested with 0.22.0). The extension uses the `steward` program you installed; **Upgrade CLI** runs `steward upgrade --to VERSION` in a visible terminal only after you confirm the exact command |
 | VS Code | 1.100 or newer: desktop, Remote-SSH, WSL and dev containers (the CLI runs where the files are). Not vscode.dev or github.dev. On Windows, use WSL |
 | A project | a folder with a `steward.toml`; without one, the **Set up a Bio-STEWARD project** walkthrough runs `steward init` with a preview first |
 
 Install the CLI (until it is on PyPI, from the release tag):
 
 ```bash
-uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.20.6"   # or pipx install "git+…@v0.20.6"
-steward --version                                                          # steward 0.20.6
+uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.22.0"   # or pipx install "git+…@v0.22.0"
+steward --version                                                          # steward 0.22.0
 ```
 
 The extension looks for `steward` on `PATH`, then in the pipx and uv tool folders, or uses `bioSteward.cliPath` from
@@ -51,7 +51,7 @@ your **user** settings. A workspace cannot set that path, and a repository's own
 | **Explain Rule…** | the CLI's `steward explain R-xx` text, shown as it prints it |
 | **Agent Skills** | the skill folders on disk, R-60's drift codes, and **Install Agent Skills…** with the CLI's dry-run plan first |
 | **Sprint** | a running sprint's tasks, states, times against their limits, done-commands with exit codes, and the commit the ledger records when a task ends, read only from the sprint file and its ledger (no git). Commits and changed files *during* a task are not shown yet; they come later from the CLI |
-| **Today**, **Approvals**, **Tasks**, **Tokens**, **Decisions**, **Drift** | the cockpit: see [below](#the-cockpit) |
+| **Today**, **Approvals**, **Tasks**, **Tokens**, **Milestones and Drift**, **Decisions** | the cockpit: see [below](#the-cockpit) |
 
 ![The Results view grouped by status for the toy benchmark with seeded faults: FAIL, INCOMPLETE, UNKNOWN, PASS and NOT APPLICABLE groups](media/readme/results.png)
 
@@ -69,26 +69,42 @@ run*: its gates read NOT EVALUATED BY THIS RUN, and the status bar keeps the las
 
 ![Freshness: fresh after a run; stale once a project file, the CLI or a newer scoped run changes things; unknown when the extension cannot tell](media/readme/freshness.png)
 
-The word **current** is never used: CLI 0.20.6 cannot show that a report still matches the files.
+The word **current** is never used: this version of the extension cannot show that a report still matches the files.
 
 ## The cockpit
 
-Six panels for the working day, one block per open project, the most urgent first. Five of them are **reduced
-forms**: CLI 0.20.6 does not yet print the documents their full forms read (a `next` command, the task board and the
-signing queue as JSON, drift in the timeline), so each shows only what 0.20.6 prints, says "Reduced form" on its
-first row and names its source on every row.
+The panels are grouped by the job they help with: **Now**, **Quality**, **Work**, **Direction** and **Agents**. With
+several projects open, each panel has one block per project, the most urgent first. Every panel has a **refresh**
+button in its title bar (it runs that panel's CLI commands again at once, with a progress bar), and every list shows
+the **newest entry first** (latest change, then the highest ID; milestones by the latest due date, while the
+countdown names the nearest). Each panel's first row names its source.
 
-| Panel | Answers | Reads (CLI 0.20.6) |
-|---|---|---|
-| **Today** (reduced) | what waits, and for whom? Resume, the next milestone, signatures waiting, exchange items, your own open requests, sprints with open tasks | `steward audit progress --json`, `steward timeline --json`, the session handoff |
-| **Where am I?** (reduced) | the same as one page, shown once when you reopen a project after 3 days; **Copy as Agent Brief** | the same |
-| **Approvals** (reduced) | what waits for your signature: one card per payload, with **View exactly what you are approving** and **✍ Sign** | `steward authorize pending --all-projects` (text) and `.steward/pending/<nonce>.txt` |
-| **Tasks** (reduced) | every task file, open first, with its `Status:` line exactly as written, *read from the file* | the task files |
-| **Tokens** | tokens per task window and model; **Start / Done Task Window…** after confirmation | `steward tokens report --json` over the agent logs you select |
-| **Decisions** (reduced) | **Open DECISIONS.md**: the log `steward.toml` names, opened as it is | `steward.toml` |
-| **Drift** (reduced) | each milestone's state in the CLI's words (on track, at risk, late, …) | `steward timeline --json` |
+![The ten panels grouped as Now, Quality, Work, Direction and Agents, each with the sentence its empty state and ? help open with](media/readme/panels.png)
 
-![The Today panel for the fixture project: Resume, the next milestone and the Pending lists of steward audit progress, each row naming its source](media/readme/today.png)
+With CLI 0.21 or newer each panel shows its **full form**, read from the versioned documents the CLI publishes
+(`steward interface` lists them). With an older CLI each panel reads what that CLI offers, and a row says what needs
+a newer one.
+
+| Group | Panel | Answers | Reads |
+|---|---|---|---|
+| Now | **Today** | what waits, and for whom? **Notifications** at the top (unread first, read ones dimmed), then Resume, the next milestone and what blocks it, what waits on you and on your agents (each with its next step), what needs tidying | `steward notifications --format json`, `steward next --format json` (older CLI: `steward audit progress --json`, `steward timeline --json`, the session handoff) |
+| Now | **Where am I?** | the same as one page, shown once when you reopen a project after 3 days; **Copy as Agent Brief** | the same |
+| Now | **Approvals** | what waits for your signature: one card per payload, with scope, budget, object and who asked, **View exactly what you are approving** and **✍ Sign** | `steward authorize pending --all-projects` (text and `--format json`) and `.steward/pending/<nonce>.txt` |
+| Work | **Tasks** | every task with its status in the CLI's words, open first, then Closed and Archived, the latest change first; **Hand to Agent** copies its brief | `steward task board --format json` (older CLI: the task files' `Status:` lines, as written) |
+| Work | **Tokens** | each task's total, its tokens by model (input, output, cache read, cache write) and the estimated cost where the CLI gives one; windows from the sprint and run records; **Use this folder** where a log setting is empty | `steward tokens report --format json` over the agent logs you select |
+| Direction | **Milestones and Drift** | each milestone's state in the CLI's words, the latest due first, then moved dates, scope, order and changes without a decision | `steward timeline --format json` |
+| Direction | **Decisions** | **Open DECISIONS.md**, the open questions with their options, and every decision, newest first | `steward decisions --format json` and the log `steward.toml` names |
+
+Overview and Results (Quality), Sprint (Work) and Agent Skills (Agents) are described [above](#what-you-see). Every
+row opens something: Markdown in preview, other files in the editor, and a record that is not a file a read-only
+details page (what it is, where it comes from, what it means, the next step).
+
+The status bar carries a **bell** with the unread count. Opening it, or the Notifications list in Today, marks what it
+showed as read; **Mark Read**, **Mark Unread** and **Mark All Read** do it by hand. Read state is kept on this machine
+only, by each notification's ID and content hash, so an item is news again only when the CLI reports a change to it.
+Toasts appear only for the three urgent kinds (a gate turned not eligible, an approval waiting, a task failed).
+
+![The Today panel and the status-bar bell on CLI 0.22: Notifications at the top, then steward next's Resume, next milestone, what waits on you and what needs tidying](media/readme/today.png)
 
 ### Approvals and ✍ Sign
 
@@ -119,16 +135,17 @@ repository can choose them; use 0.20.7 or later for signing.
 
 ![Sign step by step, the modal dialog as the extension words it, and the box that asks for a high-stakes action's name](media/readme/sign-flow.png)
 
-### Tasks, Tokens, Decisions and Drift
+### Tasks, Tokens, Milestones and Drift, Decisions
 
-![The Tasks, Tokens, Decisions and Drift panels for the fixture project, each with its Reduced form row](media/readme/cockpit.png)
+![The Tasks, Tokens, Decisions, and Milestones and Drift panels in their full forms on CLI 0.22: the task board, tokens per task and model with the estimated cost, open questions and decisions newest first, and the drift groups](media/readme/cockpit.png)
 
 ### With a newer CLI
 
-This version uses the command forms of CLI 0.20.6 for everything. It detects a newer CLI at start-up and names it in
-the log ("CLI newer than tested"), but Explain, Agent Skills, Initialize Project and freshness work the same way.
-Richer versions of them (structured explanations, a skills inventory, an init file list, *current* by digest) arrive
-in a later release, once the CLI offers them (requests C1 – C8).
+This version is tested with CLI 0.22.0 and works from 0.20.6 on. It reads the interface a CLI publishes
+(`steward interface`) to choose each panel's form, and names a CLI newer than the tested one in the log ("CLI newer
+than tested"). When a newer release notice is on this machine, the bell and Overview offer **Upgrade CLI**.
+Explain, Agent Skills, Initialize Project and freshness work the same way on every version. Their richer forms (structured explanations, a skills inventory, an init file list, *current* by digest), which CLI 0.22.0 can
+give, come in a later release of the extension.
 
 ## Commands
 
@@ -143,16 +160,23 @@ in a later release, once the CLI offers them (requests C1 – C8).
 | **Initialize Project…** | `steward init … --dry-run` first; runs `steward init …` after you confirm the exact command |
 | **Install Agent Skills…** | `steward init --skills … --dry-run` first; runs it after you confirm |
 | **Copy Order Command** (Sprint view) | puts `steward sprint go ID TASK` on the clipboard; it never starts a task |
-| **Refresh Today** / **Where am I?** | `steward audit progress --json` and `steward timeline --json`; reads the handoff |
+| **Refresh Today** / **Where am I?** | `steward notifications --format json` and `steward next --format json` (older CLI: `steward audit progress --json`, `steward timeline --json`, the handoff) |
 | **Copy as Agent Brief** | puts the Where am I? page on the clipboard (the handoff cut to 40 lines) |
-| **Refresh Tasks** | reads the task files; runs nothing |
-| **Refresh Tokens** | `steward tokens report --json --claude …` with the logs you selected |
+| **Refresh Tasks** | `steward task board --format json` (older CLI: reads the task files; runs nothing) |
+| **Refresh Tokens** | `steward tokens report --format json --claude …` with the logs you selected |
+| **Use this folder** (Tokens) | writes one empty log setting in your user settings to the folder the panel names for that agent and project; nothing is read before the click |
+| **Hand to Agent** | copies `steward check --rule … --summary` (a result), `steward task brief … --for codex` (a task) or `steward next --brief` (a milestone), at most 16 KiB, and says its size |
 | **Start Task Window…** / **Done Task Window…** | `steward task start ID` / `steward task done ID`, after you confirm the exact command |
 | **Refresh Approvals** | `steward authorize pending --all-projects` |
 | **View Exactly What You Are Approving** (card) | opens `.steward/pending/<nonce>.txt` read-only, unchanged |
 | **✍ Sign…** (card) | a modal dialog, then `steward authorize sign-pending --repo ROOT` in a new terminal (see above) |
 | **Open DECISIONS.md** | opens the decisions log in the editor; runs nothing |
-| **Refresh Drift** | `steward timeline --json` |
+| **Refresh Decisions** | `steward decisions --format json` |
+| **Refresh Drift** | `steward timeline --format json` (older CLI: `--json`) |
+| ⟳ in any panel's title bar | runs that panel's CLI commands again at once, past the debounce, with a progress bar in the panel |
+| **Notifications** (status-bar bell) | opens the feed of `steward notifications --format json` and marks every item it showed as read; read items stay dimmed under unread ones, newest first, keyed locally by ID and content hash |
+| **Mark Read** / **Mark Unread** / **Mark All Read** | updates local per-machine read state for one notification or all shown notifications |
+| **Upgrade CLI…** | runs `steward upgrade --check --format json` (local only), shows the exact command in a modal, runs `steward upgrade --to VERSION` in a visible terminal, then re-detects the CLI and runs its contract check |
 
 Every command in the background runs through an allow-list of typed builders, without a shell, with `--repo` set to
 the project, a timeout and a single run at a time. Three kinds of command write, each only after you confirm:
@@ -197,6 +221,7 @@ extension's storage, never to the shared file.
 | `bioSteward.whereAmI.showOnReopen` | `true` | any level | show Where am I? once when a project is reopened |
 | `bioSteward.whereAmI.reopenAfterDays` | `3` | any level | how many days away count as "reopened" |
 | `bioSteward.tokens.claudeLogs` / `codexLogs` / `geminiLogs` | none | you only | the agents' log files or folders `steward tokens report` reads. Each file must still be inside the file or folder you named, reached without a link, when the CLI starts. The panel shows the CLI's counts, model names and the relative paths of files the agents read; when a log path cannot be used, the setup row names it |
+| `bioSteward.notifications.toasts` | `true` | you only | show VS Code notification toasts for the three urgent notification kinds (gate turned not eligible, approval waiting, task failed); turn off to keep notifications only in the bell and Today |
 
 In an untrusted workspace VS Code ignores the workspace's values of the "any level" settings.
 
@@ -205,7 +230,7 @@ In an untrusted workspace VS Code ignores the workspace's values of the "any lev
 | Concern | What the extension does |
 |---|---|
 | Untrusted workspaces | Restricted Mode: no CLI command and no git command runs, and no sprint, task, decisions or payload file is read |
-| Running programs | only the `steward` you installed and `git` from `PATH`, never one inside a workspace folder; no shell; every argument from a typed builder on an allow-list. The one command outside the allow-list is the signing line below, and it runs only in a visible terminal, with an environment the extension sets in full (`strictEnv`) |
+| Running programs | only the `steward` you installed and `git` from `PATH`, never one inside a workspace folder; no shell; every argument from a typed builder on an allow-list. The two commands outside the allow-list are the signing line below (`authorize sign-pending`) and **Upgrade CLI** (`upgrade --to VERSION`), and each runs only in a visible terminal after a modal dialog, with an environment the extension sets in full (`strictEnv`) |
 | git | one command only, `git check-ignore -q -- .steward/report.json`, with fsmonitor, hooks and the untracked cache forced off and a cleaned environment: `PATH`, `HOME` and `GIT_CONFIG_NOSYSTEM=1`, every other variable (all `GIT_*` among them) dropped. A test shows that a repository's own `filter.*.clean` and `filter.*.process` programs never run during it. The Sprint view runs no git at all, because `git status` can start such a filter program |
 | Reading project files | sprint files and ledgers are opened without following links and without blocking, read up to a size limit, and must be valid UTF-8; nesting, task count, dependencies and ledger entries are bounded per refresh. Task files and decisions logs are found as the CLI lists project files (no link on the way, never in `.git`), and a row checks its file again when you click it. A payload file is read only if, after the read, `.steward`, `.steward/pending` and the file are still the same entries, none of them a link |
 | Shared token logs | the agent logs are this machine's, the same for every open project, and the CLI matches records to a task window by time, agent, model and session, not by project. The Tokens panel labels the CLI's "all activity" row as shared |

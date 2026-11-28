@@ -1,0 +1,489 @@
+{
+  "dispatch": "order",
+  "id": "2026-11-27-vscode-0.1",
+  "path": "development/sprints/2026-11-27-vscode-0.1.toml",
+  "schema": "steward.sprint_status/0.1",
+  "tasks": [
+    {
+      "after": [],
+      "agent": "shell",
+      "branch": "sprint/2026-11-27-vscode-0.1/T01",
+      "changed_files": [],
+      "checks": [
+        {
+          "command": "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+          "exit": 0
+        }
+      ],
+      "commit": "5b4a0b05b3fc947314f71ba04f72b38a277bbdf1",
+      "commits": [],
+      "ended": "2026-11-26T20:20:47Z",
+      "held": false,
+      "id": "T01",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 120.0
+      },
+      "log": null,
+      "model": null,
+      "note": null,
+      "ordered": true,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": "2026-11-26T20:15:00Z",
+      "state": "done",
+      "title": "Scaffold the extension (layout, manifest, toolchain, CLI install script)",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T01"
+      ],
+      "agent": "shell",
+      "branch": "sprint/2026-11-27-vscode-0.1/T02",
+      "changed_files": [],
+      "checks": [
+        {
+          "command": "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+          "exit": 0
+        }
+      ],
+      "commit": "885cbe2af4f14948b985d5266483a39abc0b9bce",
+      "commits": [],
+      "ended": "2026-11-26T20:41:40Z",
+      "held": false,
+      "id": "T02",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 150.0
+      },
+      "log": null,
+      "model": null,
+      "note": "work done and verified, not skipped: Codex finished (exit 0) and both checks passed, but the supervisor ran the sprint file it loaded before the commit step was added, so the work was left uncommitted. Committed as d51012a, fixed in cd11912 (VX8 registry), checks rerun by hand (scope guard 0; check 23 passing with the real CLI; host 2 passing). See development/tasks/vscode-0.1-T02-cli-layer.md. Recorded as skip because the supervisor has no accept command (STW-053).",
+      "ordered": true,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": "2026-11-26T20:33:48Z",
+      "state": "skipped",
+      "title": "CLI layer: locator, allow-list, runner, feature detection",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T02"
+      ],
+      "agent": "shell",
+      "branch": "sprint/2026-11-27-vscode-0.1/T03",
+      "changed_files": [],
+      "checks": [
+        {
+          "command": "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm run cli:install && npm run fixtures -- --verify",
+          "exit": 0
+        }
+      ],
+      "commit": "36dd41a565be0b2b963d93ab320c50e7ca003d73",
+      "commits": [],
+      "ended": "2026-11-26T20:56:44Z",
+      "held": false,
+      "id": "T03",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 120.0
+      },
+      "log": null,
+      "model": null,
+      "note": null,
+      "ordered": true,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": "2026-11-26T20:47:48Z",
+      "state": "done",
+      "title": "Fixtures generated from the pinned CLI",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T03"
+      ],
+      "agent": "shell",
+      "branch": "sprint/2026-11-27-vscode-0.1/T04",
+      "changed_files": [],
+      "checks": [
+        {
+          "command": "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm run cli:install && npm run fixtures -- --verify",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm run test:host",
+          "exit": 0
+        }
+      ],
+      "commit": "23ceccb67615b537aa46efb38ec6ceba5450ba07",
+      "commits": [],
+      "ended": "2026-11-26T21:13:18Z",
+      "held": false,
+      "id": "T04",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 180.0
+      },
+      "log": null,
+      "model": null,
+      "note": null,
+      "ordered": true,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": "2026-11-26T20:58:14Z",
+      "state": "done",
+      "title": "Verdict views: Overview, Results, status bar",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T04"
+      ],
+      "agent": "shell",
+      "branch": "sprint/2026-11-27-vscode-0.1/T05",
+      "changed_files": [],
+      "checks": [
+        {
+          "command": "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm run test:host",
+          "exit": 1
+        },
+        {
+          "command": "cd editors/vscode && npm run package",
+          "exit": 0
+        }
+      ],
+      "commit": "53fb037d5731ea1f74f28a409f1897351c8a0832",
+      "commits": [],
+      "ended": "2026-11-26T21:24:42Z",
+      "held": false,
+      "id": "T05",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 150.0
+      },
+      "log": null,
+      "model": null,
+      "note": "work done and verified, not skipped: the host tests failed on test order (T05's tests ran before T04's suite and left a report), fixed in 30a9770 with no test logic changed; all four checks then pass by hand (scope 0; check 69; host 0; package). See development/tasks/vscode-0.1-T05-problems-and-explain.md. Recorded as skip because the supervisor has no recheck command (STW-053 S2).",
+      "ordered": true,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": "2026-11-26T21:15:49Z",
+      "state": "skipped",
+      "title": "Problems panel and explain; build alpha.1",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T05"
+      ],
+      "agent": "shell",
+      "branch": "sprint/2026-11-27-vscode-0.1/T06",
+      "changed_files": [],
+      "checks": [
+        {
+          "command": "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm run test:host",
+          "exit": 0
+        }
+      ],
+      "commit": "dababc366edff9358e3dc0d985094b1c3cec9899",
+      "commits": [],
+      "ended": "2026-11-26T21:45:33Z",
+      "held": false,
+      "id": "T06",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 150.0
+      },
+      "log": null,
+      "model": null,
+      "note": null,
+      "ordered": true,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": "2026-11-26T21:27:31Z",
+      "state": "done",
+      "title": "Freshness, several projects, countdown, resume",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T05"
+      ],
+      "agent": "shell",
+      "branch": "sprint/2026-11-27-vscode-0.1/T07",
+      "changed_files": [],
+      "checks": [
+        {
+          "command": "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm run test:host",
+          "exit": 0
+        }
+      ],
+      "commit": "5e49ff4fdd0a9d401cd1a08076643a385c97719a",
+      "commits": [],
+      "ended": "2026-11-26T21:59:03Z",
+      "held": false,
+      "id": "T07",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 150.0
+      },
+      "log": null,
+      "model": null,
+      "note": null,
+      "ordered": true,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": "2026-11-26T21:48:09Z",
+      "state": "done",
+      "title": "Guided init with preview",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T05"
+      ],
+      "agent": "shell",
+      "branch": "sprint/2026-11-27-vscode-0.1/T08",
+      "changed_files": [],
+      "checks": [
+        {
+          "command": "test -z \"$(git diff --name-only main...HEAD | grep -v -E '^(editors/vscode/|\\.gitignore$|docs/guides/vscode\\.md$|development/tasks/)')\"",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm ci --ignore-scripts && npm run check",
+          "exit": 0
+        },
+        {
+          "command": "cd editors/vscode && npm run test:host",
+          "exit": 0
+        }
+      ],
+      "commit": "e727dd92b2bd41f848353e9727368201c183885f",
+      "commits": [],
+      "ended": "2026-11-26T22:19:36Z",
+      "held": false,
+      "id": "T08",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 150.0
+      },
+      "log": null,
+      "model": null,
+      "note": null,
+      "ordered": true,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": "2026-11-26T22:00:53Z",
+      "state": "done",
+      "title": "Agent Skills, copy for agent, scoped check",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T06",
+        "T07",
+        "T08"
+      ],
+      "agent": "shell",
+      "branch": null,
+      "changed_files": [],
+      "checks": [],
+      "commit": null,
+      "commits": [],
+      "ended": null,
+      "held": false,
+      "id": "T09",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 180.0
+      },
+      "log": null,
+      "model": null,
+      "note": null,
+      "ordered": false,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": null,
+      "state": "ready",
+      "title": "Hardening: trust, security, no network, accessibility",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T09"
+      ],
+      "agent": "shell",
+      "branch": null,
+      "changed_files": [],
+      "checks": [],
+      "commit": null,
+      "commits": [],
+      "ended": null,
+      "held": false,
+      "id": "T10",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 120.0
+      },
+      "log": null,
+      "model": null,
+      "note": null,
+      "ordered": false,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": null,
+      "state": "planned",
+      "title": "Docs, README with figures, changelog, package, export dry run",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T10"
+      ],
+      "agent": "shell",
+      "branch": null,
+      "changed_files": [],
+      "checks": [],
+      "commit": null,
+      "commits": [],
+      "ended": null,
+      "held": false,
+      "id": "T11",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 120.0
+      },
+      "log": null,
+      "model": null,
+      "note": null,
+      "ordered": false,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": null,
+      "state": "planned",
+      "title": "Independent review of the extension",
+      "uncommitted": []
+    },
+    {
+      "after": [
+        "T11"
+      ],
+      "agent": "shell",
+      "branch": null,
+      "changed_files": [],
+      "checks": [],
+      "commit": null,
+      "commits": [],
+      "ended": null,
+      "held": false,
+      "id": "T12",
+      "last_commit_subject": null,
+      "last_step": null,
+      "limits": {
+        "idle_minutes": 30.0,
+        "wall_minutes": 180.0
+      },
+      "log": null,
+      "model": null,
+      "note": null,
+      "ordered": false,
+      "permissions": null,
+      "run": null,
+      "run_log": null,
+      "started": null,
+      "state": "planned",
+      "title": "Fix pass and re-verification",
+      "uncommitted": []
+    }
+  ],
+  "window": {
+    "end": "2099-12-11T18:00:00-05:00",
+    "start": "2026-11-26T15:15:00-05:00"
+  },
+  "window_state": "open"
+}

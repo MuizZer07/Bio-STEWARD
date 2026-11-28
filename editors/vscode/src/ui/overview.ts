@@ -14,9 +14,9 @@ export class OverviewView implements vscode.Disposable {
     this.#view = vscode.window.createTreeView(OVERVIEW_VIEW, { treeDataProvider: this.tree, showCollapseAll: true });
   }
 
-  update(state: ProjectState, description?: string): void {
+  update(state: ProjectState, description?: string, root?: string): void {
     this.#view.description = description;
-    this.tree.set(overviewNodes(state));
+    this.tree.set(overviewNodes(state), root);
   }
 
   dispose(): void {

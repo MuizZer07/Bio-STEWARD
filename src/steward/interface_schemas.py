@@ -343,6 +343,17 @@ class TaskWindow(TypedDict):
     end: str | None
 
 
+class TaskAttempt(TypedDict):
+    """0.23.0 (STW-061 D02): one attempt of a delegated sprint task, as the agents ledger records it."""
+
+    attempt: int
+    agent: str
+    model: str | None
+    outcome: str | None  # redelegated, review, done or failed
+    reason: str | None  # the "cannot run" ending of a re-delegated attempt
+    tokens: int | None
+
+
 class TaskTokens(TypedDict):
     task: str
     tokens: int | None
@@ -354,6 +365,7 @@ class TaskTokens(TypedDict):
     files_read: list[FileReads]
     tool_outputs: list[ToolOutput]
     windows: NotRequired[list[TaskWindow]]  # X05: with --format json; oldest first
+    attempts: NotRequired[list[TaskAttempt]]  # D02: a sprint task's attempts by the supervisor; newest first
 
 
 class SourceFile(TypedDict):
@@ -570,7 +582,7 @@ class NextMilestone(TypedDict):
 
 class NextEntry(TypedDict):
     kind: Literal["signature", "decision", "exchange", "task_waiting", "task_failed", "task_done", "task_running",
-                  "task_ordered"]
+                  "task_ordered", "task_review", "task_limited"]  # D02: the master's review; a wait for a reset
     id: str
     title: str
     source: str
@@ -673,6 +685,28 @@ class SprintStep(TypedDict):
     command: str
 
 
+class SprintAttempt(TypedDict):
+    agent: str | None
+    model: str | None
+    role: Literal["worker", "master"] | None
+    started: str | None
+    ended: str | None
+    outcome: Literal["redelegated", "review", "done", "failed"] | None
+    reason: str | None
+    reset: str | None
+
+
+class SprintDelegation(TypedDict):
+    """0.23.0 (STW-061 D02): who ran a delegated task, a wait for a reset time, the review brief, and every attempt
+    (newest first)."""
+
+    role: Literal["worker", "master"] | None
+    agent: str | None
+    until: str | None
+    review: str | None
+    attempts: list[SprintAttempt]
+
+
 class SprintTask(TypedDict):
     id: str
     title: str
@@ -686,7 +720,7 @@ class SprintTask(TypedDict):
     checks: list[SprintCheck]
     limits: Limits
     note: str | None
-    agent: Literal["claude-code", "codex", "antigravity", "shell"]
+    agent: Literal["claude-code", "codex", "antigravity", "shell", "auto"]
     model: str | None
     permissions: Literal["read-only", "edit", "edit-and-run"] | None
     started: str | None
@@ -698,6 +732,7 @@ class SprintTask(TypedDict):
     last_commit_subject: str | None
     last_step: SprintStep | None
     uncommitted: list[str]
+    delegation: NotRequired[SprintDelegation]  # D02: only for a delegated task
 
 
 class Handoff(TypedDict):
@@ -860,6 +895,56 @@ class AgentsList(BaseModel):
 SCHEMAS[OTHER_SCHEMAS["agents list"].replace("/", "-") + ".schema.json"] = AgentsList
 
 
+# 0.23.0 (STW-061 D01): `steward agents status --format json`, the delegation and each agent's availability.
+class AgentLastRecord(TypedDict):
+    kind: Literal["ending", "observed"] | None
+    state: str | None
+    reset: str | None
+    message: str | None
+    source: str | None
+    time: str | None
+    seq: int | None
+
+
+class AgentAvailability(TypedDict):
+    agent: Literal["claude-code", "codex", "antigravity"]
+    executable: str
+    role: Literal["master", "worker", "unassigned"]
+    rank: int | None
+    installed: bool
+    found: Literal["PATH", "known folder"] | None
+    model: str | None
+    state: Literal["available", "limited", "signed_out", "missing"]
+    until: str | None
+    reset_known: bool | None
+    version: str | None
+    signed_in: bool | None
+    last: AgentLastRecord | None
+
+
+class AgentsStatus(BaseModel):
+    """The delegation ([delegation] in steward.toml) and each agent's availability: missing when its CLI is not on
+    PATH or in its install folder; limited until `until` when the availability ledger's newest record for it is a
+    limit whose reset has not passed (`reset_known` false: no reset time was printed, so it counts for an hour from
+    the record); signed out when that record says so; otherwise available. `last` is that newest record; `version`
+    and `signed_in` come from the newest record `steward agents setup` made. Order: the master, then the workers in
+    their order, then the other agents in a fixed order (claude-code, codex, antigravity). Nothing is run."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_: Literal["steward.agents_status/0.1"] = Field(alias="schema")
+    ledger: str
+    now: str
+    configured: bool
+    master: str | None
+    workers: list[str]
+    on_limit: Literal["next", "master", "wait"] | None
+    agents: list[AgentAvailability]
+
+
+SCHEMAS[OTHER_SCHEMAS["agents status"].replace("/", "-") + ".schema.json"] = AgentsStatus
+
+
 # X05 (0.22.0): each document says the order of its lists, so a reader can sort. The text views print the newest
 # entry first; these documents keep the order they had in 0.21 (a contract).
 _TEXT = " The text view prints the newest entry first."
@@ -889,7 +974,8 @@ ORDER = {
     "tidy": "Order: items by kind, a worktree before its branch, then by ID.",
     "timeline": "Order: milestones by due date, earliest first." + _TEXT,
     "tokens_report": "Order: tasks by task label (A to Z); per task, models by agent then model, agents by name, "
-                     "files most read first, tool outputs largest first, windows oldest first; `issues` A to Z."
+                     "files most read first, tool outputs largest first, windows oldest first, attempts newest "
+                     "first; `issues` A to Z."
                      + _TEXT,
 }
 
@@ -897,7 +983,7 @@ ORDER = {
 def _describe_order() -> None:
     for name, model in SCHEMAS.items():
         stem = name.removesuffix(".schema.json").rsplit("-", 1)[0].removeprefix("steward.")
-        if stem == "agents_list":  # its docstring already says its order
+        if stem in ("agents_list", "agents_status"):  # its docstring already says its order
             continue
         own = (model.__doc__ or "").strip() if model in (ProgressAudit, LastError) else ""
         text = ORDER.get(stem, _UNDATED)

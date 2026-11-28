@@ -8,13 +8,13 @@
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-0.22.0%20beta-4b4fd8">
+  <img alt="version" src="https://img.shields.io/badge/version-0.23.0%20beta-4b4fd8">
   <img alt="python" src="https://img.shields.io/badge/python-3.11%2B-0b6f72">
   <a href="https://doi.org/10.5281/zenodo.24548977"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.24548977.svg"></a>
   <img alt="licence" src="https://img.shields.io/badge/licence-MIT-1d7a4e">
   <img alt="tests" src="https://img.shields.io/badge/tests-2000%2B-1d7a4e">
   <img alt="agent skills" src="https://img.shields.io/badge/Agent%20Skills-24-a6550f">
-  <img alt="rules" src="https://img.shields.io/badge/deterministic%20rules-82-1d2330">
+  <img alt="rules" src="https://img.shields.io/badge/deterministic%20rules-83-1d2330">
 </p>
 
 <p align="center">
@@ -34,7 +34,7 @@
 > [pre-commit hooks](.pre-commit-hooks.yaml) and a [Claude Code plugin](plugin/). It keeps a deterministic record of
 > what was planned, run, frozen, found and claimed, and refuses the controlled operations (runs, unsealing, spend,
 > policy changes) that you did not approve. **Everything it offers** (the agents it works with, its 24 skills by kit,
-> its commands and its 82 rules) is on one page: [docs/capabilities.md](docs/capabilities.md).
+> its commands and its 83 rules) is on one page: [docs/capabilities.md](docs/capabilities.md).
 >
 > **Using Bio-STEWARD in your work? Please cite it:** [doi:10.5281/zenodo.24548977](https://doi.org/10.5281/zenodo.24548977)
 > (BibTeX and details under [Cite](#-cite)).
@@ -62,14 +62,14 @@ wherever required.
 
 ## 🚀 Quick start
 ```bash
-uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.22.0"     # or: pipx install "git+…@v0.22.0"
+uv tool install "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.23.0"     # or: pipx install "git+…@v0.23.0"
 cd your-research-repo
 steward init --skills .agents/skills         # scaffold; never overwrites. Claude Code: --skills .claude/skills
 steward check --summary
 ```
 Then just ask your coding agent: **"Run the using-steward skill."** It runs the checks, reads the result and tells you
 what is ready. It is a development tool, never a runtime dependency. Pinning in a requirements file:
-`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.22.0` (not in package metadata: PyPI refuses
+`bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.23.0` (not in package metadata: PyPI refuses
 direct references there).
 
 **Try it on real data** (0.20.0): a public GEO series, GSE7621 (Parkinson's disease substantia nigra, 25 samples),
@@ -104,6 +104,8 @@ Beamer talk, committed fully built) shows the benchmark and paper kits:
 - **Signed approvals**: spend, unsealing, amendments and policy changes are git tags signed with *your* SSH key;
   an agent can prepare one but never sign it.
 - **Spend guard**, **supervised sprints**, **session handoffs**.
+- **Delegation**: one master agent and its workers (`steward agents setup`); a task given to `auto` goes to the first
+  worker that can run, moves on when a usage limit stops it, and waits for the master's review.
 - **Dispatch briefs**: `steward task brief TASK --for codex|gemini|claude` turns a task into a self-contained
   prompt for another agent.
 - **Many projects, one process**: requests and release notices between repositories, one constitution.
@@ -219,10 +221,12 @@ Quarto or Pandoc. See [docs/works-with.md](docs/works-with.md).
 | `steward data fetch SOURCE:ACCESSION --study ID` | Download public data (GEO, ENA/SRA, ArrayExpress, Zenodo, URL) and record its provenance |
 | `steward study new\|add-input\|list\|show\|fingerprint` | Study records: inputs, conventions, samples, references, tools, results, papers |
 | `steward research new\|list` | Literature reviews, novelty maps, gaps, dead-end reviews |
-| `steward task brief\|template\|dispatch` | Dispatch briefs for Codex, Gemini, Claude or any agent; run one headless with Codex or Antigravity |
+| `steward agents setup\|status` | Find the installed agent CLIs and write `[delegation]` (master, workers, `on_limit`) after confirming; who can run now |
+| `steward task brief\|template\|dispatch [--to auto]` | Dispatch briefs for Codex, Gemini, Claude or any agent; run one headless with Codex or Antigravity, or the first worker that can run |
+| `steward sprint accept\|rework ID TASK` | The master's review of a worker's task: mark it done, or send it back with a note |
 | `steward agents attempt\|score\|event\|list` | Who attempted each task and who scored it (`[agents] may_score`), estimates, milestones; newest first |
 | `steward compare record` | Two pipelines side by side: agreement and every disagreement |
-| `steward tokens report\|check` | Token use per task, from the agents' own logs, with sprint tasks and runs counted from their records |
+| `steward tokens report\|check` | Token use per task, from the agents' own logs, with sprint tasks, runs and each worker's attempts counted from their records |
 | `steward licence inventory\|notices` | Licence governance: dependencies, copied code, notices |
 | `steward paper values\|displays\|citations\|manifest` | Values registry, display lock, citation record, submission manifest |
 | `steward talk plan\|prefs\|values\|export` | Talk planning and export |
@@ -240,20 +244,20 @@ Quarto or Pandoc. See [docs/works-with.md](docs/works-with.md).
 </details>
 
 <details>
-<summary><b>📐 Rules (82)</b></summary>
+<summary><b>📐 Rules (83)</b></summary>
 
 | Area | Rules |
 |---|---|
-| Configuration and planning | R-01 config · R-02 – R-04 benchmark contract · R-05, R-06 prior-work record · R-07 private-term scan |
+| Configuration and planning | R-01 config · R-02 – R-04 benchmark contract · R-05, R-06 prior-work record · R-07 private-term and controlled-access scan |
 | Paper | R-08 spec and venue · R-09 placeholders · R-10 values · R-11 figures and tables · R-12 build log · R-13 venue rules · R-14 citations · R-15 consistency · R-77 citation records (optional) · R-85 data availability |
 | Talk | R-21 – R-29: plan, stage, claim ceiling, numbers, limitations, structure, figures, visual checks, wording |
 | Runs, approvals, spend | R-31 ledger · R-32 run records · R-33 policy baseline · R-34 spend |
 | Research integrity | R-35 – R-39: frozen sets, dataset roles, sealed use, decisions, contract frozen before its first run |
 | Benchmark | R-45 splits · R-46 dataset hashes · R-47 results · R-48 comparison provenance · R-49 leakage · R-67 power · R-78 LLM evaluation |
-| Studies, data and models | R-75 study records (inputs, conventions, samples) · R-76 research records (advisory) · R-83 table data contracts · R-84 pipeline comparisons (advisory) · R-86 model records |
+| Studies, data and models | R-75 study records (inputs, conventions, samples, confounding, reference preflight) · R-76 research records (advisory) · R-83 table data contracts (identifiers, statistics) · R-84 pipeline comparisons (advisory) · R-86 model records |
 | Licences | R-79 declared licence · R-80 dependencies · R-81 copied code · R-82 provenance hints (advisory) |
 | Evidence and release | R-40 claim map · R-41 prior-work links · R-42 release integrity · R-43 independent review · R-44 runtime fingerprint · R-87 stranger test (advisory) |
-| Process and projects | R-50 – R-74: storage, constitution, exchange, sessions, tasks, changelog, branches, skills, agents, stages, frozen sets, containers, dependencies, docs, milestones, sprints, pins · R-88 tidying (advisory) |
+| Process and projects | R-50 – R-74: storage, constitution, exchange, sessions, tasks, changelog, branches, skills, agents, stages, frozen sets, containers, dependencies, docs, milestones, sprints, pins · R-88 tidying (advisory) · R-89 delegation's agents installed (advisory) |
 
 Every rule: `steward explain R-xx`. The full reference: [docs/reference/rules.md](docs/reference/rules.md).
 
@@ -297,7 +301,7 @@ python tools/measure_footprint.py --check
 tools/ci_local.sh                        # the same checks in Linux containers, on a clean export of HEAD
 ```
 
-> **Status: beta, latest release `v0.22.0`.** Usable and tested (2000+ tests on macOS, and on Linux with Python 3.11 and 3.13), installed from
+> **Status: beta, latest release `v0.23.0`.** Usable and tested (2000+ tests on macOS, and on Linux with Python 3.11 and 3.13), installed from
 > GitHub, not yet on PyPI. Configuration and report formats may still change before 1.0. See the
 > [changelog](CHANGELOG.md).
 

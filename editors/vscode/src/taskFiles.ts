@@ -1,11 +1,11 @@
-// P3 Tasks (reduced): the task files on disk, without `vscode`, so the unit tests run it on real folders.
+// P3 Tasks: the task files on disk, without `vscode`, so the unit tests run it on real folders.
 //
 // Only the folders the task globs start from are walked (each glob's fixed prefix), as CLI 0.20.6
 // `fsutil.iter_repo_files` lists files (U09): the prefix itself is reached without a link and never through `.git`,
 // no link is followed below it, `.git` is skipped at every depth, and only regular files count. Each file's text is
 // read for its Status and ID lines only. Read-only: nothing here writes.
 import { constants } from 'node:fs';
-import { open, readdir, readFile } from 'node:fs/promises';
+import { lstat, open, readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { unlinkedFile, unlinkedFolder } from './cli/paths';
 import {
@@ -68,14 +68,20 @@ export async function listTaskFiles(root: string): Promise<TaskListState> {
   const found = new Set<string>();
   const budget: { left: number; truncated?: boolean } = { left: MAX_WALKED };
   for (const base of [...new Set(settings.specs.map(globBase))]) await walk(root, base, found, budget);
-  const paths = selectTaskFiles([...found], settings);
+  // Newest first (E01): the files changed last are the ones listed when there are more than MAX_TASK_FILES.
+  const selected = selectTaskFiles([...found], settings);
+  const changed = new Map(await Promise.all(selected.map(async (path) =>
+    [path, await lstat(join(root, path)).then((st) => st.mtimeMs, () => 0)] as const)));
+  const paths = [...selected].sort((a, b) => (changed.get(b) ?? 0) - (changed.get(a) ?? 0));
   const listed = paths.slice(0, MAX_TASK_FILES);
   const files = await Promise.all(listed.map(async (path): Promise<TaskFile> => {
     const inside = await unlinkedFile(root, path);
     if (!inside) return { path, unreadable: 'reached through a link, or not a regular file inside the project' };
     try {
       const text = await readSmall(inside);
-      return { path, status: statusLine(text), value: statusValue(text), id: idLine(text) };
+      const mtime = changed.get(path);
+      return { path, status: statusLine(text), value: statusValue(text), id: idLine(text),
+        changed: mtime ? new Date(mtime).toISOString() : undefined };
     } catch (error) {
       return { path, unreadable: error instanceof Error ? error.message : String(error) };
     }

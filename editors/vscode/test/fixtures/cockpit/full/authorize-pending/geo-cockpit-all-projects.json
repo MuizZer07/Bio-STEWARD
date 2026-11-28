@@ -1,0 +1,66 @@
+{
+  "items": [
+    {
+      "action": "spend",
+      "baseline": "0000000000000000000000000000000000000000",
+      "budget": "none",
+      "expires": "2000-01-02T00:00:00Z",
+      "nonce": "06e95f82fc4afc7a2e7dbb4007d9ff0d",
+      "object": "sha256:e256768e7aa71f79ed23f42a005c9697e431bc760d2e06b3150c77ab96d39ad2",
+      "path": ".steward/pending/06e95f82fc4afc7a2e7dbb4007d9ff0d.txt",
+      "payload_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "peer": null,
+      "project": "GEO",
+      "repo_id": "00000000-0000-4000-8000-000000000000",
+      "requester": null,
+      "scope": "-",
+      "state": "expired",
+      "summary": "Spend for the first rerun",
+      "tag": "steward/auth/06e95f82fc4afc7a2e7dbb4007d9ff0d"
+    },
+    {
+      "action": "spend",
+      "baseline": "0000000000000000000000000000000000000000",
+      "budget": "none",
+      "expires": "2099-01-01T00:00:00Z",
+      "nonce": "d3e83e998137f78c0c7e973875d6e77e",
+      "object": "sha256:e256768e7aa71f79ed23f42a005c9697e431bc760d2e06b3150c77ab96d39ad2",
+      "path": ".steward/pending/d3e83e998137f78c0c7e973875d6e77e.txt",
+      "payload_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "peer": null,
+      "project": "GEO",
+      "repo_id": "00000000-0000-4000-8000-000000000000",
+      "requester": null,
+      "scope": "-",
+      "state": "waiting",
+      "summary": "Spend for the model comparison",
+      "tag": "steward/auth/d3e83e998137f78c0c7e973875d6e77e"
+    },
+    {
+      "action": "spend",
+      "baseline": "0000000000000000000000000000000000000000",
+      "budget": "none",
+      "expires": "2099-01-01T00:00:00Z",
+      "nonce": "7b274a7e92249e37ac57dd488e04c43a",
+      "object": "sha256:e256768e7aa71f79ed23f42a005c9697e431bc760d2e06b3150c77ab96d39ad2",
+      "path": ".steward/pending/7b274a7e92249e37ac57dd488e04c43a.txt",
+      "payload_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "peer": "PEER",
+      "project": "PEER",
+      "repo_id": "00000000-0000-4000-8000-000000000001",
+      "requester": null,
+      "scope": "-",
+      "state": "waiting",
+      "summary": "Spend for the peer rerun",
+      "tag": "steward/auth/7b274a7e92249e37ac57dd488e04c43a"
+    }
+  ],
+  "schema": "steward.authorize_pending/0.1",
+  "skipped": [
+    {
+      "peer": "GONE",
+      "reason": "not_steward_project"
+    }
+  ],
+  "waiting": 2
+}

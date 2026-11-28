@@ -12,7 +12,7 @@ from conftest import CONTRACT, PRIOR, append, codes, edit, gate, one, results
 def test_example_passes_every_applicable_rule(cli, example):
     code, rep = cli.check(example)
     assert code == 0 and gate(rep)["eligible"]
-    assert rep["verdict"]["summary"]["counts"] == {"PASS": 28, "FAIL": 0, "INCOMPLETE": 0, "UNKNOWN": 0, "NOT_APPLICABLE": 55}
+    assert rep["verdict"]["summary"]["counts"] == {"PASS": 28, "FAIL": 0, "INCOMPLETE": 0, "UNKNOWN": 0, "NOT_APPLICABLE": 56}
 
 
 # ---------------------------------------------------------------- R-01 config.valid

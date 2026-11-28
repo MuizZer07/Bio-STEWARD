@@ -12,6 +12,11 @@ import type { AuditState } from './today';
 import type { TokensState } from './tokens';
 import type { ApprovalsState } from './approvals';
 import type { DecisionsState } from './decisions';
+import type { Capabilities } from '../cli/features';
+import type { BoardDocument, DecisionsDocument, FullRead, NextDocument, PendingDocument } from './full';
+import type { NotificationsState } from './notifications';
+import type { UpgradeState } from './upgrade';
+import { formatArgv } from '../cli/upgrade';
 
 // ── State ────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -33,7 +38,11 @@ export type CliState =
   | { readonly kind: 'invalid-setting' }
   | { readonly kind: 'too-old'; readonly version: string; readonly minimum: string }
   | { readonly kind: 'failed' }
-  | { readonly kind: 'ready'; readonly version: string; readonly mode: string; readonly newerThanTested: boolean };
+  | {
+    readonly kind: 'ready'; readonly version: string; readonly mode: string; readonly newerThanTested: boolean;
+    // What the CLI's interface offers (src/cli/features.ts); absent: nothing beyond CLI 0.20.6 (E04).
+    readonly capabilities?: Capabilities;
+  };
 
 export type RunState = 'none' | 'running' | 'completed' | 'unreadable' | 'not-configured' | 'failed';
 
@@ -49,16 +58,27 @@ export interface ProjectState {
   readonly partial?: LoadedReport;
   // `steward timeline --json` for the countdown (S3); absent until the CLI is ready.
   readonly timeline?: TimelineState;
-  // `steward audit progress --json` for Today and "Where am I?" (reduced forms, 0.2.0 P1, P2).
+  // `steward audit progress --json` for Today and "Where am I?" (0.2.0 P1, P2).
   readonly audit?: AuditState;
-  // P3 (reduced): the task files and their Status lines, read from the files (no CLI call).
+  // P3: the task files and their Status lines, read from the files (no CLI call).
   readonly tasks?: TaskListState | { readonly kind: 'loading' };
   // P4: `steward tokens report --json`.
   readonly tokens?: TokensState;
-  // P5 (reduced): the text of `steward authorize pending --all-projects`.
+  // P5: the text of `steward authorize pending --all-projects`.
   readonly approvals?: ApprovalsState;
-  // P6 (reduced): the decisions log steward.toml names, found on disk (no CLI call; its entries are not read).
+  // P6: the decisions log steward.toml names, found on disk (no CLI call; its entries are not read).
   readonly decisions?: DecisionsState;
+  // E04, the full forms (CLI 0.21 and later): `steward next` for Today, `task board` for Tasks, and `authorize pending
+  // --format json` for the Approvals cards. Absent when the CLI does not offer them.
+  readonly next?: FullRead<NextDocument>;
+  readonly board?: FullRead<BoardDocument>;
+  readonly pending?: FullRead<PendingDocument>;
+  // `steward decisions --format json` for the Decisions panel.
+  readonly decisionsDoc?: FullRead<DecisionsDocument>;
+  // E03: `steward notifications --format json`.
+  readonly notifications?: NotificationsState;
+  // E03: `steward upgrade --check --format json` (local only, never --online).
+  readonly upgrade?: UpgradeState;
 }
 
 export function initialState(trusted: boolean): ProjectState {
@@ -139,17 +159,18 @@ const badgeText = (badge: GateBadge) => `${badge.glyph} ${badge.text}`;
 // ── Tree nodes ──────────────────────────────────────────────────────────────────────────────────────────────
 
 export type NodeKind =
-  | 'cli' | 'run' | 'report' | 'gate' | 'gate-reason' | 'gate-counts' | 'blocking' | 'waived' | 'ref'
+  | 'cli' | 'upgrade' | 'run' | 'report' | 'gate' | 'gate-reason' | 'gate-counts' | 'blocking' | 'waived' | 'ref'
   | 'counts' | 'worst' | 'coverage' | 'areas' | 'area' | 'not-evaluated' | 'not-evaluated-item' | 'statement'
   | 'partial' | 'no-full' | 'group' | 'result' | 'detail'
   | 'skills-drift' | 'skills-folder' | 'skills-detail' | 'skill'
   | 'sprint' | 'sprint-task' | 'sprint-task-waiting' | 'sprint-detail' | 'sprint-check' | 'sprint-events' | 'sprint-event'
-  | 'today-note' | 'today-project' | 'today-resume' | 'today-milestone' | 'today-section' | 'today-item'
+  | 'today-note' | 'today-project' | 'today-notifications' | 'notification-unread' | 'notification-read'
+  | 'today-resume' | 'today-milestone' | 'today-section' | 'today-item'
   | 'task-note' | 'task-project' | 'task-group' | 'task-file'
   | 'tokens-note' | 'tokens-project' | 'tokens-setup' | 'tokens-total' | 'tokens-task' | 'tokens-model' | 'tokens-group'
-  | 'tokens-item' | 'tokens-issue'
-  | 'decisions-note' | 'decisions-project' | 'decisions-log' | 'decisions-missing'
-  | 'drift-note' | 'drift-project' | 'drift-milestone';
+  | 'tokens-item' | 'tokens-issue' | 'tokens-use-folder' | 'tokens-empty'
+  | 'decisions-note' | 'decisions-project' | 'decisions-log' | 'decisions-missing' | 'decisions-group' | 'decisions-entry'
+  | 'drift-note' | 'drift-project' | 'drift-milestone' | 'drift-group' | 'drift-item';
 
 export interface ViewNode {
   // Unique within its tree and stable across refreshes of the same report.
@@ -160,15 +181,23 @@ export interface ViewNode {
   // Plain text; the UI never renders it as markdown or HTML.
   readonly tooltip?: string;
   readonly icon?: { readonly codicon: string; readonly tone?: Tone };
+  // Dim the row label (used for read notifications, alongside the word "read" in description and accessibility).
+  readonly dimmed?: boolean;
   readonly children?: readonly ViewNode[];
   readonly expanded?: boolean;
   readonly command?: 'runCheck' | 'showLog' | 'checkSkills' | 'installSkills' | 'resume' | 'showTimeline'
-    | 'openFile' | 'openTokenSettings' | 'openTaskFile' | 'openDecisionLog';
+    | 'openFile' | 'openTokenSettings' | 'openTaskFile' | 'openDecisionLog' | 'useTokenFolder' | 'startTokenWindow'
+    | 'openNotification' | 'upgradeCli';
   // The project root a command acts on (the Today panel shows several projects at once).
   readonly root?: string;
+  // The notification ID for `openNotification` and per-item read/unread actions.
+  readonly notificationId?: string;
   // The file `openFile` opens (an absolute path inside the project).
   readonly path?: string;
   readonly code?: string;
+  readonly next?: string;
+  readonly source?: string;
+  readonly anchor?: Readonly<{ path: string; line?: number }>;
   readonly ref?: { readonly rule: string; readonly subject: string; readonly status: Status; readonly index?: number };
 }
 
@@ -329,7 +358,9 @@ function cliNode(state: ProjectState): ViewNode[] {
     description: `${state.cli.mode} mode${newer}`,
     tooltip: state.cli.mode === 'limited'
       ? 'Limited mode: this CLI has no machine interface. Freshness is by file changes only, and explanations are shown as text.'
-      : `${state.cli.mode} mode`,
+      : state.cli.mode === 'full'
+        ? 'Full mode: this CLI publishes its machine interface (steward interface), and the extension reads what it lists.'
+        : `${state.cli.mode} mode`,
     icon: { codicon: 'info' },
   }];
 }
@@ -398,10 +429,33 @@ export function emptyState(state: ProjectState): EmptyState | undefined {
   }
 }
 
+function upgradeNode(state: ProjectState): ViewNode[] {
+  if (state.cli.kind !== 'ready' || state.upgrade?.kind !== 'ready') return [];
+  const { check } = state.upgrade;
+  if (!check.upgrade_available || !check.latest_version) return [];
+  const tooltip = [
+    `Installed: steward ${check.installed_version} (${check.install_method})`,
+    `Newest known: steward ${check.latest_version}${check.source ? ` (from ${check.source})` : ''}`,
+    ...(check.command ? [`Install command: ${formatArgv(check.command)}`] : ['Installer could not be detected by the CLI.']),
+    ...(check.note ? [check.note] : []),
+    'Click to review the exact command in a modal and run steward upgrade in a terminal.',
+  ].join('\n');
+  return [{
+    id: 'upgrade',
+    kind: 'upgrade',
+    label: 'Upgrade CLI',
+    description: `steward ${check.installed_version} → ${check.latest_version}`,
+    tooltip,
+    icon: { codicon: 'arrow-circle-up', tone: 'info' },
+    command: 'upgradeCli',
+  }];
+}
+
 export function overviewNodes(state: ProjectState): ViewNode[] {
   if (emptyState(state)) return [];
   return [
     ...cliNode(state),
+    ...upgradeNode(state),
     ...runNode(state),
     ...(state.full
       ? verdictNodes(state.full, 'full')
@@ -451,6 +505,8 @@ function resultNode(loaded: LoadedReport, index: number, prefix: string, showSub
     children: result.details.map((detail, i) => ({
       id: `${id}/detail:${i}`, kind: 'detail' as const, ...detailLabel(detail),
       code: resultCode(result.rule, detail.code),
+      anchor: typeof detail.path === 'string'
+        ? { path: detail.path, line: typeof detail.line === 'number' ? detail.line : undefined } : undefined,
       ref: { rule: result.rule, subject: result.subject, status: result.status, index },
     })),
   };
@@ -512,7 +568,8 @@ function byFile(loaded: LoadedReport, files?: readonly (string | undefined)[]): 
     const indices = subjects.get(subject) ?? [];
     const id = `file:${g}`;
     return group(id, subject || REPOSITORY_LEVEL, indices, indices.map((i) => resultNode(loaded, i, id, false)),
-      { icon: { codicon: subject ? 'file' : 'repo' }, tooltip: subject || 'Results about the whole repository' });
+      { icon: { codicon: subject ? 'file' : 'repo' }, tooltip: subject || 'Results about the whole repository',
+        ...(files && subject ? { command: 'openFile' as const, path: subject } : {}) });
   });
 }
 

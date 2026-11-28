@@ -42,12 +42,14 @@ describe('Guided init (S6)', function () {
     assert.ok(folder);
     root = realpathSync(folder.uri.fsPath);
     cli = vscode.workspace.getConfiguration('bioSteward').get<string>('cliPath') ?? '';
-    assert.equal(execFileSync(cli, ['--version'], { encoding: 'utf8' }).trim(), 'steward 0.20.6');
+    // The CLI the tests run on: the manifest's testedWithCli (rule G2).
+    const tested: string = extension.packageJSON.bioSteward.testedWithCli;
+    assert.equal(execFileSync(cli, ['--version'], { encoding: 'utf8' }).trim(), `steward ${tested}`);
     for (let i = 0; api.project.state.cli.kind === 'detecting' && i < 100; i++) {
       await new Promise((done) => setTimeout(done, 50));
     }
     assert.equal(api.project.state.cli.kind, 'ready');
-    console.log('    Guided init uses steward 0.20.6');
+    console.log(`    Guided init uses steward ${tested}`);
   });
 
   after(() => api?.init.dispose());

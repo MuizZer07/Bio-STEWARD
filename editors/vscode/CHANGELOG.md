@@ -1,7 +1,75 @@
 # Changelog: Bio-STEWARD for VS Code
 
-The extension has its own version numbers and tags (`vscode-vX.Y.Z`). Builds before the public release are
-numbered 0.0.x; 0.1.0 is the first public release.
+The extension has its own version numbers and tags (`vscode-vX.Y.Z`). The builds before the roadmap to v1.0 were
+numbered 0.0.x. Since then each extension version names the CLI it was tested with and is built as a `.vsix` that is
+sideloaded in the adopting projects; it goes to the Marketplace only after v1.0. Newest first.
+
+## 0.3.0 (the MVP, 2026-11-27)
+
+The first version on the roadmap to v1.0 (sprint 2026-11-28-s1, tasks E01 – E05): every panel in its full form on
+CLI 0.22, grouped by job, with a refresh button, newest first, a notifications bell, Upgrade CLI and token counts that
+work. Tested with `bio-steward` 0.22.0 (`testedWithCli`); it still works from 0.20.6 on (`minimumCli`), where each
+panel shows what that CLI offers and says what needs a newer one. Not published: install the `.vsix`.
+
+### Added
+- **The notifications bell** (E03): a status-bar bell with the unread count, and **Notifications** at the top of
+  Today, from `steward notifications --format json`. Opening the bell or the list marks what it showed as read; **Mark
+  Read**, **Mark Unread** and **Mark All Read** do it by hand. Read items stay, dimmed, under the unread ones, newest
+  first. Read state is kept on this machine only, by each item's ID and content hash, so an item is news again only
+  when the CLI reports a change to it. Toasts only for the three urgent kinds (a gate turned not eligible, an approval
+  waiting, a sprint task failed); `bioSteward.notifications.toasts` turns them off.
+- **Upgrade CLI** (E03): when `steward upgrade --check --format json` finds a newer release notice on this machine
+  (the extension asks nothing of the network), the bell and Overview offer it. A modal shows the exact
+  `steward upgrade --repo ROOT --to VERSION` and the CLI's installer command; on your confirmation a visible terminal
+  runs it, and the CLI asks before installing. When the terminal closes, the extension detects the new CLI and runs
+  its contract check.
+- **The full forms** (E04), from the documents CLI 0.21 / 0.22 publish (`steward interface` lists them):
+  - **Today** and **Where am I?** from `steward next`: Resume, the next milestone and what blocks it, what waits on you
+    and on your agents with each row's next step, what needs tidying.
+  - **Tasks** from `steward task board`: the status in the CLI's words; Closed and Archived groups.
+  - **Approvals** cards add scope, budget, object, who asked, peer, baseline, the CLI's payload hash and the signed
+    tag from `authorize pending --format json`.
+  - **Decisions** adds the open questions with their options and every decision, newest first.
+  - **Milestones and Drift** adds moved dates, scope, order and changes without a decision.
+  - **Sprint** adds each task's step, commits (newest first), changed files, uncommitted files and logs from
+    `sprint status --format json`.
+- **Token counts that work** (E04): windows come from the records (the sprint ledger, runs, the agents ledger, and the
+  hand-made windows). Each task shows its total, its tokens by model (input, output, cache read, cache write) and the
+  estimated cost where the CLI gives one, and says which windows and logs it covers. Where a log setting is empty, the
+  panel names that agent's usual folder for the project and offers **Use this folder**, which writes only that user
+  setting; nothing is read before the click. An empty panel says in one sentence which input is missing, with the
+  button that fixes it.
+- **Every item does something** (E02): Markdown opens in preview (with **Open as Text** and **Copy Path**), other
+  files in the editor (with **Reveal in Explorer**), and a record that is not a file opens a read-only details page:
+  what it is, where it comes from, what it means and the next step. Row actions per panel, among them **Hand to
+  Agent**, which copies `steward check --rule … --summary`, `steward task brief … --for codex` or `steward next
+  --brief`, at most 16 KiB, and says its size.
+- **A refresh button (⟳) in every panel's title bar** (E01): it runs that panel's CLI commands again at once, past the
+  debounce and the Sprint pacing, with a progress bar in the panel.
+- Figures for the guide and this README: the panels by job, Today with the bell, and the cockpit in its full forms.
+
+### Changed
+- **Panels by job** (E01): the ten panels sit in one container, in five groups, each header named with its group:
+  *Now* (Today, Approvals), *Quality* (Overview, Results), *Work* (Tasks, Sprint, Tokens), *Direction* (Milestones and
+  Drift, Decisions), *Agents* (Agent Skills). Each empty state and each `?` help opens with one sentence on how the
+  panel helps when developing with agents.
+- **Newest first in every list** (E01): tasks by the latest change, then the ID, highest first; decisions,
+  notifications, exchange items, sprints and their tasks, runs and token windows likewise; milestones the latest due
+  first, while the status-bar countdown still names the nearest. The order is made from the CLI's dates and IDs.
+- **"Reduced" is gone** from every string (E01). Where the installed CLI cannot give something, the row says what is
+  missing and how to get it ("… needs steward 0.21 or newer: Upgrade CLI").
+- `testedWithCli` is 0.22.0. Feature detection reads the interface CLI 0.21+ publishes (`interface_version` and its
+  `commands` map).
+- The version is 0.3.0: the roadmap to v1.0 made this release the MVP (the 0.0.x numbering was for the builds before
+  it).
+
+### Development
+- `npm run cli:install` installs the pinned CLI from the release tag `v<testedWithCli>` of the enclosing repository
+  (`git archive`) when it has it, and otherwise from PyPI, then the public tag; `--source local|pypi|tag` chooses one,
+  and the output names the source used. `npm run fixtures` reads the same tag. The tests no longer clone the public
+  repository.
+- New fixtures from CLI 0.22.0: the full-form documents, a recorded sprint with stand-in agent logs for the token
+  totals.
 
 ## 0.0.5 (pilot build, 2026-11-27)
 

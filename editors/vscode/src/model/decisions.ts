@@ -1,12 +1,14 @@
-// P6 Decisions in its reduced form (RELEASE_vscode_0.2.0_SPEC §3; design v0.3 §4.1): **Open DECISIONS.md** only.
+// P6 Decisions (RELEASE_vscode_0.2.0_SPEC §3; design v0.3 §4.1): **Open DECISIONS.md**.
 //
-// The full form reads `steward decisions --format json` (C14, the cockpit CLI), which 0.20.6 does not have. The
-// reduced form names the project's decisions log and opens it in the editor; it never parses the log's entries.
+// The panel names the project's decisions log and opens it in the editor; it never parses the log's entries. The
+// entries, newest first, come from `steward decisions --format json` (CLI 0.21 and later), which is task E04.
 // Which file is the log comes from steward.toml as CLI 0.20.6 reads it (`IntegritySection.decisions`,
 // `session.decisions_log`, `integrity.decision_logs`):
 //   - with an `[integrity]` table: its `decisions` (a path, a list, or globs), default `development/DECISIONS.md`;
 //   - without one: `<[paths] records>/DECISIONS.md`, where `records` defaults to `development`.
 // Globs match with the CLI's own glob rules (the ones the Tasks panel uses). Pure: no `vscode` import.
+import { fullProblem, type DecisionsDocument, type FullRead, type RecordedDecision } from './full';
+import { newestFirst } from './order';
 import { escapesRoot, globMatch } from './tasks';
 import { parseToml, TomlDateTime, TomlError, type TomlTable, type TomlValue } from './toml';
 import type { ViewNode } from './views';
@@ -16,10 +18,9 @@ export const DEFAULT_RECORDS = 'development';
 // At most this many logs per project are listed (a glob can match many files).
 export const MAX_DECISION_LOGS = 50;
 
-export const DECISIONS_REDUCED_NOTE = 'Reduced form (CLI 0.20.6): the decisions log steward.toml names (or the CLI\'s ' +
-  'default), opened in the editor as it is. Its entries are not read or listed here. The full form (open decisions ' +
-  'first, then the log, searchable; Record decision…) needs `steward decisions --format json` in a newer CLI. ' +
-  'The extension never writes a decision: you write it in the log.';
+export const DECISIONS_SOURCE_NOTE = 'The decisions log steward.toml names (or the CLI\'s default), opened in the ' +
+  'editor as it is. Listing its entries and the open questions needs steward 0.21 or newer (`steward decisions ' +
+  '--format json`): Upgrade CLI. The extension never writes a decision: you write it in the log.';
 
 // Where the name of the log comes from, in the words the panel shows.
 export type DecisionsSource = 'integrity.decisions' | 'integrity-default' | 'paths.records' | 'default';
@@ -125,6 +126,8 @@ export interface DecisionsInput {
   readonly root: string;
   readonly name: string;
   readonly decisions?: DecisionsState;
+  // E04: `steward decisions --format json`, when the CLI offers it; the full form.
+  readonly doc?: FullRead<DecisionsDocument>;
 }
 
 // The log **Open DECISIONS.md** opens: the first one that exists, in the configured order. This is the extension's
@@ -150,10 +153,60 @@ function logNode(root: string, log: DecisionLog, settings: DecisionsSettings, pr
   }
   return {
     id: `${prefix}/${log.path}`, kind: 'decisions-log', label: log.path, description: from,
-    tooltip: `${log.path}\nThe decisions log, named by ${from}. Click to open it as it is (it is checked again first); ` +
+    tooltip: `${log.path}\nThe decisions log, named by ${from}. Open it in Markdown preview or use Open as Text to edit it; ` +
       'its entries are not read here.',
     icon: { codicon: 'book' }, command: 'openDecisionLog', path: `${root}/${log.path}`, root,
   };
+}
+
+// ── P6 full form: steward decisions --format json (E04) ──────────────────────────────────────────────────────
+
+export const DECISIONS_COMMAND = 'steward decisions';
+export const DECISIONS_FULL_NOTE = 'The decisions log steward.toml names, then what steward decisions reads from the ' +
+  'records: the open questions with their options, and every dated decision, newest first. Click a decision to open ' +
+  'its log. The extension never writes a decision: you write it in the log.';
+
+// Newest first: the latest date first; on one date, the entry written later in its log first.
+export function decisionsNewestFirst(entries: readonly RecordedDecision[]): RecordedDecision[] {
+  return newestFirst(entries, (entry) => entry.date, (entry) => `${entry.path} ${String(entry.line).padStart(9, '0')}`);
+}
+
+const firstLine = (text: string | null) => (text ?? '').split(/\r?\n/)[0];
+
+function documentNodes(input: DecisionsInput, doc: DecisionsDocument, state: Extract<DecisionsState, { kind: 'ready' }>,
+  prefix: string): ViewNode[] {
+  const logs = new Set(state.logs.filter((log) => log.exists).map((log) => log.path));
+  const opens = (path: string) => (logs.has(path) ? { command: 'openDecisionLog' as const, path: `${input.root}/${path}`, root: input.root } : {});
+  const open: ViewNode = {
+    id: `${prefix}/open`, kind: 'decisions-group', label: `Open decisions (${doc.open_decisions.length})`,
+    description: doc.open_decisions.length ? DECISIONS_COMMAND : `none · ${DECISIONS_COMMAND}`,
+    tooltip: `Questions still open in the records (the index page and the handoff), as ${DECISIONS_COMMAND} reads them.`,
+    icon: { codicon: 'question', tone: doc.open_decisions.length ? 'warning' : undefined }, expanded: doc.open_decisions.length > 0,
+    children: doc.open_decisions.map((item, i): ViewNode => ({
+      id: `${prefix}/open/${i}`, kind: 'decisions-entry', label: item.question,
+      description: item.options.length ? `${item.options.length} option${item.options.length === 1 ? '' : 's'}` : `${item.path}:${item.line}`,
+      tooltip: [item.question, ...item.options.map((option) => `- ${option}`), `${item.path}:${item.line} (${DECISIONS_COMMAND})`].join('\n'),
+      icon: { codicon: 'question' }, ...opens(item.path),
+      children: item.options.length ? item.options.map((option, j): ViewNode => ({
+        id: `${prefix}/open/${i}/${j}`, kind: 'decisions-entry', label: option, description: 'option',
+      })) : undefined,
+    })),
+  };
+  const recorded: ViewNode = {
+    id: `${prefix}/entries`, kind: 'decisions-group', label: `Decisions (${doc.entries.length})`,
+    description: doc.entries.length ? 'newest first' : `none · ${DECISIONS_COMMAND}`,
+    tooltip: `Every dated decision ${DECISIONS_COMMAND} reads from the log, newest first.`, icon: { codicon: 'law' }, expanded: true,
+    children: decisionsNewestFirst(doc.entries).map((entry, i): ViewNode => ({
+      id: `${prefix}/entries/${i}`, kind: 'decisions-entry', label: `${entry.date}: ${entry.title}`,
+      description: firstLine(entry.decision ?? entry.quotes[0]?.text ?? null) || entry.path,
+      tooltip: [entry.heading, entry.decision ? `Decision: ${entry.decision}` : undefined,
+        ...entry.quotes.map((quote) => `${quote.who ?? 'Quote'}: ${quote.text}`),
+        entry.consequences ? `Consequences: ${entry.consequences}` : undefined,
+        `${entry.path}:${entry.line} (${DECISIONS_COMMAND})`].filter(Boolean).join('\n'),
+      icon: { codicon: 'law' }, ...opens(entry.path),
+    })),
+  };
+  return [open, recorded];
 }
 
 function projectNodes(input: DecisionsInput, prefix: string): ViewNode[] {
@@ -185,6 +238,11 @@ function projectNodes(input: DecisionsInput, prefix: string): ViewNode[] {
       description: 'the walk stopped at its entry limit', tooltip: 'Some decisions logs a glob names may be missing here.',
       icon: { codicon: 'warning', tone: 'warning' } });
   }
+  if (input.doc?.kind === 'ready') nodes.push(...documentNodes(input, input.doc.doc, state, prefix));
+  else if (input.doc && input.doc.kind !== 'none' && input.doc.kind !== 'loading') {
+    nodes.push({ id: `${prefix}/doc`, kind: 'decisions-note', label: fullProblem(input.doc.kind, DECISIONS_COMMAND),
+      description: 'the entries are not listed', icon: { codicon: 'warning', tone: 'warning' } });
+  }
   const first = firstLog(state);
   if (first && first.path !== primaryLog(state.settings)) {
     nodes.push({ id: `${prefix}/policy`, kind: 'decisions-note', label: `Open DECISIONS.md opens ${first.path}`,
@@ -205,9 +263,11 @@ export function decisionsSummary(state: DecisionsState | undefined): string {
 // One project: the note, then its logs. Several: one block per project, in the order given (the Today order).
 export function decisionsNodes(inputs: readonly DecisionsInput[]): ViewNode[] {
   if (!inputs.length) return [];
+  const full = inputs.every((input) => input.doc?.kind === 'ready');
   const note: ViewNode = {
-    id: 'decisions/reduced', kind: 'decisions-note', label: 'Reduced form', description: 'Open DECISIONS.md only',
-    tooltip: DECISIONS_REDUCED_NOTE, icon: { codicon: 'info', tone: 'info' },
+    id: 'decisions/source', kind: 'decisions-note', label: 'Decisions log',
+    description: full ? `named by steward.toml · ${DECISIONS_COMMAND}` : 'named by steward.toml',
+    tooltip: full ? DECISIONS_FULL_NOTE : DECISIONS_SOURCE_NOTE, icon: { codicon: 'info', tone: 'info' },
   };
   if (inputs.length === 1) return [note, ...projectNodes(inputs[0], `decisions/${inputs[0].root}`)];
   return [note, ...inputs.map((input): ViewNode => ({

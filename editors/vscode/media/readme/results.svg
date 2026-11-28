@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="760" height="370" viewBox="0 0 760 370" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
 <rect width="760" height="370" rx="10" fill="#1f1f1f"/>
 <rect x="0" y="0" width="760" height="320" rx="10" fill="#181818"/>
-<text x="8" y="17" fill="#bbbbbb" font-size="11" font-weight="700">⌄  RESULTS</text>
-<text x="748" y="17" fill="#9d9d9d" font-size="12" text-anchor="end">☰  ▷</text>
+<text x="8" y="17" fill="#bbbbbb" font-size="11" font-weight="700">⌄  QUALITY · RESULTS</text>
+<text x="748" y="17" fill="#9d9d9d" font-size="12" text-anchor="end">☰  ▷  ⟳</text>
 <text x="8" y="41" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="41.5" fill="#f48771" font-weight="700" font-size="12.5">✗</text><text x="40" y="41" fill="#cccccc">✗ FAIL<tspan dx="7" fill="#9d9d9d">2</tspan></text>
 <text x="22" y="63" fill="#9d9d9d" font-size="12">⌄</text><text x="37" y="63.5" fill="#f48771" font-weight="700" font-size="12.5">✗</text><text x="54" y="63" fill="#cccccc">R-02 contract.valid<tspan dx="7" fill="#9d9d9d">FAIL · benchmarks/expr-clf.contract.toml · blocks gate default</tspan></text>
 <text x="50" y="85" fill="#cccccc">Input should be 'TBD' or 'unknown'<tspan dx="7" fill="#9d9d9d">leakage.not_a_contract_key</tspan></text>
@@ -15,7 +15,7 @@
 <text x="37" y="239.5" fill="#75beff" font-weight="700" font-size="12.5">?</text><text x="54" y="239" fill="#cccccc">R-03 contract.consistent<tspan dx="7" fill="#9d9d9d">UNKNOWN · benchmarks/expr-clf.contract.toml · blocks gate default</tspan></text>
 <text x="37" y="261.5" fill="#75beff" font-weight="700" font-size="12.5">?</text><text x="54" y="261" fill="#cccccc">R-45 benchmark.splits<tspan dx="7" fill="#9d9d9d">UNKNOWN · benchmarks/expr-clf.contract.toml · blocks gate default</tspan></text>
 <text x="8" y="283" fill="#9d9d9d" font-size="12">›</text><text x="23" y="283.5" fill="#89d185" font-weight="700" font-size="12.5">✓</text><text x="40" y="283" fill="#cccccc">✓ PASS<tspan dx="7" fill="#9d9d9d">22</tspan></text>
-<text x="8" y="305" fill="#9d9d9d" font-size="12">›</text><text x="23" y="305.5" fill="#8b8b8b" font-weight="700" font-size="12.5">–</text><text x="40" y="305" fill="#cccccc">– NOT APPLICABLE<tspan dx="7" fill="#9d9d9d">53</tspan></text>
+<text x="8" y="305" fill="#9d9d9d" font-size="12">›</text><text x="23" y="305.5" fill="#8b8b8b" font-weight="700" font-size="12.5">–</text><text x="40" y="305" fill="#cccccc">– NOT APPLICABLE<tspan dx="7" fill="#9d9d9d">54</tspan></text>
 <text x="16" y="342" font-size="11.5" fill="#8b949e">Drawing of the Results view grouped by status, rendered by the extension's view model from the toy benchmark's</text>
 <text x="16" y="358" font-size="11.5" fill="#8b949e">fixture report with seeded faults (not a screenshot).</text>
 </svg>

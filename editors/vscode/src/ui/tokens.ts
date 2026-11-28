@@ -2,10 +2,13 @@
 // model, with totals, for every open project; **Start Task Window…** and **Done Task Window…** run `steward task
 // start ID` / `steward task done ID` after a modal that shows the exact command line. The agent logs come from
 // three machine settings (src/tokenLogs.ts); with none set, the panel says how to set them.
+import { homedir } from 'node:os';
 import * as vscode from 'vscode';
 import { windowCandidates } from '../model/tasks';
 import { orderProjects } from '../model/today';
-import { isWindowId, SETTING_KEYS, TOKEN_AGENTS, tokensNodes, type LogSelection, type TokenAgent } from '../model/tokens';
+import {
+  isWindowId, logFolderHints, SETTING_KEYS, TOKEN_AGENTS, tokensNodes, type LogSelection, type TokenAgent,
+} from '../model/tokens';
 import type { ViewNode } from '../model/views';
 import type { Project } from '../project';
 import type { RunResult } from '../cli/runner';
@@ -17,6 +20,7 @@ export const TOKENS_VIEW = 'bioSteward.tokens';
 export const TOKENS_REFRESH_COMMAND = 'bioSteward.tokens.refresh';
 export const START_WINDOW_COMMAND = 'bioSteward.tokens.startWindow';
 export const DONE_WINDOW_COMMAND = 'bioSteward.tokens.doneWindow';
+export const USE_FOLDER_COMMAND = 'bioSteward.tokens.useFolder';
 
 export type Confirm = (cli: string, args: readonly string[]) => Promise<boolean>;
 
@@ -29,6 +33,11 @@ export function logSettings(): Record<TokenAgent, readonly unknown[] | undefined
     out[agent] = Array.isArray(value) ? value : undefined;
   }
   return out;
+}
+
+// E04: the agents whose log setting is empty (no entry that names a path), by the user's own settings.
+export function emptySettings(settings = logSettings()): TokenAgent[] {
+  return TOKEN_AGENTS.filter((agent) => !(settings[agent] ?? []).some((entry) => typeof entry === 'string' && entry.trim()));
 }
 
 export class TokensView implements vscode.Disposable {
@@ -78,8 +87,13 @@ export class TokensView implements vscode.Disposable {
     }
     this.#readUnread();
     const logs = this.#logs ?? { files: { claude: [], codex: [], gemini: [] }, problems: [], capped: {} };
-    const ordered = orderProjects(projects.filter((project) => project.state.trusted), (project) => project.state.audit);
-    this.tree.set(tokensNodes(ordered.map((project) => ({ root: project.root, name: project.name, tokens: project.state.tokens, logs }))));
+    const ordered = orderProjects(projects.filter((project) => project.state.trusted), (project) => project.state.audit,
+      (project) => project.state.next);
+    const empty = emptySettings();
+    const home = homedir();
+    this.tree.set(tokensNodes(ordered.map((project) => ({
+      root: project.root, name: project.name, tokens: project.state.tokens, logs, empty, hints: logFolderHints(project.root, home),
+    }))));
   }
 
   dispose(): void {
@@ -170,4 +184,23 @@ export async function taskWindow(action: 'start' | 'done', projects: readonly Pr
     void vscode.window.showWarningMessage(`Bio-STEWARD: steward task ${action} did not run (${result.kind}). See the Bio-STEWARD log.`);
   }
   return result;
+}
+
+// E04: **Use this folder**: set one agent's log setting to the folder it usually keeps an open project's logs in.
+// Only that folder (as the panel computed it for an open project), only while the setting is empty, and only in the
+// user's own settings (the setting is machine-scoped). Nothing is read before the write; the report is read after it.
+export async function useFolder(projects: readonly Project[], view: TokensView, input: unknown): Promise<boolean> {
+  if (!vscode.workspace.isTrusted || typeof input !== 'object' || input === null) return false;
+  // The row's click passes { agent, path }; its inline button passes the row itself (the agent is its code).
+  const row = input as { agent?: unknown; code?: unknown; kind?: unknown; path?: unknown };
+  const agent = row.kind === 'tokens-use-folder' ? row.code : row.agent;
+  const { path } = row;
+  if (typeof agent !== 'string' || !(TOKEN_AGENTS as readonly string[]).includes(agent) || typeof path !== 'string') return false;
+  const key = agent as TokenAgent;
+  const home = homedir();
+  if (!projects.some((project) => logFolderHints(project.root, home)[key] === path) || !emptySettings().includes(key)) return false;
+  await vscode.workspace.getConfiguration().update(SETTING_KEYS[key], [path], vscode.ConfigurationTarget.Global);
+  void vscode.window.showInformationMessage(`Bio-STEWARD: ${SETTING_KEYS[key]} is now [${path}] in your user settings.`);
+  await view.refresh();
+  return true;
 }

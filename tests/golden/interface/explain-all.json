@@ -9,19 +9,19 @@
       "codes": [
         {
           "code": "R-01.overlay",
-          "fix": null
+          "fix": "a local overlay file is active on top of steward.toml"
         },
         {
           "code": "R-01.overlay_refused",
-          "fix": null
+          "fix": "the local overlay tried to weaken or change a protected setting"
         },
         {
           "code": "R-01.overlay_unreadable",
-          "fix": null
+          "fix": "the local overlay file cannot be read or parsed"
         },
         {
           "code": "R-01.records_missing",
-          "fix": null
+          "fix": "a required process record declared in steward.toml is missing"
         }
       ],
       "fix": "fix steward.toml (see the detail lines); `steward check config`",
@@ -60,47 +60,47 @@
       "codes": [
         {
           "code": "R-03.confirmatory_unspecified",
-          "fix": null
+          "fix": "a confirmatory contract still has a TBD or unspecified field"
         },
         {
           "code": "R-03.confirmatory_without_comparison",
-          "fix": null
+          "fix": "a confirmatory contract declares no [comparison] block"
         },
         {
           "code": "R-03.confirmatory_without_thresholds",
-          "fix": null
+          "fix": "a confirmatory contract declares no pass thresholds"
         },
         {
           "code": "R-03.duplicate_id",
-          "fix": null
+          "fix": "two benchmark contracts declare the same contract ID"
         },
         {
           "code": "R-03.duplicate_split",
-          "fix": null
+          "fix": "a contract declares two splits with the same name"
         },
         {
           "code": "R-03.missing_file",
-          "fix": null
+          "fix": "a file referenced by the benchmark contract does not exist"
         },
         {
           "code": "R-03.no_test_role",
-          "fix": null
+          "fix": "the contract's splits include no split with role = test"
         },
         {
           "code": "R-03.path_outside",
-          "fix": null
+          "fix": "a path in the benchmark contract escapes the repository root"
         },
         {
           "code": "R-03.primary_undefined",
-          "fix": null
+          "fix": "metrics.primary names a metric not listed in metrics.definitions"
         },
         {
           "code": "R-03.threshold_baseline_undefined",
-          "fix": null
+          "fix": "a threshold compares against an undeclared baseline"
         },
         {
           "code": "R-03.threshold_metric_undefined",
-          "fix": null
+          "fix": "a threshold references an undeclared metric"
         }
       ],
       "fix": "make the contract's cross-references consistent; create the referenced files",
@@ -121,7 +121,7 @@
       "codes": [
         {
           "code": "R-04.found",
-          "fix": null
+          "fix": "confirmatory benchmark contract file(s) found for this profile"
         }
       ],
       "fix": "add a confirmatory benchmark contract (development/templates/benchmark.contract.toml)",
@@ -142,15 +142,15 @@
       "codes": [
         {
           "code": "R-05.duplicate_work_id",
-          "fix": null
+          "fix": "two prior-work entries share the same work ID"
         },
         {
           "code": "R-05.human_judgment",
-          "fix": null
+          "fix": "novelty judgment is still unset and awaits the human owner"
         },
         {
           "code": "R-05.unknown_work",
-          "fix": null
+          "fix": "a comparison references a prior-work ID not declared in works"
         }
       ],
       "fix": "fix the prior-work record; use 'unknown' for identifiers you cannot find",
@@ -171,7 +171,7 @@
       "codes": [
         {
           "code": "R-06.found",
-          "fix": null
+          "fix": "prior-work record(s) with a closest_method work found"
         }
       ],
       "fix": "add a prior-work record with a closest_method work",
@@ -188,31 +188,35 @@
       "areas": [
         "privacy"
       ],
-      "checks": "Committed files hold no term from the private or public term lists and no home path with a user name.",
+      "checks": "Files in the privacy scan's scope contain no controlled-access accessions, listed terms or absolute home paths with user names.",
       "codes": [
         {
           "code": "R-07.allowed_lines",
-          "fix": null
+          "fix": "count of lines carrying an explicit R-07 allow marker"
         },
         {
           "code": "R-07.bad_pattern",
-          "fix": null
+          "fix": "a regular expression in a term list failed to compile"
+        },
+        {
+          "code": "R-07.controlled_access",
+          "fix": "a controlled-access accession (dbGaP or EGA) appeared in a scanned file"
         },
         {
           "code": "R-07.hit",
-          "fix": null
+          "fix": "a private denylist term appeared in a scanned file (reported by list and line only)"
         },
         {
           "code": "R-07.list_empty",
-          "fix": null
+          "fix": "a configured term list contains no active terms"
         },
         {
           "code": "R-07.list_missing",
-          "fix": null
+          "fix": "a configured term list file does not exist"
         },
         {
           "code": "R-07.list_unreadable",
-          "fix": null
+          "fix": "a configured term list file could not be read as UTF-8"
         },
         {
           "code": "R-07.local_path",
@@ -220,11 +224,11 @@
         },
         {
           "code": "R-07.pdf_unreadable",
-          "fix": null
+          "fix": "PDF text could not be extracted for the privacy scan"
         },
         {
           "code": "R-07.policy_hit",
-          "fix": null
+          "fix": "a public policy term appeared in a scanned file"
         }
       ],
       "fix": "remove the private terms at the listed file:line (or install poppler for PDFs)",
@@ -234,7 +238,7 @@
       "rule": "R-07",
       "run": "steward check privacy --summary",
       "version": 2,
-      "why": "Agents copy names, paths and notes into code and documents; this keeps them out."
+      "why": "Private identifiers, names and paths can appear in code and documents."
     },
     {
       "area": "paper",
@@ -265,11 +269,11 @@
         },
         {
           "code": "R-09.marker",
-          "fix": null
+          "fix": "an unresolved placeholder marker (TODO, TBD, FIXME, or similar) was found"
         },
         {
           "code": "R-09.mode",
-          "fix": null
+          "fix": "check mode used for the manuscript (draft or final)"
         }
       ],
       "fix": "resolve the TODO/TBD markers listed",
@@ -290,39 +294,39 @@
       "codes": [
         {
           "code": "R-10.generated_missing",
-          "fix": null
+          "fix": "the generated values file for the manuscript is missing; run steward paper values --write"
         },
         {
           "code": "R-10.generated_stale",
-          "fix": null
+          "fix": "the generated values file is out of date; run steward paper values --write"
         },
         {
           "code": "R-10.literal",
-          "fix": null
+          "fix": "a bare numeric literal in the manuscript is not drawn from the values registry"
         },
         {
           "code": "R-10.no_registry",
-          "fix": null
+          "fix": "the manuscript references a value key, but no paper/values.toml exists"
         },
         {
           "code": "R-10.source_error",
-          "fix": null
+          "fix": "a value's source file could not be read or its pointer failed"
         },
         {
           "code": "R-10.source_missing",
-          "fix": null
+          "fix": "a value's declared source file does not exist"
         },
         {
           "code": "R-10.source_unknown",
-          "fix": null
+          "fix": "a value's source cannot be resolved or has an unsupported format"
         },
         {
           "code": "R-10.unknown_key",
-          "fix": null
+          "fix": "the manuscript references a key not defined in paper/values.toml"
         },
         {
           "code": "R-10.unused",
-          "fix": null
+          "fix": "a key defined in paper/values.toml is not referenced in the manuscript"
         }
       ],
       "fix": "register numbers in paper/values.toml; `steward paper values --write`",
@@ -343,39 +347,39 @@
       "codes": [
         {
           "code": "R-11.fingerprints_compared",
-          "fix": null
+          "fix": "count of display entries whose fingerprints were compared with the lock"
         },
         {
           "code": "R-11.lock_entry_invalid",
-          "fix": null
+          "fix": "a display entry in displays.lock is missing required fingerprint fields"
         },
         {
           "code": "R-11.lock_invalid",
-          "fix": null
+          "fix": "the paper's displays.lock file cannot be parsed or fails its schema"
         },
         {
           "code": "R-11.missing_file",
-          "fix": null
+          "fix": "a figure, table, or data file named by a display entry is missing"
         },
         {
           "code": "R-11.missing_script",
-          "fix": null
+          "fix": "the generating script named by a display entry is missing"
         },
         {
           "code": "R-11.no_lock",
-          "fix": null
+          "fix": "displays.lock is missing; run steward paper displays NAME --record"
         },
         {
           "code": "R-11.not_cited",
-          "fix": null
+          "fix": "a declared display label is never referenced in the manuscript text"
         },
         {
           "code": "R-11.not_included",
-          "fix": null
+          "fix": "a declared display output file is not included in the manuscript"
         },
         {
           "code": "R-11.not_recorded",
-          "fix": null
+          "fix": "a declared display is not yet recorded in displays.lock"
         },
         {
           "code": "R-11.nothing_to_check",
@@ -383,15 +387,15 @@
         },
         {
           "code": "R-11.path_outside",
-          "fix": null
+          "fix": "a display's script, input, or output path escapes the repository root"
         },
         {
           "code": "R-11.stale",
-          "fix": null
+          "fix": "a display's script, input, or output changed since displays.lock was recorded"
         },
         {
           "code": "R-11.unregistered",
-          "fix": null
+          "fix": "a figure or table included in the manuscript is not registered in the display manifest"
         }
       ],
       "fix": "rebuild the displays, then `steward paper displays --record`",
@@ -412,35 +416,35 @@
       "codes": [
         {
           "code": "R-12.latex_error",
-          "fix": null
+          "fix": "the LaTeX build log contains an error line"
         },
         {
           "code": "R-12.mode",
-          "fix": null
+          "fix": "check mode used for the paper build (draft or final)"
         },
         {
           "code": "R-12.multiply_defined",
-          "fix": null
+          "fix": "the LaTeX build log reports a multiply-defined label"
         },
         {
           "code": "R-12.overfull",
-          "fix": null
+          "fix": "the LaTeX build log reports an overfull box warning"
         },
         {
           "code": "R-12.rerun",
-          "fix": null
+          "fix": "the LaTeX build log asks to rerun LaTeX, BibTeX, or Biber"
         },
         {
           "code": "R-12.undefined_citation",
-          "fix": null
+          "fix": "the LaTeX build log reports an undefined citation key"
         },
         {
           "code": "R-12.undefined_reference",
-          "fix": null
+          "fix": "the LaTeX build log reports an undefined cross-reference"
         },
         {
           "code": "R-12.undefined_summary",
-          "fix": null
+          "fix": "the LaTeX build log summarizes unresolved references or citations"
         }
       ],
       "fix": "rebuild the paper (latexmk) and fix undefined references or citations",
@@ -461,115 +465,115 @@
       "codes": [
         {
           "code": "R-13.abstract_words",
-          "fix": null
+          "fix": "measured word count of the manuscript abstract"
         },
         {
           "code": "R-13.abstract_words_over",
-          "fix": null
+          "fix": "the manuscript abstract exceeds the venue's word limit"
         },
         {
           "code": "R-13.anonymity",
-          "fix": null
+          "fix": "a double-blind anonymity term appeared in the manuscript or PDF"
         },
         {
           "code": "R-13.anonymity_no_list",
-          "fix": null
+          "fix": "double-blind venue requires paper.anonymity_file to be configured"
         },
         {
           "code": "R-13.anonymity_unreadable",
-          "fix": null
+          "fix": "the configured anonymity term list could not be read"
         },
         {
           "code": "R-13.anonymity_unspecified",
-          "fix": null
+          "fix": "the venue profile leaves anonymity.double_blind unspecified"
         },
         {
           "code": "R-13.dpi_unavailable",
-          "fix": null
+          "fix": "Pillow is not installed, so raster figure DPI cannot be checked"
         },
         {
           "code": "R-13.dpi_unknown",
-          "fix": null
+          "fix": "a raster figure carries no resolution (DPI) metadata"
         },
         {
           "code": "R-13.figure_dpi",
-          "fix": null
+          "fix": "a raster figure's resolution is below the venue's minimum DPI"
         },
         {
           "code": "R-13.figure_format",
-          "fix": null
+          "fix": "a figure uses a file format not listed in the venue's allowed formats"
         },
         {
           "code": "R-13.limit_unspecified",
-          "fix": null
+          "fix": "a venue page or word limit is still TBD or unspecified"
         },
         {
           "code": "R-13.main_end_not_found",
-          "fix": null
+          "fix": "the configured main_ends_at marker was not found in the PDF text"
         },
         {
           "code": "R-13.missing_declaration",
-          "fix": null
+          "fix": "a required venue declaration (such as ethics or data availability) is missing"
         },
         {
           "code": "R-13.missing_section",
-          "fix": null
+          "fix": "a section required by the venue profile is missing from the manuscript"
         },
         {
           "code": "R-13.mode",
-          "fix": null
+          "fix": "check mode used for venue compliance (draft or final)"
         },
         {
           "code": "R-13.no_pdf",
-          "fix": null
+          "fix": "the compiled manuscript PDF is missing; build the paper first"
         },
         {
           "code": "R-13.no_source",
-          "fix": null
+          "fix": "the venue profile lacks a recorded source_url and retrieved date"
         },
         {
           "code": "R-13.not_found",
-          "fix": null
+          "fix": "the title or abstract could not be located in the main source file"
         },
         {
           "code": "R-13.pages",
-          "fix": null
+          "fix": "measured total page count of the compiled manuscript PDF"
         },
         {
           "code": "R-13.pages_main",
-          "fix": null
+          "fix": "the main body of the PDF exceeds the venue's main-page limit"
         },
         {
           "code": "R-13.pages_total",
-          "fix": null
+          "fix": "the PDF exceeds the venue's total page limit"
         },
         {
           "code": "R-13.pages_unsupported",
-          "fix": null
+          "fix": "page-limit checks are not implemented for .docx manuscripts in this version"
         },
         {
           "code": "R-13.pdf_author_metadata",
-          "fix": null
+          "fix": "the compiled PDF metadata names an author for a double-blind venue"
         },
         {
           "code": "R-13.pdf_unreadable",
-          "fix": null
+          "fix": "the PDF could not be read (install poppler or the [paper] extra)"
         },
         {
           "code": "R-13.required_unspecified",
-          "fix": null
+          "fix": "a required section or declaration in the venue profile is still unspecified"
         },
         {
           "code": "R-13.title_words",
-          "fix": null
+          "fix": "measured word count of the manuscript title"
         },
         {
           "code": "R-13.title_words_over",
-          "fix": null
+          "fix": "the manuscript title exceeds the venue's word limit"
         },
         {
           "code": "R-13.words_unsupported",
-          "fix": null
+          "fix": "word-limit checks are implemented for LaTeX sources only in this version"
         }
       ],
       "fix": "meet the venue rules listed (pages, words, sections, anonymity, figures)",
@@ -590,35 +594,35 @@
       "codes": [
         {
           "code": "R-14.duplicate_doi",
-          "fix": null
+          "fix": "two bibliography entries share the same DOI"
         },
         {
           "code": "R-14.duplicate_key",
-          "fix": null
+          "fix": "the same citation key is defined more than once across .bib files"
         },
         {
           "code": "R-14.malformed_identifier",
-          "fix": null
+          "fix": "a bibliography entry's DOI, PMID, or arXiv identifier is malformed"
         },
         {
           "code": "R-14.missing_entry",
-          "fix": null
+          "fix": "a citation key used in the manuscript has no entry in the bibliography"
         },
         {
           "code": "R-14.no_identifier",
-          "fix": null
+          "fix": "a bibliography entry carries no DOI, PMID, arXiv ID, or URL"
         },
         {
           "code": "R-14.parse",
-          "fix": null
+          "fix": "a bibliography (.bib) file could not be parsed"
         },
         {
           "code": "R-14.unused",
-          "fix": null
+          "fix": "a bibliography entry is never cited in the manuscript"
         },
         {
           "code": "R-14.verification",
-          "fix": null
+          "fix": "summary counts of bibliography entries with and without verification metadata"
         }
       ],
       "fix": "fix the bibliography: missing, duplicate or malformed entries",
@@ -639,15 +643,15 @@
       "codes": [
         {
           "code": "R-15.invalid",
-          "fix": null
+          "fix": "a cross-value consistency assertion expression could not be parsed or evaluated"
         },
         {
           "code": "R-15.unavailable",
-          "fix": null
+          "fix": "a value referenced by a consistency assertion is unavailable"
         },
         {
           "code": "R-15.violated",
-          "fix": null
+          "fix": "a cross-value consistency assertion evaluated to false"
         }
       ],
       "fix": "check the values in the failed assertion",
@@ -668,7 +672,7 @@
       "codes": [
         {
           "code": "R-21.custom_purpose",
-          "fix": null
+          "fix": "the talk plan uses a custom purpose not in the built-in taxonomy"
         },
         {
           "code": "R-21.no_decisions",
@@ -676,15 +680,15 @@
         },
         {
           "code": "R-21.no_outline",
-          "fix": null
+          "fix": "the talk plan has no outline; run steward talk plan NAME --write-outline"
         },
         {
           "code": "R-21.overrides",
-          "fix": null
+          "fix": "the talk's preference overrides failed schema validation"
         },
         {
           "code": "R-21.unknown_stage",
-          "fix": null
+          "fix": "the talk plan names a research stage not in the taxonomy"
         }
       ],
       "fix": "complete talks/<name>/talk.toml; `steward talk plan <name>`",
@@ -705,7 +709,7 @@
       "codes": [
         {
           "code": "R-22.unusual",
-          "fix": null
+          "fix": "the talk's stage and purpose combination is unusual and should be confirmed"
         }
       ],
       "fix": "ask the presenter to confirm the research stage; set stage_source = \"confirmed\"",
@@ -726,19 +730,19 @@
       "codes": [
         {
           "code": "R-23.ceiling",
-          "fix": null
+          "fix": "claim status ceiling permitted for the talk's declared research stage"
         },
         {
           "code": "R-23.evidence_insufficient",
-          "fix": null
+          "fix": "a talk claim lacks sufficient evidence for its stated status"
         },
         {
           "code": "R-23.overstatement",
-          "fix": null
+          "fix": "a talk claim's status exceeds the research stage's ceiling without evidence"
         },
         {
           "code": "R-23.unknown_status",
-          "fix": null
+          "fix": "a talk claim uses an unrecognized claim status"
         }
       ],
       "fix": "lower the claim's status, or add evidence that supports it",
@@ -759,23 +763,23 @@
       "codes": [
         {
           "code": "R-24.literal",
-          "fix": null
+          "fix": "a bare numeric literal on a slide is not drawn from the values registry"
         },
         {
           "code": "R-24.no_registry",
-          "fix": null
+          "fix": "slides reference a value key, but no values registry is linked"
         },
         {
           "code": "R-24.unknown_key",
-          "fix": null
+          "fix": "a slide references a key not defined in the values registry"
         },
         {
           "code": "R-24.variables_missing",
-          "fix": null
+          "fix": "the generated talk variables file is missing; run steward talk values NAME --write"
         },
         {
           "code": "R-24.variables_stale",
-          "fix": null
+          "fix": "the generated talk variables file is stale; run steward talk values NAME --write"
         }
       ],
       "fix": "use \\val{key} / {{< var key >}} for numbers; `steward talk values` for Quarto",
@@ -796,11 +800,11 @@
       "codes": [
         {
           "code": "R-25.missing_frame",
-          "fix": null
+          "fix": "no slide frame covers limitations in the built talk source"
         },
         {
           "code": "R-25.missing_role",
-          "fix": null
+          "fix": "the talk outline declares no section with the limitations role"
         }
       ],
       "fix": "add a limitations section (outline role and slide)",
@@ -821,27 +825,27 @@
       "codes": [
         {
           "code": "R-26.decision_not_shown",
-          "fix": null
+          "fix": "an unresolved decision listed in the talk plan does not appear in the slides"
         },
         {
           "code": "R-26.feedback_slide_in_informational",
-          "fix": null
+          "fix": "an informational talk includes a feedback-only slide role"
         },
         {
           "code": "R-26.no_decisions_section",
-          "fix": null
+          "fix": "a targeted-feedback talk has no decisions section in its outline"
         },
         {
           "code": "R-26.no_qa_backup",
-          "fix": null
+          "fix": "the talk outline includes no Q&A or backup section"
         },
         {
           "code": "R-26.no_text",
-          "fix": null
+          "fix": "slide text could not be extracted to check structure"
         },
         {
           "code": "R-26.required_section",
-          "fix": null
+          "fix": "a section required for the talk's purpose is missing"
         }
       ],
       "fix": "make the structure match the feedback intent (decisions, backup slides)",
@@ -862,27 +866,27 @@
       "codes": [
         {
           "code": "R-27.missing_file",
-          "fix": null
+          "fix": "a source or output file for a talk display is missing"
         },
         {
           "code": "R-27.not_recorded",
-          "fix": null
+          "fix": "a talk display is not recorded in displays.lock"
         },
         {
           "code": "R-27.not_traceable",
-          "fix": null
+          "fix": "this slide format cannot be traced automatically; export to PPTX or Beamer"
         },
         {
           "code": "R-27.nothing_to_trace",
-          "fix": null
+          "fix": "no figures were found on slides to trace against the display lock"
         },
         {
           "code": "R-27.stale",
-          "fix": null
+          "fix": "a talk display changed since displays.lock was recorded"
         },
         {
           "code": "R-27.unregistered",
-          "fix": null
+          "fix": "a figure on a slide is not registered in the display manifest"
         }
       ],
       "fix": "use registered, current displays on slides",
@@ -903,35 +907,35 @@
       "codes": [
         {
           "code": "R-28.build_error",
-          "fix": null
+          "fix": "the slide build log contains a compilation error"
         },
         {
           "code": "R-28.contrast",
-          "fix": null
+          "fix": "measured foreground-to-background contrast ratio is below the minimum"
         },
         {
           "code": "R-28.engine",
-          "fix": null
+          "fix": "slide engine detected for the layout check"
         },
         {
           "code": "R-28.font_too_small",
-          "fix": null
+          "fix": "text on a slide is smaller than the configured minimum font size"
         },
         {
           "code": "R-28.frame_overflow",
-          "fix": null
+          "fix": "the slide build log reports an overfull frame or box"
         },
         {
           "code": "R-28.min_font",
-          "fix": null
+          "fix": "minimum font size observed across the slides"
         },
         {
           "code": "R-28.no_log",
-          "fix": null
+          "fix": "the slide build log is missing; build the slides first"
         },
         {
           "code": "R-28.no_pdf",
-          "fix": null
+          "fix": "the compiled slide PDF is missing; build or export the slides"
         },
         {
           "code": "R-28.not_assessed",
@@ -939,31 +943,31 @@
         },
         {
           "code": "R-28.note",
-          "fix": null
+          "fix": "informational note from the slide layout inspector"
         },
         {
           "code": "R-28.outside_slide",
-          "fix": null
+          "fix": "a text or shape element extends outside the slide boundary"
         },
         {
           "code": "R-28.pdf_reader_missing",
-          "fix": null
+          "fix": "no PDF reader is installed to inspect slide layout (install poppler or [talk])"
         },
         {
           "code": "R-28.pdf_unreadable",
-          "fix": null
+          "fix": "the compiled slide PDF could not be read"
         },
         {
           "code": "R-28.prefs",
-          "fix": null
+          "fix": "a talk preference layer failed validation"
         },
         {
           "code": "R-28.slides",
-          "fix": null
+          "fix": "measured slide count against the configured maximum"
         },
         {
           "code": "R-28.too_many_slides",
-          "fix": null
+          "fix": "the deck has more slides than the configured maximum"
         }
       ],
       "fix": "fewer slides, larger fonts, no overflow; build or export the PDF, or install a PDF reader (poppler or the [talk] extra)",
@@ -984,7 +988,7 @@
       "codes": [
         {
           "code": "R-29.strong_wording",
-          "fix": null
+          "fix": "strong or overclaiming wording found on a slide for human review"
         }
       ],
       "fix": "review the strong wording listed (advisory)",
@@ -1005,7 +1009,7 @@
       "codes": [
         {
           "code": "R-31.anchor_mismatch",
-          "fix": null
+          "fix": "a signed ledger anchor does not match the ledger's hash at that sequence number"
         },
         {
           "code": "R-31.anchor_none",
@@ -1013,7 +1017,7 @@
         },
         {
           "code": "R-31.anchor_ok",
-          "fix": null
+          "fix": "a signed ledger anchor matched the ledger hash at that sequence number"
         },
         {
           "code": "R-31.anchor_unavailable",
@@ -1021,15 +1025,15 @@
         },
         {
           "code": "R-31.anchor_unverified",
-          "fix": null
+          "fix": "a ledger anchor tag could not be verified against the pinned signers"
         },
         {
           "code": "R-31.coverage",
-          "fix": null
+          "fix": "scope note describing what hash-chain tamper evidence detects"
         },
         {
           "code": "R-31.torn_tail",
-          "fix": null
+          "fix": "the ledger ends with an incomplete trailing line; run steward ledger recover"
         }
       ],
       "fix": "restore the ledger from version control, or `steward ledger recover` a torn tail",
@@ -1050,23 +1054,23 @@
       "codes": [
         {
           "code": "R-32.failed",
-          "fix": null
+          "fix": "a recorded run exited with a failed status"
         },
         {
           "code": "R-32.interrupted",
-          "fix": null
+          "fix": "a recorded run was interrupted before finishing; recover or rerun it"
         },
         {
           "code": "R-32.killed",
-          "fix": null
+          "fix": "a recorded run was killed (for example by a wall-time, memory, or hang limit)"
         },
         {
           "code": "R-32.local_slot",
-          "fix": null
+          "fix": "a run used a local slot instead of sharing the repository's permit slots"
         },
         {
           "code": "R-32.output_changed",
-          "fix": null
+          "fix": "a run's recorded output file changed after the run finished"
         },
         {
           "code": "R-32.unfinished",
@@ -1091,39 +1095,39 @@
       "codes": [
         {
           "code": "R-33.awaiting_signature",
-          "fix": null
+          "fix": "a prepared policy-change authorization payload is waiting to be signed"
         },
         {
           "code": "R-33.baseline_moving",
-          "fix": null
+          "fix": "the trust root points to a moving ref instead of a pinned commit hash"
         },
         {
           "code": "R-33.changed",
-          "fix": null
+          "fix": "a policy file differs from the pinned baseline without an authorization"
         },
         {
           "code": "R-33.fingerprint",
-          "fix": null
+          "fix": "SSH key fingerprint of a configured approval signer"
         },
         {
           "code": "R-33.object",
-          "fix": null
+          "fix": "expected working-tree digest to authorize a policy change"
         },
         {
           "code": "R-33.overlay",
-          "fix": null
+          "fix": "a local overlay setting was checked against the policy baseline"
         },
         {
           "code": "R-33.pending",
-          "fix": null
+          "fix": "approval key and trust-root setup is not yet complete"
         },
         {
           "code": "R-33.pin_unreadable",
-          "fix": null
+          "fix": "the external per-user trust pin cannot be read; re-pin with steward authorize pin"
         },
         {
           "code": "R-33.policy_removed",
-          "fix": null
+          "fix": "the policy block was removed relative to the pinned trust root"
         },
         {
           "code": "R-33.repo_id_changed",
@@ -1131,11 +1135,11 @@
         },
         {
           "code": "R-33.signer",
-          "fix": null
+          "fix": "authorized signer principal and key type from the signers file"
         },
         {
           "code": "R-33.trust_root",
-          "fix": null
+          "fix": "source and pinned reference of the active trust root"
         },
         {
           "code": "R-33.verification_unavailable",
@@ -1160,27 +1164,27 @@
       "codes": [
         {
           "code": "R-34.actual_without_estimate",
-          "fix": null
+          "fix": "a spend record logged an actual cost without a prior estimate"
         },
         {
           "code": "R-34.over_cap",
-          "fix": null
+          "fix": "committed spend exceeds the configured budget cap without authorization"
         },
         {
           "code": "R-34.totals",
-          "fix": null
+          "fix": "summary of recorded spend calls and committed total"
         },
         {
           "code": "R-34.trust_unpinned",
-          "fix": null
+          "fix": "a spend authorization cannot be checked because the trust root is not pinned"
         },
         {
           "code": "R-34.unauthorized",
-          "fix": null
+          "fix": "a spend record past the cap lacks an intact signed authorization"
         },
         {
           "code": "R-34.verification_unavailable",
-          "fix": null
+          "fix": "spend authorization signature cannot be checked in this environment"
         }
       ],
       "fix": "authorize the spend, or stay within the cap",
@@ -1201,19 +1205,19 @@
       "codes": [
         {
           "code": "R-35.proposal_pending",
-          "fix": null
+          "fix": "an amendment proposal is open and awaiting a signed approval"
         },
         {
           "code": "cohort.changed",
-          "fix": null
+          "fix": "a frozen cohort file changed after the freeze"
         },
         {
           "code": "params.changed",
-          "fix": null
+          "fix": "a frozen parameter value changed after the freeze"
         },
         {
           "code": "protocol.drift",
-          "fix": null
+          "fix": "a frozen protocol file changed after the freeze"
         }
       ],
       "fix": "revert the frozen files, or propose and sign an amendment",
@@ -1234,19 +1238,19 @@
       "codes": [
         {
           "code": "R-36.role_mismatch",
-          "fix": null
+          "fix": "a dataset's declared role differs from the role recorded in the integrity ledger"
         },
         {
           "code": "R-36.role_unrecorded",
-          "fix": null
+          "fix": "a dataset is declared sealed or spent but was never sealed with steward seal"
         },
         {
           "code": "R-36.sealed_changed",
-          "fix": null
+          "fix": "a sealed dataset's content hash changed after sealing"
         },
         {
           "code": "R-36.unknown_link",
-          "fix": null
+          "fix": "a dataset's links list names a dataset not declared in datasets.toml"
         }
       ],
       "fix": "make datasets.toml roles match `steward integrity status`",
@@ -1267,11 +1271,11 @@
       "codes": [
         {
           "code": "R-37.paper_reports_sealed",
-          "fix": null
+          "fix": "a manuscript value reads from a sealed dataset before a signed unseal"
         },
         {
           "code": "R-37.run_read_sealed",
-          "fix": null
+          "fix": "a recorded run read a sealed dataset before a signed unseal"
         }
       ],
       "fix": "investigate the use of sealed data before its unseal",
@@ -1292,7 +1296,7 @@
       "codes": [
         {
           "code": "R-38.append_only_history",
-          "fix": null
+          "fix": "number of git commits inspected to check that decisions logs are append-only"
         },
         {
           "code": "R-38.append_only_new",
@@ -1304,11 +1308,11 @@
         },
         {
           "code": "R-38.append_only_weak",
-          "fix": null
+          "fix": "decisions log history was checked without a pinned policy baseline"
         },
         {
           "code": "R-38.decisions_base_unknown",
-          "fix": null
+          "fix": "the git base ref for checking decisions-log history could not be resolved"
         },
         {
           "code": "R-38.decisions_rewritten",
@@ -1320,7 +1324,7 @@
         },
         {
           "code": "R-38.history_partial",
-          "fix": null
+          "fix": "only a bounded prefix of git history was inspected for the decisions log"
         },
         {
           "code": "R-38.history_unavailable",
@@ -1332,23 +1336,23 @@
         },
         {
           "code": "R-38.no_decision",
-          "fix": null
+          "fix": "a gated integrity action lacks a matching entry in DECISIONS.md"
         },
         {
           "code": "R-38.no_policy",
-          "fix": null
+          "fix": "a gated integrity action cannot be verified because [policy] is not configured"
         },
         {
           "code": "R-38.trust_unpinned",
-          "fix": null
+          "fix": "a gated action's authorization cannot be checked because the trust root is unpinned"
         },
         {
           "code": "R-38.unauthorized",
-          "fix": null
+          "fix": "a gated integrity action lacks a verified signed authorization"
         },
         {
           "code": "R-38.verification_unavailable",
-          "fix": null
+          "fix": "authorization signatures cannot be verified in this environment"
         }
       ],
       "fix": "record the decision in DECISIONS.md and use a verified authorization; never rewrite the log",
@@ -1394,15 +1398,15 @@
       "codes": [
         {
           "code": "R-40.contract_not_frozen",
-          "fix": null
+          "fix": "a claim references a contract that has not been frozen"
         },
         {
-          "code": "R-40.derived_binary",
-          "fix": null
+          "code": "R-40.derived_binary64",
+          "fix": "a derived value is computed in binary floating point"
         },
         {
           "code": "R-40.invalid_tolerance",
-          "fix": null
+          "fix": "a claim's numeric tolerance is negative or not finite"
         },
         {
           "code": "R-40.no_run",
@@ -1414,11 +1418,11 @@
         },
         {
           "code": "R-40.not_numeric",
-          "fix": null
+          "fix": "the evidence value pointed to by a claim is not numeric"
         },
         {
           "code": "R-40.out_of_range",
-          "fix": null
+          "fix": "a claimed or evidence number exceeds the exact comparison range"
         },
         {
           "code": "R-40.run_failed",
@@ -1426,23 +1430,23 @@
         },
         {
           "code": "R-40.run_missing",
-          "fix": null
+          "fix": "a claim names a run ID not present in the run ledger"
         },
         {
           "code": "R-40.run_unfinished",
-          "fix": null
+          "fix": "a claim names a run that has no recorded outcome yet"
         },
         {
           "code": "R-40.source_unreadable",
-          "fix": null
+          "fix": "a claim's evidence source file or pointer could not be read"
         },
         {
           "code": "R-40.unknown_value_key",
-          "fix": null
+          "fix": "a claim's value_key is not defined in any paper values registry"
         },
         {
           "code": "R-40.value_mismatch",
-          "fix": null
+          "fix": "a claim's stated value differs from the recorded evidence beyond tolerance"
         }
       ],
       "fix": "tie the claim to finished runs whose output matches the stated value",
@@ -1467,7 +1471,7 @@
         },
         {
           "code": "R-41.unknown_contract",
-          "fix": null
+          "fix": "a claimed difference links to a benchmark contract that does not exist"
         }
       ],
       "fix": "link each claimed difference to an existing contract",
@@ -1488,31 +1492,31 @@
       "codes": [
         {
           "code": "R-42.artifact_mismatch",
-          "fix": null
+          "fix": "a distribution artifact's SHA-256 differs from the release manifest"
         },
         {
           "code": "R-42.audited",
-          "fix": null
+          "fix": "summary of release artifacts and member counts scanned by the audit"
         },
         {
           "code": "R-42.bundle_mismatch",
-          "fix": null
+          "fix": "a skill bundle zip differs from its recorded manifest or source files"
         },
         {
           "code": "R-42.bundle_record_stale",
-          "fix": null
+          "fix": "a skill bundle's .bundle.json record is stale relative to its zip"
         },
         {
           "code": "R-42.citation",
-          "fix": null
+          "fix": "a structural problem was found in CITATION.cff"
         },
         {
           "code": "R-42.citation_changed",
-          "fix": null
+          "fix": "CITATION.cff changed after the release manifest was written"
         },
         {
           "code": "R-42.citation_invalid",
-          "fix": null
+          "fix": "cffconvert reported schema errors in CITATION.cff"
         },
         {
           "code": "R-42.citation_not_validated",
@@ -1524,27 +1528,27 @@
         },
         {
           "code": "R-42.citation_validator_error",
-          "fix": null
+          "fix": "running cffconvert failed unexpectedly"
         },
         {
           "code": "R-42.claims_changed",
-          "fix": null
+          "fix": "the claim map changed after the release manifest was written"
         },
         {
           "code": "R-42.claims_not_passing",
-          "fix": null
+          "fix": "the release claim map (R-40) is not passing"
         },
         {
           "code": "R-42.excluded",
-          "fix": null
+          "fix": "a distribution archive includes a path matched by the exclusion patterns"
         },
         {
           "code": "R-42.forbidden_member",
-          "fix": null
+          "fix": "a distribution archive contains a forbidden file or directory"
         },
         {
           "code": "R-42.identity_missing",
-          "fix": null
+          "fix": "the release manifest is missing a required project identity field"
         },
         {
           "code": "R-42.identity_recorded",
@@ -1552,23 +1556,23 @@
         },
         {
           "code": "R-42.local_path",
-          "fix": null
+          "fix": "a release artifact contains an absolute local home path"
         },
         {
           "code": "R-42.lock_changed",
-          "fix": null
+          "fix": "a lock file changed after the release manifest was written"
         },
         {
           "code": "R-42.lock_unavailable",
-          "fix": null
+          "fix": "a declared lock file could not be read for the release check"
         },
         {
           "code": "R-42.manifest_invalid",
-          "fix": null
+          "fix": "the release manifest cannot be parsed or fails its schema"
         },
         {
           "code": "R-42.manifest_other_dist",
-          "fix": null
+          "fix": "the release manifest was written for a different dist directory"
         },
         {
           "code": "R-42.members_unscanned",
@@ -1576,23 +1580,23 @@
         },
         {
           "code": "R-42.missing_artifact",
-          "fix": null
+          "fix": "an expected distribution artifact pattern matched no built file"
         },
         {
           "code": "R-42.missing_member",
-          "fix": null
+          "fix": "a required file is missing from a built distribution archive"
         },
         {
           "code": "R-42.missing_required",
-          "fix": null
+          "fix": "a required release file (such as README or LICENSE) is missing"
         },
         {
           "code": "R-42.no_claim_map",
-          "fix": null
+          "fix": "the configured release claim map file does not exist"
         },
         {
           "code": "R-42.no_dist",
-          "fix": null
+          "fix": "no distribution artifacts exist in the configured dist directory"
         },
         {
           "code": "R-42.no_manifest",
@@ -1600,31 +1604,31 @@
         },
         {
           "code": "R-42.policy_term",
-          "fix": null
+          "fix": "a public policy term appeared inside a release artifact member"
         },
         {
           "code": "R-42.policy_term_in_name",
-          "fix": null
+          "fix": "a public policy term appeared in a release artifact member's path"
         },
         {
           "code": "R-42.private_term",
-          "fix": null
+          "fix": "a private denylist term appeared inside a release artifact member"
         },
         {
           "code": "R-42.private_term_in_name",
-          "fix": null
+          "fix": "a private denylist term appeared in a release artifact member's path"
         },
         {
           "code": "R-42.shipped_secret",
-          "fix": null
+          "fix": "a secret-like file or pattern was found inside a built distribution"
         },
         {
           "code": "R-42.terms_unavailable",
-          "fix": null
+          "fix": "a configured term list could not be loaded during the release audit"
         },
         {
           "code": "R-42.version_mismatch",
-          "fix": null
+          "fix": "a built artifact's version differs from the package version"
         }
       ],
       "fix": "add the required files, `steward release manifest` after building, remove refused members",
@@ -1645,11 +1649,11 @@
       "codes": [
         {
           "code": "R-43.accepted_on_tests_unrecorded",
-          "fix": null
+          "fix": "a finding accepted on tests lacks its recorded regression test details"
         },
         {
           "code": "R-43.independence_unknown",
-          "fix": null
+          "fix": "a review record omits its implementer, so independence cannot be checked"
         },
         {
           "code": "R-43.invalid",
@@ -1657,15 +1661,15 @@
         },
         {
           "code": "R-43.known_issue",
-          "fix": null
+          "fix": "a non-blocking finding is recorded as a known issue"
         },
         {
           "code": "R-43.no_register",
-          "fix": null
+          "fix": "the configured review findings register file does not exist"
         },
         {
           "code": "R-43.no_regression_test",
-          "fix": null
+          "fix": "a finding marked verified names a regression test that could not be collected"
         },
         {
           "code": "R-43.no_reverifier",
@@ -1685,19 +1689,19 @@
         },
         {
           "code": "R-43.open",
-          "fix": null
+          "fix": "an open or unverified blocking review finding remains unresolved"
         },
         {
           "code": "R-43.open_minor",
-          "fix": null
+          "fix": "an open minor or low-severity review finding is recorded"
         },
         {
           "code": "R-43.recommended",
-          "fix": null
+          "fix": "an independent red-team review is recommended before releasing a confirmatory project"
         },
         {
           "code": "R-43.review",
-          "fix": null
+          "fix": "summary of a recorded independent review and the revision it covered"
         },
         {
           "code": "R-43.stale_review",
@@ -1705,7 +1709,7 @@
         },
         {
           "code": "R-43.unlisted_limitation",
-          "fix": null
+          "fix": "a known-issue finding is not listed in the release limitations"
         },
         {
           "code": "R-43.unwaived",
@@ -1734,23 +1738,23 @@
       "codes": [
         {
           "code": "R-44.acknowledged",
-          "fix": null
+          "fix": "a runtime module change was acknowledged as neutral"
         },
         {
           "code": "R-44.added",
-          "fix": null
+          "fix": "a new runtime module was added since fingerprints were recorded"
         },
         {
           "code": "R-44.changed",
-          "fix": null
+          "fix": "a runtime module changed since its fingerprint was recorded"
         },
         {
           "code": "R-44.removed",
-          "fix": null
+          "fix": "a fingerprinted runtime module was removed"
         },
         {
           "code": "R-44.unparsable",
-          "fix": null
+          "fix": "a runtime Python module could not be parsed for fingerprinting"
         }
       ],
       "fix": "review the code change; `steward release ack MODULE --reason ...` if neutral, else re-record after review",
@@ -1771,67 +1775,67 @@
       "codes": [
         {
           "code": "R-45.blank_group",
-          "fix": null
+          "fix": "one or more sample rows have a blank group value, so group overlap is incomplete"
         },
         {
           "code": "R-45.checked",
-          "fix": null
+          "fix": "summary of splits, sample counts, and group or time checks evaluated"
         },
         {
           "code": "R-45.duplicate_id",
-          "fix": null
+          "fix": "a split file lists the same sample ID more than once"
         },
         {
           "code": "R-45.empty_split",
-          "fix": null
+          "fix": "a declared split file contains no sample IDs"
         },
         {
           "code": "R-45.group_overlap",
-          "fix": null
+          "fix": "two splits share at least one group (such as donor, patient, or study)"
         },
         {
           "code": "R-45.group_unchecked",
-          "fix": null
+          "fix": "group overlap could not be checked because metadata is missing or incomplete"
         },
         {
           "code": "R-45.id_overlap",
-          "fix": null
+          "fix": "two splits share at least one sample ID"
         },
         {
           "code": "R-45.metadata_invalid",
-          "fix": null
+          "fix": "the split metadata table is malformed or missing its declared key column"
         },
         {
           "code": "R-45.metadata_missing",
-          "fix": null
+          "fix": "the declared split metadata file does not exist"
         },
         {
           "code": "R-45.no_metadata",
-          "fix": null
+          "fix": "one or more split sample IDs are missing from the metadata table"
         },
         {
           "code": "R-45.path_outside",
-          "fix": null
+          "fix": "a split or metadata path escapes the repository root"
         },
         {
           "code": "R-45.split_missing",
-          "fix": null
+          "fix": "a declared split IDs file does not exist"
         },
         {
           "code": "R-45.split_unreadable",
-          "fix": null
+          "fix": "a split IDs file could not be read as UTF-8 text"
         },
         {
           "code": "R-45.temporal_order",
-          "fix": null
+          "fix": "an earlier split contains timestamps on or after a later split"
         },
         {
           "code": "R-45.time_unchecked",
-          "fix": null
+          "fix": "temporal split ordering could not be checked (needs time_key and metadata)"
         },
         {
           "code": "R-45.time_unparsed",
-          "fix": null
+          "fix": "one or more timestamps in the metadata could not be parsed"
         }
       ],
       "fix": "fix the split files or the sample metadata; `steward benchmark splits CONTRACT` lists overlaps",
@@ -1852,11 +1856,11 @@
       "codes": [
         {
           "code": "R-46.hash_mismatch",
-          "fix": null
+          "fix": "a benchmark dataset file's SHA-256 differs from the contract's recorded hash"
         },
         {
           "code": "R-46.no_hash",
-          "fix": null
+          "fix": "a benchmark dataset in the contract has no recorded SHA-256 digest"
         },
         {
           "code": "R-46.not_a_repository_file",
@@ -1881,59 +1885,59 @@
       "codes": [
         {
           "code": "R-47.duplicate_method",
-          "fix": null
+          "fix": "two baselines in the contract share the same name"
         },
         {
           "code": "R-47.invalid",
-          "fix": null
+          "fix": "the benchmark results file could not be read or has an invalid table shape"
         },
         {
           "code": "R-47.missing_result",
-          "fix": null
+          "fix": "a required split, method, or metric cell is missing from the results table"
         },
         {
           "code": "R-47.no_required_splits",
-          "fix": null
+          "fix": "no test split is defined and [results] splits is not set"
         },
         {
           "code": "R-47.no_results",
-          "fix": null
+          "fix": "the declared benchmark results file does not exist"
         },
         {
           "code": "R-47.not_numeric",
-          "fix": null
+          "fix": "a benchmark result cell is not a finite number"
         },
         {
           "code": "R-47.out_of_range",
-          "fix": null
+          "fix": "a benchmark result value exceeds the exact comparison range"
         },
         {
           "code": "R-47.path_outside",
-          "fix": null
+          "fix": "the declared results file path escapes the repository root"
         },
         {
           "code": "R-47.reserved_name",
-          "fix": null
+          "fix": "a baseline uses the reserved name 'candidate'"
         },
         {
           "code": "R-47.threshold_met",
-          "fix": null
+          "fix": "a declared benchmark threshold was met by the candidate result"
         },
         {
           "code": "R-47.threshold_not_evaluable",
-          "fix": null
+          "fix": "a declared benchmark threshold could not be evaluated from the results"
         },
         {
           "code": "R-47.threshold_not_met",
-          "fix": null
+          "fix": "the candidate result did not meet a declared benchmark threshold"
         },
         {
           "code": "R-47.undeclared",
-          "fix": null
+          "fix": "the results file contains methods or metrics not declared in the contract"
         },
         {
           "code": "R-47.unknown_split",
-          "fix": null
+          "fix": "a required split listed under [results] is not defined in [splits]"
         }
       ],
       "fix": "fill the results matrix for every metric, method and required split; `steward benchmark results CONTRACT`",
@@ -1954,31 +1958,31 @@
       "codes": [
         {
           "code": "R-48.inputs_changed",
-          "fix": null
+          "fix": "a split file changed after the recorded comparison run executed"
         },
         {
           "code": "R-48.no_output",
-          "fix": null
+          "fix": "the declared comparison output file does not exist"
         },
         {
           "code": "R-48.not_from_run",
-          "fix": null
+          "fix": "no finished steward run recorded the comparison output with its current hash"
         },
         {
           "code": "R-48.path_outside",
-          "fix": null
+          "fix": "the comparison output path escapes the repository root"
         },
         {
           "code": "R-48.procedure_unrecorded",
-          "fix": null
+          "fix": "the comparison run did not record required inputs or seed metadata"
         },
         {
           "code": "R-48.run",
-          "fix": null
+          "fix": "run ID of the recorded comparison run checked"
         },
         {
           "code": "R-48.split_missing",
-          "fix": null
+          "fix": "a split file required by the comparison run is missing"
         }
       ],
       "fix": "rerun the comparison with `steward run --input <each split file> --output <comparison.output> --seed ...`",
@@ -1999,27 +2003,27 @@
       "codes": [
         {
           "code": "R-49.declared_checked",
-          "fix": null
+          "fix": "a leakage type is declared checked with an existing evidence path"
         },
         {
           "code": "R-49.declared_not_applicable",
-          "fix": null
+          "fix": "a leakage type is declared not applicable with a recorded reason"
         },
         {
           "code": "R-49.evidence_missing",
-          "fix": null
+          "fix": "a checked leakage type names an evidence path that does not exist"
         },
         {
           "code": "R-49.reason_missing",
-          "fix": null
+          "fix": "a not_applicable leakage declaration omits its reason"
         },
         {
           "code": "R-49.undeclared",
-          "fix": null
+          "fix": "one or more known leakage types are not declared in [leakage]"
         },
         {
           "code": "R-49.unknown_type",
-          "fix": null
+          "fix": "the contract's [leakage] table names an unrecognized leakage type"
         }
       ],
       "fix": "declare each leakage type in the contract's [leakage] table: checked (with evidence) or not_applicable (with a reason)",
@@ -2040,47 +2044,47 @@
       "codes": [
         {
           "code": "R-50.annex_key_only",
-          "fix": null
+          "fix": "a git-annex symlink is present locally without its annexed content"
         },
         {
           "code": "R-50.annex_mismatch",
-          "fix": null
+          "fix": "a git-annex pointer key differs from the digest in the storage registry"
         },
         {
           "code": "R-50.dvc_mismatch",
-          "fix": null
+          "fix": "a DVC pointer records an MD5 digest different from the storage registry"
         },
         {
           "code": "R-50.git_unavailable",
-          "fix": null
+          "fix": "git could not list tracked files, so large tracked files were not checked"
         },
         {
           "code": "R-50.hash_mismatch",
-          "fix": null
+          "fix": "a registered artifact's SHA-256 differs from the storage registry"
         },
         {
           "code": "R-50.large_tracked",
-          "fix": null
+          "fix": "a tracked file in git exceeds the configured large-file threshold"
         },
         {
           "code": "R-50.no_retrieval",
-          "fix": null
+          "fix": "a registered artifact lacks a retrieval note saying how to obtain it"
         },
         {
           "code": "R-50.not_present",
-          "fix": null
+          "fix": "a registered artifact is absent from the working tree"
         },
         {
           "code": "R-50.path_outside",
-          "fix": null
+          "fix": "a registered artifact or DVC pointer path escapes the repository root"
         },
         {
           "code": "R-50.registry_outside",
-          "fix": null
+          "fix": "the configured storage registry path escapes the repository root"
         },
         {
           "code": "R-50.unstable",
-          "fix": null
+          "fix": "a registered artifact changed on disk while its digest was being computed"
         }
       ],
       "fix": "fetch or restore the artifact (see its retrieval note), or `steward storage record PATH --retrieval ...` after a reviewed change",
@@ -2105,11 +2109,11 @@
         },
         {
           "code": "R-51.recommended",
-          "fix": null
+          "fix": "add constitution version under [steward] to align with project governance"
         },
         {
           "code": "R-51.version_differs",
-          "fix": null
+          "fix": "the declared constitution version differs from the toolkit's current version"
         }
       ],
       "fix": "declare `constitution` under [steward] (steward constitution), or read --changes and update the version",
@@ -2130,39 +2134,39 @@
       "codes": [
         {
           "code": "R-52.contract_invalid",
-          "fix": null
+          "fix": "a reproduction contract file could not be parsed or failed validation"
         },
         {
           "code": "R-52.failed",
-          "fix": null
+          "fix": "the latest reproduction check on this tree recorded mismatched outputs"
         },
         {
           "code": "R-52.ledger",
-          "fix": null
+          "fix": "the reproduction ledger has a hash-chain or formatting error"
         },
         {
           "code": "R-52.no_files",
-          "fix": null
+          "fix": "the reproduction record checked zero files, so it cannot pass"
         },
         {
           "code": "R-52.no_git",
-          "fix": null
+          "fix": "git is unavailable, so the current tree hash cannot be matched"
         },
         {
           "code": "R-52.no_manifest",
-          "fix": null
+          "fix": "the reproduction contract's manifest file does not exist"
         },
         {
           "code": "R-52.not_current",
-          "fix": null
+          "fix": "no reproduction check covers the current repository tree"
         },
         {
           "code": "R-52.passed",
-          "fix": null
+          "fix": "a passing reproduction check covers the current repository tree"
         },
         {
           "code": "R-52.torn_tail",
-          "fix": null
+          "fix": "the reproduction ledger ends with an incomplete trailing line"
         }
       ],
       "fix": "re-derive the outputs on this commit and run `steward repro check ID --work DIR`",
@@ -2187,11 +2191,15 @@
         },
         {
           "code": "R-53.bad_transition",
-          "fix": null
+          "fix": "an exchange item's ledger records a disallowed state transition"
+        },
+        {
+          "code": "R-53.deferred_stale",
+          "fix": "a deferred inbox item's target version has already been released"
         },
         {
           "code": "R-53.duplicate_id",
-          "fix": null
+          "fix": "two exchange items or aliases claim the same exchange ID"
         },
         {
           "code": "R-53.invalid",
@@ -2199,11 +2207,11 @@
         },
         {
           "code": "R-53.ledger_broken",
-          "fix": null
+          "fix": "exchange/log.jsonl failed hash-chain verification or has a torn tail"
         },
         {
           "code": "R-53.misplaced",
-          "fix": null
+          "fix": "an exchange item is in the wrong subfolder for its sender project code"
         },
         {
           "code": "R-53.missing_entry",
@@ -2211,7 +2219,7 @@
         },
         {
           "code": "R-53.name_mismatch",
-          "fix": null
+          "fix": "an exchange item's filename stem does not match its header ID"
         },
         {
           "code": "R-53.oneway_channel",
@@ -2219,7 +2227,7 @@
         },
         {
           "code": "R-53.orphan_response",
-          "fix": null
+          "fix": "a response item names a target ID not present in inbox/ or outbox/"
         },
         {
           "code": "R-53.public_term",
@@ -2227,39 +2235,39 @@
         },
         {
           "code": "R-53.receipt_mismatch",
-          "fix": null
+          "fix": "an outbox item differs from the bytes the peer recorded in its receipt"
         },
         {
           "code": "R-53.removed_after_retirement",
-          "fix": null
+          "fix": "a superseded or withdrawn inbox item's file was removed while its receipt remains"
         },
         {
           "code": "R-53.response_target_mismatch",
-          "fix": null
+          "fix": "a response's Answers binding does not match the bytes of the target item"
         },
         {
           "code": "R-53.symlink",
-          "fix": null
+          "fix": "exchange/ or an entry inside it is a symbolic link, which is refused"
         },
         {
           "code": "R-53.tag_missing",
-          "fix": null
+          "fix": "a shipped item names a release tag that does not exist in this repository"
         },
         {
           "code": "R-53.tag_not_verified",
-          "fix": null
+          "fix": "a peer-reported shipped tag is stated in the ledger but not verified locally"
         },
         {
           "code": "R-53.unacknowledged",
-          "fix": null
+          "fix": "a received inbox item has exceeded ack_days without a decision"
         },
         {
           "code": "R-53.undelivered",
-          "fix": null
+          "fix": "an outbox item has no committed receipt from its peer after the grace window"
         },
         {
           "code": "R-53.unknown_entry",
-          "fix": null
+          "fix": "an unexpected file or folder is present inside exchange/"
         },
         {
           "code": "R-53.unknown_item",
@@ -2267,11 +2275,11 @@
         },
         {
           "code": "R-53.upgrade_available",
-          "fix": null
+          "fix": "a received release notice advertises a newer version than currently used"
         },
         {
           "code": "R-53.wrong_counterparty",
-          "fix": null
+          "fix": "a response came from a project other than the item's addressee"
         }
       ],
       "fix": "fix the item or ledger entry named. Record states with `steward exchange state ID STATE --note ...`. For a missing receipt, check the peer's ref and ask it to pull and commit its receipt. For an item edited after the peer received it, restore the received bytes, or re-file the revision under a new ID",
@@ -2292,15 +2300,15 @@
       "codes": [
         {
           "code": "R-54.future_date",
-          "fix": null
+          "fix": "an exchange item's last state carries a date in the future"
         },
         {
           "code": "R-54.inbox_edited",
-          "fix": null
+          "fix": "a received inbox item was edited after its receipt hash was recorded"
         },
         {
           "code": "R-54.ledger",
-          "fix": null
+          "fix": "exchange/log.jsonl could not be verified for inbox intake checks"
         },
         {
           "code": "R-54.no_date",
@@ -2308,11 +2316,11 @@
         },
         {
           "code": "R-54.no_decision",
-          "fix": null
+          "fix": "an acknowledged inbox item has waited past ack_days without a decision"
         },
         {
           "code": "R-54.receipt_unverified",
-          "fix": null
+          "fix": "one or more inbox items have no recorded receipt hash to compare against"
         }
       ],
       "fix": "restore an edited inbox item from version control (a correction is a new revision the sender files); decide acknowledged items with `steward exchange respond`",
@@ -2333,23 +2341,23 @@
       "codes": [
         {
           "code": "R-55.missing",
-          "fix": null
+          "fix": "the configured session handoff file does not exist"
         },
         {
           "code": "R-55.over_budget",
-          "fix": null
+          "fix": "the session handoff exceeds the configured word budget"
         },
         {
           "code": "R-55.private",
-          "fix": null
+          "fix": "the session handoff contains a private term or local home path"
         },
         {
           "code": "R-55.shape",
-          "fix": null
+          "fix": "the session handoff is missing one or more required sections"
         },
         {
           "code": "R-55.stale",
-          "fix": null
+          "fix": "a decisions log changed after the session handoff was last committed"
         },
         {
           "code": "R-55.uncommitted",
@@ -2357,7 +2365,7 @@
         },
         {
           "code": "R-55.words",
-          "fix": null
+          "fix": "word count of the session handoff against its configured budget"
         }
       ],
       "fix": "close the session again with `steward session close` and commit the handoff",
@@ -2378,31 +2386,31 @@
       "codes": [
         {
           "code": "R-56.computed_import",
-          "fix": null
+          "fix": "a dynamic or computed import was found and cannot be statically checked"
         },
         {
           "code": "R-56.forbidden_distribution",
-          "fix": null
+          "fix": "pyproject.toml declares a dependency forbidden by the boundary rule"
         },
         {
           "code": "R-56.forbidden_import",
-          "fix": null
+          "fix": "a Python file imports a module forbidden by the boundary rule"
         },
         {
           "code": "R-56.no_pyproject",
-          "fix": null
+          "fix": "the declared pyproject.toml file does not exist"
         },
         {
           "code": "R-56.pyproject_invalid",
-          "fix": null
+          "fix": "the declared pyproject.toml file could not be parsed"
         },
         {
           "code": "R-56.scanned",
-          "fix": null
+          "fix": "count of Python files parsed for boundary import checks"
         },
         {
           "code": "R-56.unparsable",
-          "fix": null
+          "fix": "a Python file could not be parsed for boundary import checks"
         }
       ],
       "fix": "remove the forbidden import or dependency named, or move it to an allowed group",
@@ -2423,23 +2431,23 @@
       "codes": [
         {
           "code": "R-57.duplicate_id",
-          "fix": null
+          "fix": "two task specification files declare the same task ID"
         },
         {
           "code": "R-57.next_id_invalid",
-          "fix": null
+          "fix": "the board's Next unused ID does not match the configured id_pattern"
         },
         {
           "code": "R-57.next_id_stale",
-          "fix": null
+          "fix": "the board's Next unused ID is already in use by an existing task"
         },
         {
           "code": "R-57.no_board",
-          "fix": null
+          "fix": "the configured task board file does not exist"
         },
         {
           "code": "R-57.no_id",
-          "fix": null
+          "fix": "a task specification file lacks an **ID:** line matching id_pattern"
         },
         {
           "code": "R-57.no_next_id",
@@ -2447,11 +2455,11 @@
         },
         {
           "code": "R-57.not_on_board",
-          "fix": null
+          "fix": "an open task specification is not listed on the task board"
         },
         {
           "code": "R-57.unknown_status",
-          "fix": null
+          "fix": "a task specification uses a status not in the allowed status list"
         }
       ],
       "fix": "give each task spec a unique ID and a known status, list open tasks on the board, and raise its next unused ID",
@@ -2476,35 +2484,35 @@
         },
         {
           "code": "R-58.git_error",
-          "fix": null
+          "fix": "git failed while inspecting tags or changed files since the last release"
         },
         {
           "code": "R-58.no_changelog",
-          "fix": null
+          "fix": "the configured changelog file is not committed in git"
         },
         {
           "code": "R-58.no_entry",
-          "fix": null
+          "fix": "the changelog has no Unreleased section or no entries under it"
         },
         {
           "code": "R-58.no_tag",
-          "fix": null
+          "fix": "no release tag matching the configured pattern exists yet"
         },
         {
           "code": "R-58.not_ready",
-          "fix": null
+          "fix": "a changelog entry lacks its required ready status field"
         },
         {
           "code": "R-58.not_updated",
-          "fix": null
+          "fix": "relevant files changed since the last release without updating the changelog"
         },
         {
           "code": "R-58.range",
-          "fix": null
+          "fix": "git range and count of changed files inspected since the last release tag"
         },
         {
           "code": "R-58.unreadable",
-          "fix": null
+          "fix": "git could not read HEAD's tree for the changelog check"
         }
       ],
       "fix": "add an entry under Unreleased in the changelog for the changes since the last release tag",
@@ -2525,43 +2533,43 @@
       "codes": [
         {
           "code": "R-59.branch_name",
-          "fix": null
+          "fix": "a branch name does not match the declared branch naming patterns"
         },
         {
           "code": "R-59.history_unavailable",
-          "fix": null
+          "fix": "git could not read commit history for the declared branch"
         },
         {
           "code": "R-59.no_git",
-          "fix": null
+          "fix": "git is unavailable or this folder is not a git repository"
         },
         {
           "code": "R-59.no_integration_branch",
-          "fix": null
+          "fix": "the declared integration branch does not exist"
         },
         {
           "code": "R-59.no_release_branch",
-          "fix": null
+          "fix": "the declared release branch does not exist"
         },
         {
           "code": "R-59.no_tag",
-          "fix": null
+          "fix": "no release tag exists on the integration branch to anchor merge checks"
         },
         {
           "code": "R-59.not_no_ff",
-          "fix": null
+          "fix": "a merge into the integration branch was not recorded as a --no-ff merge commit"
         },
         {
           "code": "R-59.refs_unavailable",
-          "fix": null
+          "fix": "git could not list branch refs for naming checks"
         },
         {
           "code": "R-59.since_unknown",
-          "fix": null
+          "fix": "the configured since ref for branch-model history could not be resolved"
         },
         {
           "code": "R-59.untagged_release_commit",
-          "fix": null
+          "fix": "a commit on the release branch has no matching release tag"
         }
       ],
       "fix": "tag the release commit, merge task branches with --no-ff, or rename the branch to a declared pattern",
@@ -2586,31 +2594,31 @@
         },
         {
           "code": "R-60.dangling",
-          "fix": null
+          "fix": "a skills copy is a broken symbolic link whose target does not exist"
         },
         {
           "code": "R-60.drift",
-          "fix": null
+          "fix": "a skills copy differs from the canonical skills directory"
         },
         {
           "code": "R-60.linked",
-          "fix": null
+          "fix": "a skills copy is properly linked to the canonical skills directory"
         },
         {
           "code": "R-60.missing",
-          "fix": null
+          "fix": "a declared skills copy directory does not exist"
         },
         {
           "code": "R-60.no_canonical",
-          "fix": null
+          "fix": "the declared canonical skills directory does not exist"
         },
         {
           "code": "R-60.pointer",
-          "fix": null
+          "fix": "a skills copy uses a STEWARD_SKILLS pointer file matching the canonical directory"
         },
         {
           "code": "R-60.pointer_wrong",
-          "fix": null
+          "fix": "a STEWARD_SKILLS pointer file does not resolve to the canonical skills directory"
         },
         {
           "code": "R-60.wrong_target",
@@ -2635,11 +2643,11 @@
       "codes": [
         {
           "code": "R-61.conflict_marker",
-          "fix": null
+          "fix": "an unresolved git merge-conflict marker was found in a committed file"
         },
         {
           "code": "R-61.not_scanned",
-          "fix": null
+          "fix": "one or more committed files could not be read for conflict-marker scanning"
         }
       ],
       "fix": "resolve the merge conflict in the file named (or mark a file that holds markers on purpose)",
@@ -2660,27 +2668,27 @@
       "codes": [
         {
           "code": "R-62.ledger",
-          "fix": null
+          "fix": "the agents ledger has a hash-chain or structural error"
         },
         {
           "code": "R-62.not_permitted",
-          "fix": null
+          "fix": "an attempt was scored by an agent not allowed by [agents] may_score"
         },
         {
           "code": "R-62.self_scored",
-          "fix": null
+          "fix": "an attempt was scored by its own author"
         },
         {
           "code": "R-62.silent_override",
-          "fix": null
+          "fix": "an attempt was re-scored without recording an override reason"
         },
         {
           "code": "R-62.torn_tail",
-          "fix": null
+          "fix": "the agents ledger ends with an incomplete trailing line"
         },
         {
           "code": "R-62.unknown_attempt",
-          "fix": null
+          "fix": "a score references a task and attempt number not present in the ledger"
         }
       ],
       "fix": "record scores with `steward agents score` by an agent other than the author; append an override with a reason",
@@ -2701,27 +2709,27 @@
       "codes": [
         {
           "code": "R-63.changed",
-          "fix": null
+          "fix": "a file in a frozen set changed relative to its recorded fingerprint"
         },
         {
           "code": "R-63.history_unavailable",
-          "fix": null
+          "fix": "git history could not be read to inspect frozen-set changes"
         },
         {
           "code": "R-63.invalid",
-          "fix": null
+          "fix": "the frozen-set record file could not be parsed or failed validation"
         },
         {
           "code": "R-63.no_decision",
-          "fix": null
+          "fix": "a re-recorded frozen set lacks its required decision reference"
         },
         {
           "code": "R-63.no_files",
-          "fix": null
+          "fix": "a frozen set's glob patterns matched no files in the repository"
         },
         {
           "code": "R-63.not_recorded",
-          "fix": null
+          "fix": "a declared frozen set has not been recorded yet with steward frozen record"
         }
       ],
       "fix": "restore the frozen files, or record the new version with `steward frozen record NAME --decision ...`",
@@ -2746,7 +2754,7 @@
         },
         {
           "code": "R-64.large_folder",
-          "fix": null
+          "fix": "an unignored folder inside the container build context exceeds the size limit"
         },
         {
           "code": "R-64.link_context",
@@ -2754,7 +2762,7 @@
         },
         {
           "code": "R-64.link_dangling",
-          "fix": null
+          "fix": "a broken symbolic link was found inside the container build context"
         },
         {
           "code": "R-64.link_outside",
@@ -2762,7 +2770,7 @@
         },
         {
           "code": "R-64.missing",
-          "fix": null
+          "fix": "the declared container build context directory does not exist"
         },
         {
           "code": "R-64.secret_file",
@@ -2787,23 +2795,23 @@
       "codes": [
         {
           "code": "R-65.invalid",
-          "fix": null
+          "fix": "a declared docker-compose file is not valid YAML"
         },
         {
           "code": "R-65.missing_key",
-          "fix": null
+          "fix": "a compose service is missing a required environment key"
         },
         {
           "code": "R-65.no_yaml",
-          "fix": null
+          "fix": "PyYAML is not installed, so compose files cannot be parsed"
         },
         {
           "code": "R-65.ship_ignored",
-          "fix": null
+          "fix": "a path required to ship in the image is excluded by .dockerignore"
         },
         {
           "code": "R-65.ship_missing",
-          "fix": null
+          "fix": "a path required to ship in the image does not exist in the context"
         },
         {
           "code": "R-65.ship_outside",
@@ -2811,15 +2819,15 @@
         },
         {
           "code": "R-65.unknown_service",
-          "fix": null
+          "fix": "the configuration names a compose service not defined in the compose file"
         },
         {
           "code": "R-65.unreadable",
-          "fix": null
+          "fix": "a declared docker-compose file could not be read"
         },
         {
           "code": "R-65.user_data_not_volume",
-          "fix": null
+          "fix": "a compose service's user data path is not mounted on a named volume"
         }
       ],
       "fix": "set the key in the service's environment or env_file, mount user data on a named volume, or un-ignore the shipped path",
@@ -2840,23 +2848,23 @@
       "codes": [
         {
           "code": "R-66.git_error",
-          "fix": null
+          "fix": "git failed while comparing pinned dependencies against the last release tag"
         },
         {
           "code": "R-66.incomplete",
-          "fix": null
+          "fix": "a dependency upgrade's parity record is missing required harnesses or approval"
         },
         {
           "code": "R-66.no_record",
-          "fix": null
+          "fix": "a pinned dependency changed since the last release without a parity record"
         },
         {
           "code": "R-66.no_tag",
-          "fix": null
+          "fix": "no release tag exists yet to compare pinned dependency versions against"
         },
         {
           "code": "R-66.record",
-          "fix": null
+          "fix": "summary of a checked dependency upgrade parity record"
         }
       ],
       "fix": "write the upgrade's parity record (package, old, new, harnesses with verdicts, approval)",
@@ -2877,31 +2885,31 @@
       "codes": [
         {
           "code": "R-67.invalid",
-          "fix": null
+          "fix": "the power table file could not be read or fails its schema"
         },
         {
           "code": "R-67.invalid_row",
-          "fix": null
+          "fix": "one or more rows in the power table have invalid values"
         },
         {
           "code": "R-67.missing_row",
-          "fix": null
+          "fix": "the power table lacks a row for a required shrinkage factor"
         },
         {
           "code": "R-67.no_power",
-          "fix": null
+          "fix": "the contract has no power table; run steward benchmark power CONTRACT --effects FILE"
         },
         {
           "code": "R-67.no_row",
-          "fix": null
+          "fix": "no power-table row matches the contract's minimum_units"
         },
         {
           "code": "R-67.stale",
-          "fix": null
+          "fix": "the power table is out of date relative to its effects input or contract"
         },
         {
           "code": "R-67.underpowered",
-          "fix": null
+          "fix": "estimated statistical power at minimum_units is below the target power"
         }
       ],
       "fix": "run `steward benchmark power` for the contract, or raise minimum_units to reach the target",
@@ -2922,27 +2930,27 @@
       "codes": [
         {
           "code": "R-68.below_minimum",
-          "fix": null
+          "fix": "an outcome stage launched before reaching the declared accrual minimum"
         },
         {
           "code": "R-68.ledger",
-          "fix": null
+          "fix": "the staged-runs ledger has a hash-chain or structural error"
         },
         {
           "code": "R-68.no_go",
-          "fix": null
+          "fix": "an outcome stage launched without a recorded GO decision"
         },
         {
           "code": "R-68.no_launch",
-          "fix": null
+          "fix": "a stage outcome was recorded without a matching launch entry"
         },
         {
           "code": "R-68.torn_tail",
-          "fix": null
+          "fix": "the staged-runs ledger ends with an incomplete trailing line"
         },
         {
           "code": "R-68.unfinished",
-          "fix": null
+          "fix": "a launched stage has no recorded outcome entry yet"
         }
       ],
       "fix": "record the GO in the decisions log before an outcome stage runs; accrue to the minimum first",
@@ -2963,19 +2971,19 @@
       "codes": [
         {
           "code": "R-69.link",
-          "fix": null
+          "fix": "a generated documentation path is a symbolic link, which is refused"
         },
         {
           "code": "R-69.missing",
-          "fix": null
+          "fix": "a generated site page, README block, or SVG asset is missing"
         },
         {
           "code": "R-69.private",
-          "fix": null
+          "fix": "generated documentation contains a private term or local home path"
         },
         {
           "code": "R-69.readme_invalid",
-          "fix": null
+          "fix": "the README's steward block markers are malformed or cannot be updated"
         },
         {
           "code": "R-69.retired",
@@ -3004,11 +3012,11 @@
       "codes": [
         {
           "code": "R-70.duplicate_id",
-          "fix": null
+          "fix": "two milestones in development/milestones.toml share the same ID"
         },
         {
           "code": "R-70.invalid",
-          "fix": null
+          "fix": "development/milestones.toml could not be parsed or failed validation"
         },
         {
           "code": "R-70.no_board",
@@ -3016,15 +3024,15 @@
         },
         {
           "code": "R-70.past_due",
-          "fix": null
+          "fix": "a milestone past its due date has no recorded outcome (met, moved, or dropped)"
         },
         {
           "code": "R-70.unknown_item",
-          "fix": null
+          "fix": "a milestone references an exchange item not found in exchange/"
         },
         {
           "code": "R-70.unknown_task",
-          "fix": null
+          "fix": "a milestone references a task ID not found in any task spec"
         }
       ],
       "fix": "fix development/milestones.toml; record each past milestone's outcome (met, moved with a decision, dropped)",
@@ -3045,31 +3053,31 @@
       "codes": [
         {
           "code": "R-71.added_not_by_human",
-          "fix": null
+          "fix": "a task added after sprint opening was not recorded by a human"
         },
         {
           "code": "R-71.bad_transition",
-          "fix": null
+          "fix": "a sprint task's ledger records a disallowed state transition"
         },
         {
           "code": "R-71.foreign_ledger",
-          "fix": null
+          "fix": "the sprint ledger was opened for a different sprint ID"
         },
         {
           "code": "R-71.id",
-          "fix": null
+          "fix": "the sprint file name does not match its declared sprint ID"
         },
         {
           "code": "R-71.invalid",
-          "fix": null
+          "fix": "a sprint file under development/sprints/ failed schema or DAG validation"
         },
         {
           "code": "R-71.ledger",
-          "fix": null
+          "fix": "the sprint ledger failed hash-chain verification or has a torn tail"
         },
         {
           "code": "R-71.not_opened",
-          "fix": null
+          "fix": "task state entries appear in the sprint ledger before the sprint opened"
         },
         {
           "code": "R-71.plan_changed",
@@ -3077,7 +3085,7 @@
         },
         {
           "code": "R-71.unknown_task",
-          "fix": null
+          "fix": "the sprint ledger names a task ID not defined in the sprint file"
         }
       ],
       "fix": "fix the sprint file named (steward sprint check ID), or recover its ledger",
@@ -3098,15 +3106,15 @@
       "codes": [
         {
           "code": "R-72.no_report",
-          "fix": null
+          "fix": "a finished sprint has no sprint report; run steward sprint report ID"
         },
         {
           "code": "R-72.stale_report",
-          "fix": null
+          "fix": "the sprint report is older than the sprint ledger; regenerate it"
         },
         {
           "code": "R-72.unchecked_done",
-          "fix": null
+          "fix": "a task marked done does not have every done command recorded with exit 0"
         }
       ],
       "fix": "write the report of each sprint whose window has ended: steward sprint report ID",
@@ -3127,31 +3135,31 @@
       "codes": [
         {
           "code": "R-73.artifact_absent",
-          "fix": null
+          "fix": "a declared pin's artifact file is not present on disk"
         },
         {
           "code": "R-73.artifact_changed",
-          "fix": null
+          "fix": "a pin's artifact file differs from its recorded SHA-256 digest"
         },
         {
           "code": "R-73.artifact_missing",
-          "fix": null
+          "fix": "a retired pin's kept archive artifact is missing from disk"
         },
         {
           "code": "R-73.identity_changed",
-          "fix": null
+          "fix": "a retired pin's package or version differs from what the ledger recorded"
         },
         {
           "code": "R-73.ledger",
-          "fix": null
+          "fix": "the pins ledger could not be verified"
         },
         {
           "code": "R-73.protected_missing",
-          "fix": null
+          "fix": "a record protected by a pin no longer exists"
         },
         {
           "code": "R-73.retirement_incomplete",
-          "fix": null
+          "fix": "a pin retirement did not finish; run steward pins retire NAME --resume"
         }
       ],
       "fix": "restore the kept artifact of a retired pin (or the pinned artifact itself); see steward pins status",
@@ -3172,15 +3180,15 @@
       "codes": [
         {
           "code": "R-74.callers_unavailable",
-          "fix": null
+          "fix": "project files could not be scanned to check callers of a deprecated pin"
         },
         {
           "code": "R-74.deprecated_in_use",
-          "fix": null
+          "fix": "a deprecated pin is still imported or referenced by project code"
         },
         {
           "code": "R-74.eligible",
-          "fix": null
+          "fix": "all retirement conditions hold for this pin; it may be retired with approval"
         }
       ],
       "fix": "move callers off a deprecated pin; retire an eligible one with a signed approval (steward pins status)",
@@ -3197,39 +3205,39 @@
       "areas": [
         "studies"
       ],
-      "checks": "Every study record's inputs, results and plan are present and match their recorded sha256; studies that depend on a changed one, and the papers citing them, are stale; the same input in two studies is listed; declared references (genome, annotation, identifier namespace, databases) agree across studies.",
+      "checks": "When a study declares chromosome sizes, VCF and SAM header contigs and BED intervals are checked against the declared genome. Every study record's inputs, results and plan are present and match their recorded sha256; studies that depend on a changed one, and the papers citing them, are stale; the same input in two studies is listed; declared references agree across studies. Sample sheets are checked for complete confounding and strong imbalance. A recorded Bioconductor version has major.minor release form.",
       "codes": [
         {
           "code": "R-75.chromosome_naming",
-          "fix": null
+          "fix": "input files mix incompatible chromosome naming conventions (such as chr1 and 1)"
         },
         {
           "code": "R-75.convention_mismatch",
-          "fix": null
+          "fix": "a study input's chromosome naming disagrees with the declared convention"
         },
         {
           "code": "R-75.duplicate_input",
-          "fix": null
+          "fix": "the same input file or accession digest appears in more than one study"
         },
         {
           "code": "R-75.file_changed",
-          "fix": null
+          "fix": "a fingerprinted study input, plan, or result changed on disk"
         },
         {
           "code": "R-75.file_missing",
-          "fix": null
+          "fix": "a recorded study input, plan, or result file is missing or outside the repo"
         },
         {
           "code": "R-75.inconsistent_references",
-          "fix": null
+          "fix": "active studies disagree on a reference declared under [studies] consistent"
         },
         {
           "code": "R-75.invalid",
-          "fix": null
+          "fix": "a study record file could not be parsed or failed schema validation"
         },
         {
           "code": "R-75.matrix_missing",
-          "fix": null
+          "fix": "a sample-sheet matrix file declared by the study is missing"
         },
         {
           "code": "R-75.matrix_no_header",
@@ -3237,11 +3245,11 @@
         },
         {
           "code": "R-75.matrix_refused",
-          "fix": null
+          "fix": "a sample-sheet matrix path is a link or outside the repository"
         },
         {
           "code": "R-75.matrix_unrecorded",
-          "fix": null
+          "fix": "a sample-sheet matrix file is not fingerprinted in the study record"
         },
         {
           "code": "R-75.no_inputs",
@@ -3249,35 +3257,55 @@
         },
         {
           "code": "R-75.none",
-          "fix": null
+          "fix": "no study records exist yet; create one with steward study new ID"
+        },
+        {
+          "code": "R-75.reference_incomplete",
+          "fix": "provide contig declarations with lengths or a BED file with intervals to check"
+        },
+        {
+          "code": "R-75.reference_mismatch",
+          "fix": "check the input's contig names and lengths or interval bounds against the declared genome"
+        },
+        {
+          "code": "R-75.reference_sizes",
+          "fix": "provide a readable chromosome-sizes file with unique contig names and positive lengths"
+        },
+        {
+          "code": "R-75.sample_confounding",
+          "fix": "condition groups are completely confounded with a batch or covariate factor"
         },
         {
           "code": "R-75.sample_duplicate",
-          "fix": null
+          "fix": "a sample ID appears more than once in the sample sheet"
         },
         {
           "code": "R-75.sample_field_missing",
-          "fix": null
+          "fix": "a required column is missing from the sample sheet"
+        },
+        {
+          "code": "R-75.sample_imbalance",
+          "fix": "advisory: a condition's share is strongly imbalanced across factor levels"
         },
         {
           "code": "R-75.sample_no_id",
-          "fix": null
+          "fix": "a row in the sample sheet has a blank sample ID"
         },
         {
           "code": "R-75.sample_not_in_matrix",
-          "fix": null
+          "fix": "a sample listed in the sample sheet has no matching column in the matrix"
         },
         {
           "code": "R-75.sample_not_in_metadata",
-          "fix": null
+          "fix": "a sample column in the matrix is absent from the sample sheet"
         },
         {
           "code": "R-75.sample_value_missing",
-          "fix": null
+          "fix": "a required metadata cell is blank in the sample sheet"
         },
         {
           "code": "R-75.sample_value_not_allowed",
-          "fix": null
+          "fix": "a sample metadata cell contains a value outside the allowed set"
         },
         {
           "code": "R-75.samples_empty",
@@ -3285,31 +3313,31 @@
         },
         {
           "code": "R-75.samples_no_id",
-          "fix": null
+          "fix": "the declared sample ID column is missing from the sample sheet header"
         },
         {
           "code": "R-75.samples_refused",
-          "fix": null
+          "fix": "the sample sheet path is a link or outside the repository"
         },
         {
           "code": "R-75.stale_dependency",
-          "fix": null
+          "fix": "this study depends on another study whose inputs or results changed"
         },
         {
           "code": "R-75.stale_paper",
-          "fix": null
+          "fix": "a paper citing this study is stale because the study's records changed"
         },
         {
           "code": "R-75.unfingerprinted",
-          "fix": null
+          "fix": "a study file has no recorded SHA-256; run steward study fingerprint ID --write"
         },
         {
           "code": "R-75.unknown_dependency",
-          "fix": null
+          "fix": "this study names a dependency study ID that does not exist"
         },
         {
           "code": "R-75.unknown_paper",
-          "fix": null
+          "fix": "this study lists a paper name not declared in steward.toml"
         }
       ],
       "fix": "restore the recorded file, or accept its new bytes on purpose (steward study fingerprint ID --accept PATH); a missing digest: steward study fingerprint ID --write",
@@ -3330,19 +3358,19 @@
       "codes": [
         {
           "code": "R-76.draft",
-          "fix": null
+          "fix": "a research record is still a draft; replace its template examples and set status = done"
         },
         {
           "code": "R-76.invalid",
-          "fix": null
+          "fix": "a research record file could not be parsed or failed schema validation"
         },
         {
           "code": "R-76.no_difference",
-          "fix": null
+          "fix": "a novelty contribution does not state how it differs from prior work"
         },
         {
           "code": "R-76.no_nearest",
-          "fix": null
+          "fix": "a novelty contribution names no nearest prior-work source"
         },
         {
           "code": "R-76.no_sources",
@@ -3350,7 +3378,7 @@
         },
         {
           "code": "R-76.stale_review",
-          "fix": null
+          "fix": "a literature review is older than [research] stale_days and due for an update"
         },
         {
           "code": "R-76.undecided_dead_end",
@@ -3358,11 +3386,11 @@
         },
         {
           "code": "R-76.undecided_gap",
-          "fix": null
+          "fix": "a recorded gap or flaw is marked addressed or accepted without a decision"
         },
         {
           "code": "R-76.unknown_relation",
-          "fix": null
+          "fix": "a research record links to another research record ID that does not exist"
         }
       ],
       "fix": "re-run a stale review; name the nearest prior work; record the decision on a gap or dead end",
@@ -3383,39 +3411,39 @@
       "codes": [
         {
           "code": "R-77.invalid",
-          "fix": null
+          "fix": "the paper's citations verification file could not be parsed or failed validation"
         },
         {
           "code": "R-77.no_bibliography",
-          "fix": null
+          "fix": "the manuscript cites keys, but no .bib file is among the paper's sources"
         },
         {
           "code": "R-77.no_record",
-          "fix": null
+          "fix": "the paper's citations verification file is missing; run steward paper citations NAME --fetch"
         },
         {
           "code": "R-77.no_title",
-          "fix": null
+          "fix": "a cited bibliography entry has no title field to compare against the record"
         },
         {
           "code": "R-77.outside",
-          "fix": null
+          "fix": "the configured citations verification file path escapes the repository root"
         },
         {
           "code": "R-77.parse",
-          "fix": null
+          "fix": "a bibliography file could not be parsed for citation verification"
         },
         {
           "code": "R-77.refused",
-          "fix": null
+          "fix": "the citations verification file is a link or cannot be safely read"
         },
         {
           "code": "R-77.title_mismatch",
-          "fix": null
+          "fix": "a cited entry's title disagrees with the resolved title recorded for its DOI or PMID"
         },
         {
           "code": "R-77.unverified",
-          "fix": null
+          "fix": "a cited entry with a DOI or PMID has no entry in the citations verification record"
         }
       ],
       "fix": "record the citation (steward paper citations NAME --fetch) or correct the cited title or identifier",
@@ -3444,11 +3472,15 @@
         },
         {
           "code": "R-78.cases_missing",
-          "fix": null
+          "fix": "the declared [llm_eval] cases CSV file cannot be read"
         },
         {
           "code": "R-78.columns",
-          "fix": null
+          "fix": "the [llm_eval] cases CSV is missing required columns or has no rows"
+        },
+        {
+          "code": "R-78.contamination_risk",
+          "fix": "test cases were public on or before a candidate model's stated training cutoff"
         },
         {
           "code": "R-78.cutoff_unknown",
@@ -3456,7 +3488,11 @@
         },
         {
           "code": "R-78.group_leak",
-          "fix": null
+          "fix": "at least one study or group appears in both tuning and test cases"
+        },
+        {
+          "code": "R-78.id_conflict",
+          "fix": "a case ID appears more than once with conflicting split or group assignments"
         },
         {
           "code": "R-78.no_candidates",
@@ -3471,12 +3507,20 @@
           "fix": "name the [[frozen]] set that holds the prompts"
         },
         {
+          "code": "R-78.prompts_not_intact",
+          "fix": "the named [[frozen]] prompt set is not recorded or has changed (R-63)"
+        },
+        {
           "code": "R-78.prompts_unknown",
           "fix": "no [[frozen]] set of that name"
         },
         {
           "code": "R-78.self_judging",
           "fix": "a model judges its own answers"
+        },
+        {
+          "code": "R-78.undated_cases",
+          "fix": "test cases lack an ISO publication date, so cutoff exposure cannot be checked"
         }
       ],
       "fix": "move a shared study out of tuning or test; use another judge; freeze the prompts; review cases before a cutoff",
@@ -3497,11 +3541,11 @@
       "codes": [
         {
           "code": "R-79.declared_invalid",
-          "fix": null
+          "fix": "the licence declared under [licence] is not an SPDX licence expression"
         },
         {
           "code": "R-79.mismatch",
-          "fix": null
+          "fix": "a project metadata file or LICENSE states a different licence than [licence] declared"
         },
         {
           "code": "R-79.no_licence_file",
@@ -3534,43 +3578,43 @@
         },
         {
           "code": "R-80.changed",
-          "fix": null
+          "fix": "a dependency's version or licence changed relative to the committed baseline"
         },
         {
           "code": "R-80.exception",
-          "fix": null
+          "fix": "a dependency is permitted under a recorded dated licence exception"
         },
         {
           "code": "R-80.incompatible",
-          "fix": null
+          "fix": "a dependency's licence is incompatible with the project's licence policy"
         },
         {
           "code": "R-80.inventory",
-          "fix": null
+          "fix": "the dependency licence inventory encountered a reading or metadata problem"
         },
         {
           "code": "R-80.notices_missing",
-          "fix": null
+          "fix": "the third-party notices file required for public distribution is missing"
         },
         {
           "code": "R-80.notices_stale",
-          "fix": null
+          "fix": "the third-party notices file is out of date; run steward licence notices --write"
         },
         {
           "code": "R-80.obligation",
-          "fix": null
+          "fix": "a permitted dependency carries a licence obligation (such as attribution or notice)"
         },
         {
           "code": "R-80.scope",
-          "fix": null
+          "fix": "scope note stating that licence checks evaluate declared rules and metadata only"
         },
         {
           "code": "R-80.unknown",
-          "fix": null
+          "fix": "a dependency's licence could not be identified from its installed metadata"
         },
         {
           "code": "R-80.use_unmatched",
-          "fix": null
+          "fix": "an entry in [licence] use names a package not found in the dependency inventory"
         }
       ],
       "fix": "replace the dependency, declare it in [licence] use as invoked when it only runs as a separate tool, record a dated exception with its approver, or update the notices (steward licence notices --write)",
@@ -3591,19 +3635,19 @@
       "codes": [
         {
           "code": "R-81.declared",
-          "fix": null
+          "fix": "copied, ported, or vendored code is declared in third_party and permitted by policy"
         },
         {
           "code": "R-81.incompatible",
-          "fix": null
+          "fix": "a declared or header-marked third-party file has a licence disallowed by policy"
         },
         {
           "code": "R-81.obligation",
-          "fix": null
+          "fix": "a declared third-party file is permitted with an attribution or notice obligation"
         },
         {
           "code": "R-81.unknown",
-          "fix": null
+          "fix": "a declared or header-marked third-party file has an unrecognized licence"
         }
       ],
       "fix": "declare the source and licence in third_party, rewrite the code independently, or record an exception",
@@ -3624,7 +3668,7 @@
       "codes": [
         {
           "code": "R-82.hint",
-          "fix": null
+          "fix": "advisory: a comment suggests ported or adapted code without a third_party declaration"
         }
       ],
       "fix": "declare the code's source in third_party, or confirm it is original",
@@ -3641,117 +3685,141 @@
       "areas": [
         "data"
       ],
-      "checks": "Declared data tables for column types, identifier shapes, missing values, counts, p-values, fold changes and sample alignment.",
+      "checks": "Declared data tables for Ensembl suffix consistency, species symbol casing and obsolete HGNC symbols, as well as column types, identifier shapes, missing values, counts, p-values, fold changes and sample alignment. The contract validates a declared log base.",
       "codes": [
         {
           "code": "R-83.adjusted_equals_raw",
-          "fix": null
+          "fix": "adjusted p-values equal raw p-values on every row of the table"
         },
         {
           "code": "R-83.duplicate_id",
-          "fix": null
+          "fix": "a row identifier appears more than once in the declared id_column"
         },
         {
           "code": "R-83.encoding",
-          "fix": null
+          "fix": "the data table is not UTF-8 encoded"
         },
         {
           "code": "R-83.excel_date",
-          "fix": null
+          "fix": "a gene symbol or identifier looks like an Excel-mangled date (such as 7-Sep)"
         },
         {
           "code": "R-83.format",
-          "fix": null
+          "fix": "the data table has a structural CSV or TSV formatting error"
         },
         {
           "code": "R-83.header",
-          "fix": null
+          "fix": "the data table has a missing, empty, or malformed header row"
+        },
+        {
+          "code": "R-83.hgnc_reference",
+          "fix": "the declared local HGNC reference TSV is missing required columns or symbols"
         },
         {
           "code": "R-83.identifier",
-          "fix": null
+          "fix": "a cell does not match the declared identifier format"
         },
         {
           "code": "R-83.infinite_lfc",
-          "fix": null
+          "fix": "a log fold-change cell contains an infinite value"
         },
         {
           "code": "R-83.invalid_cell",
-          "fix": null
+          "fix": "a cell contains a disallowed control character such as NUL"
         },
         {
           "code": "R-83.log_fold_change",
-          "fix": null
+          "fix": "a log fold-change cell is not a finite number"
         },
         {
           "code": "R-83.missing_column",
-          "fix": null
+          "fix": "a column declared in the data contract is absent from the table header"
         },
         {
           "code": "R-83.missing_file",
-          "fix": null
+          "fix": "the data table file declared in [[data.contract]] does not exist"
         },
         {
           "code": "R-83.missing_id",
-          "fix": null
+          "fix": "a data row has a blank identifier in the declared id_column"
+        },
+        {
+          "code": "R-83.mixed_ensembl_versions",
+          "fix": "an Ensembl ID column mixes versioned and unversioned identifiers"
         },
         {
           "code": "R-83.mixed_na",
-          "fix": null
+          "fix": "the table mixes different missing-value tokens (such as NA, NaN, and empty)"
         },
         {
           "code": "R-83.no_samples",
-          "fix": null
+          "fix": "a declared sample matrix has no sample columns"
         },
         {
           "code": "R-83.p_order",
-          "fix": null
+          "fix": "an adjusted p-value is smaller than its corresponding raw p-value"
         },
         {
           "code": "R-83.p_value",
-          "fix": null
+          "fix": "a p-value cell is outside [0, 1] or not a finite number"
         },
         {
           "code": "R-83.p_zero",
-          "fix": null
+          "fix": "a p-value is recorded as exact 0 (possible numerical underflow)"
+        },
+        {
+          "code": "R-83.previous_hgnc_symbol",
+          "fix": "a gene symbol is a previous HGNC symbol rather than the approved symbol"
         },
         {
           "code": "R-83.raw_count",
-          "fix": null
+          "fix": "a raw-count cell is negative or not an integer"
         },
         {
           "code": "R-83.refused",
-          "fix": null
+          "fix": "the declared data table is a symbolic link or has extra hard links"
+        },
+        {
+          "code": "R-83.retired_hgnc_symbol",
+          "fix": "a gene symbol is a withdrawn HGNC symbol"
         },
         {
           "code": "R-83.row_width",
-          "fix": null
+          "fix": "a data row has a different number of columns than the header"
         },
         {
           "code": "R-83.sample_not_in_matrix",
-          "fix": null
+          "fix": "a sample in the linked sample sheet has no column in this matrix"
         },
         {
           "code": "R-83.sample_not_in_sheet",
-          "fix": null
+          "fix": "a sample column in this matrix is absent from the linked sample sheet"
         },
         {
           "code": "R-83.sample_order",
-          "fix": null
+          "fix": "the sample order in the matrix differs from the linked sample sheet"
+        },
+        {
+          "code": "R-83.study_reference",
+          "fix": "the study record linked by this data contract could not be safely read"
+        },
+        {
+          "code": "R-83.symbol_case",
+          "fix": "a gene symbol's casing disagrees with the linked study's declared species"
         },
         {
           "code": "R-83.type",
-          "fix": null
+          "fix": "a cell value does not match the column's declared data type"
         },
         {
           "code": "R-83.unreadable",
-          "fix": null
+          "fix": "the declared data table could not be read or changed during the check"
         }
       ],
       "fix": "inspect the reported row and column, then correct the export or the declared table contract",
       "governance": "project",
       "name": "data.contracts",
-      "pass_does_not_mean": "That a database lists the identifiers or that any scientific conclusion follows.",
+      "pass_does_not_mean": "That every identifier is current or that any scientific conclusion follows.",
       "rule": "R-83",
       "run": "steward check data --summary",
       "version": 1,
@@ -3766,15 +3834,15 @@
       "codes": [
         {
           "code": "R-84.invalid",
-          "fix": null
+          "fix": "a saved shadow-stage comparison record could not be parsed or failed validation"
         },
         {
           "code": "R-84.missing",
-          "fix": null
+          "fix": "a declared shadow stage has no recorded comparison yet"
         },
         {
           "code": "R-84.stale",
-          "fix": null
+          "fix": "a shadow-stage comparison no longer matches its recorded runs or outputs"
         }
       ],
       "fix": "keep both recorded outputs and run steward compare record with the shadow stage name",
@@ -3796,15 +3864,15 @@
       "codes": [
         {
           "code": "R-85.accession_missing",
-          "fix": null
+          "fix": "an accession from a cited study is missing from the paper's data-availability statement"
         },
         {
           "code": "R-85.no_statement",
-          "fix": null
+          "fix": "no data-availability file or section was found for the paper"
         },
         {
           "code": "R-85.refused",
-          "fix": null
+          "fix": "the declared data-availability file is a link or outside the repository"
         }
       ],
       "fix": "name every accession of the cited studies in the paper's data-availability statement",
@@ -3829,7 +3897,7 @@
         },
         {
           "code": "R-86.contract_split",
-          "fix": null
+          "fix": "the model record's evaluation split is not defined in its benchmark contract"
         },
         {
           "code": "R-86.duplicate",
@@ -3837,7 +3905,7 @@
         },
         {
           "code": "R-86.input_changed",
-          "fix": null
+          "fix": "a model evaluation run's input file changed after the recorded run"
         },
         {
           "code": "R-86.licence",
@@ -3845,19 +3913,19 @@
         },
         {
           "code": "R-86.metric_mismatch",
-          "fix": null
+          "fix": "a recorded model-card metric disagrees with the evaluation run's output"
         },
         {
           "code": "R-86.metric_undefined",
-          "fix": null
+          "fix": "a model-card metric is not declared in the benchmark contract"
         },
         {
           "code": "R-86.metrics_unrecorded",
-          "fix": null
+          "fix": "the referenced evaluation run did not record metric values"
         },
         {
           "code": "R-86.run_context",
-          "fix": null
+          "fix": "the referenced evaluation run does not match the model weights or split context"
         },
         {
           "code": "R-86.run_ledger",
@@ -3869,19 +3937,19 @@
         },
         {
           "code": "R-86.split_file",
-          "fix": null
+          "fix": "a split file referenced by the model's benchmark contract is missing or unreadable"
         },
         {
           "code": "R-86.training_input",
-          "fix": null
+          "fix": "a training study's input file changed since the model record was written"
         },
         {
           "code": "R-86.training_study",
-          "fix": null
+          "fix": "a training study named in the model record does not exist or failed checks"
         },
         {
           "code": "R-86.weights_changed",
-          "fix": null
+          "fix": "the model weights file is missing or differs from its recorded SHA-256"
         }
       ],
       "fix": "check the weights and training studies, then record a current evaluation run and use its metric values",
@@ -3902,15 +3970,15 @@
       "codes": [
         {
           "code": "R-87.ignored",
-          "fix": null
+          "fix": "a stranger-test file was ignored because it was empty or dated in the future"
         },
         {
           "code": "R-87.none",
-          "fix": null
+          "fix": "no stranger-test record was found under development/assessment/"
         },
         {
           "code": "R-87.stale",
-          "fix": null
+          "fix": "the latest stranger-test record is older than [stranger_test] max_age_days"
         }
       ],
       "fix": "run a stranger test on the coming release: steward stranger-test brief --tag TAG --for AGENT",
@@ -3931,23 +3999,23 @@
       "codes": [
         {
           "code": "R-88.contradiction",
-          "fix": null
+          "fix": "a task's board status contradicts what a sprint ledger recorded"
         },
         {
           "code": "R-88.exchange",
-          "fix": null
+          "fix": "an exchange item is still open after a response or awaiting acknowledgement"
         },
         {
           "code": "R-88.leftover",
-          "fix": null
+          "fix": "a merged sprint branch or worktree is still present in the repository"
         },
         {
           "code": "R-88.stale_page",
-          "fix": null
+          "fix": "a handoff or index page is older than its threshold or behind the latest tag"
         },
         {
           "code": "R-88.stale_task",
-          "fix": null
+          "fix": "an open task on the board has been untouched longer than stale_days"
         }
       ],
       "fix": "run steward tidy, then ask the owner whether to archive, delete or keep each item",
@@ -3958,6 +4026,27 @@
       "run": "steward check tidy --summary",
       "version": 1,
       "why": "Stale tasks and pages cost attention, and for agents tokens, at every session; naming them lets the owner archive, delete or keep each one."
+    },
+    {
+      "area": "agents",
+      "areas": [
+        "agents"
+      ],
+      "checks": "Advisory: with [delegation] declared, each agent it names (the master and every worker) is installed: its CLI is on PATH or in its known install folder. Nothing is run.",
+      "codes": [
+        {
+          "code": "R-89.missing",
+          "fix": "an agent configured under [delegation] is not installed on PATH or in its install folder"
+        }
+      ],
+      "fix": "install the agent named, or run steward agents setup to write a [delegation] of the installed agents",
+      "governance": "multi-project",
+      "name": "delegation.installed",
+      "pass_does_not_mean": "That the agent is signed in or within its usage limits: steward agents status shows what the availability ledger recorded.",
+      "rule": "R-89",
+      "run": "steward check agents --summary",
+      "version": 1,
+      "why": "A delegated task given to an agent that is not installed fails before it starts, and the master learns it only then."
     }
   ],
   "schema": "steward.explain/0.1",

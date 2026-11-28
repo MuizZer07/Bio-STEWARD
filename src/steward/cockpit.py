@@ -657,8 +657,20 @@ def next_doc(root: Path, cfg: Any, now: dt.datetime) -> dict[str, Any]:
             st, when = s["states"][t.id], s["times"].get(t.id)
             label = f"sprint {sid} task {t.id}: {t.title}"
             if st["state"] in ("running", "checking"):
-                agents.append(_entry("task_running", f"{sid}/{t.id}", f"{label} ({st['state']}, agent {t.agent})",
+                agents.append(_entry("task_running", f"{sid}/{t.id}", f"{label} ({st['state']}, agent "
+                                     f"{st.get('agent') if st.get('agent') and (t.agent == 'auto' or st.get('role')) else t.agent})",
                                      s["ledger"], f"steward sprint status {sid}", when))
+            elif st["state"] == "waiting":  # D02: no worker can run until a reset time
+                agents.append(_entry("task_limited", f"{sid}/{t.id}", f"{label} waits until {st.get('until')} "
+                                     "(no worker can run; on_limit = wait)", s["ledger"], "steward agents status",
+                                     when))
+            elif st["state"] in ("redelegated", "rework"):
+                agents.append(_entry("task_ordered", f"{sid}/{t.id}", f"{label} ({st['state']}, starts again on its "
+                                     "branch)", s["ledger"], f"steward sprint start {sid}", when))
+            elif st["state"] == "review":  # D02: a worker's task passed its checks; the master reviews it
+                human.append(_entry("task_review", f"{sid}/{t.id}", f"{label} passed its checks; the master reviews "
+                                    f"it (brief {st.get('review') or '-'})", s["ledger"],
+                                    f"steward sprint accept {sid} {t.id}", when))
             elif st["state"] == "ready" and st["go"]:
                 agents.append(_entry("task_ordered", f"{sid}/{t.id}", f"{label} (ordered, not started)", s["ledger"],
                                      f"steward sprint start {sid}", when))

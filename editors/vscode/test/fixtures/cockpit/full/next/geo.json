@@ -1,0 +1,23 @@
+{
+  "milestone": null,
+  "notes": [],
+  "now": "2026-11-27T00:00:00Z",
+  "project": "biology-geo",
+  "resume": null,
+  "schema": "steward.next/0.1",
+  "tidy": {
+    "command": "steward tidy",
+    "counts": {
+      "contradiction": 0,
+      "exchange": 0,
+      "leftover": 0,
+      "memory": 0,
+      "stale_page": 0,
+      "stale_task": 0
+    },
+    "total": 0
+  },
+  "tool_version": "0.22.0",
+  "waiting_on_agents": [],
+  "waiting_on_human": []
+}

@@ -1,4 +1,4 @@
-// P6 Decisions (reduced): find the project's decisions logs on disk, without `vscode`, so the unit tests run it on
+// P6 Decisions: find the project's decisions logs on disk, without `vscode`, so the unit tests run it on
 // real folders. Read-only: the log's text is never read here (it is opened in the editor as it is), and nothing is
 // written or created. A log counts as found as CLI 0.20.6 `fsutil.iter_repo_files` would list it (U09): a regular
 // file inside the project, reached without a link and not through `.git`. The same check runs again when it is opened.

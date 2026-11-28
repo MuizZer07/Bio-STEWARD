@@ -141,11 +141,23 @@ Usage and input errors can report a diagnostic on stderr and leave stdout empty.
 Discovery and the default read commands use local data. To query configured
 remote peers explicitly, use `steward exchange status --fetch --format json`.
 
+## More JSON documents (0.23.0)
+
+| Command | Schema | What it holds |
+|---|---|---|
+| `steward agents status --format json` | `steward.agents_status/0.1` | Each agent CLI the delegation names (`claude-code`, `codex`, `antigravity`): available, limited until a time, signed out or missing; its role (master or worker); its last record in the availability ledger. Read from the ledger and PATH; no agent is run. See [Delegate to other agents](guides/delegation.md). |
+| `steward sprint status ID --format json` | `steward.sprint_status/0.1` | Additions only: a delegated task's row has `delegation` (its role, agent, `until`, the review brief and its attempts, newest first); `auto` is a task agent. |
+| `steward next --format json` | `steward.next/0.1` | Additions only: the kinds `task_review` (a worker's task waiting for `steward sprint accept`) and `task_limited` (a task waiting for a reset time). |
+| `steward tokens report --format json` | `steward.tokens_report/0.1` | Additions only: a delegated task's `attempts` (newest first), each with its agent, model, outcome and tokens. |
+
+In a gate, `steward agents status --format json` tells a script which workers can take a task now; a task in review
+appears in `steward next --format json` until the master accepts it.
+
 ## More JSON documents (0.21.0)
 
 | Command | Schema | What it holds |
 |---|---|---|
-| `steward explain R-42 --format json` | `steward.explain/0.1` | The rule's name, version, area, what it checks, why, what a PASS does not mean, its fix, and every result code with its own fix where one exists. `steward explain --all --format json` lists every rule. |
+| `steward explain R-42 --format json` | `steward.explain/0.1` | The rule's name, version, area, what it checks, why, what a PASS does not mean, its fix, and every result code with a one-line description or its own fix (0.23.0: every code has one). `steward explain --all --format json` lists every rule. |
 | `steward check --digest-only --against report.json --format json` | `steward.digest/0.1` | The present digest of the report's inputs, and `current`. No rule is evaluated. |
 | `steward init --dry-run --format json` | `steward.init_plan/0.1` | What `init` would create, skip, update or print, the `steward.toml` tables it would append, and the next commands. Nothing is written. |
 | `steward skills list --format json` | `steward.skills/0.1` | The bundled skills by bundle, with their descriptions. In a project with `[skills]`, the canonical folder, the skills in it and the state of each copy (the codes of R-60). |

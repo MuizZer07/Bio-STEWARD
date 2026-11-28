@@ -7,7 +7,7 @@
 // A scoped re-check (`check AREA …`, `check --rule R-xx`) shows its report as a partial run: its gates read
 // NOT EVALUATED BY THIS RUN and the status bar keeps the last full verdict, marked stale (design v0.1 §5.3).
 import * as vscode from 'vscode';
-import { copyText } from './clipboard';
+import { copyBriefText } from './rowBrief';
 import { CHECK_AREAS, isArea, isRuleId, type Area, type Rule } from '../cli/commands';
 import { agentText, recheckCommand } from '../model/agent';
 import type { ViewNode } from '../model/views';
@@ -54,10 +54,7 @@ export async function copyForAgent(project: Project | undefined, input?: unknown
     return undefined;
   }
   const text = agentText(result.stdout, rule, project.cliVersion ?? 'unknown');
-  await copyText(text);
-  void vscode.window.showInformationMessage(
-    `Bio-STEWARD: Copied ${recheckCommand(rule)} (${Buffer.byteLength(result.stdout, 'utf8')} bytes) for your agent.`);
-  return text;
+  return copyBriefText(recheckCommand(rule), text);
 }
 
 // The command returns at once; the message offers the log.

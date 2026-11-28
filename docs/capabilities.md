@@ -87,7 +87,7 @@ Install only the kits you use: `steward init --skills DIR --kits core,paper`. Ea
 
 Every command: `steward COMMAND --help`; the full list: [the command reference](reference/commands.md).
 
-## Rules (82, by area)
+## Rules (83, by area)
 
 | Area | Rules |
 |---|---|
@@ -114,7 +114,7 @@ Every command: `steward COMMAND --help`; the full list: [the command reference](
 | repro | R-52 `repro.current` |
 | session | R-55 `session.handoff` |
 | files | R-61 `files.conflict_markers` |
-| agents | R-62 `agents.ledger` |
+| agents | R-62 `agents.ledger` · R-89 `delegation.installed` |
 | stages | R-68 `stages.records` |
 | frozen | R-63 `frozen.sets` |
 | dependencies | R-66 `dependencies.parity` |
@@ -131,4 +131,4 @@ Every command: `steward COMMAND --help`; the full list: [the command reference](
 | models | R-86 `model.records` |
 | tidy | R-88 `tidy.stale` |
 
-Advisory (reported, not in the default gate): R-55, R-58, R-70, R-71, R-72, R-74, R-76, R-82, R-84, R-87, R-88. What each rule checks: `steward explain R-xx`, or [the rule reference](reference/rules.md).
+Advisory (reported, not in the default gate): R-55, R-58, R-70, R-71, R-72, R-74, R-76, R-82, R-84, R-87, R-88, R-89. What each rule checks: `steward explain R-xx`, or [the rule reference](reference/rules.md).

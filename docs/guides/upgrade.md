@@ -26,9 +26,9 @@ steward upgrade --check --online --format json
 
 ```console
 $ steward upgrade --check
-Installed version 0.21.1 (uv-tool)
-Newest known version 0.22.0 (exchange)
-Install command uv tool install --no-config --force 'bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.22.0'
+Installed version 0.22.0 (uv-tool)
+Newest known version 0.23.0 (exchange)
+Install command uv tool install --no-config --force 'bio-steward @ git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.23.0'
 ```
 
 The check reads the project's received toolkit release notices (`exchange/inbox/`) by default. A notice counts only
@@ -55,7 +55,7 @@ The JSON result (`steward.upgrade/0.1`) reports:
   "channel": null,
   "command": null,
   "install_method": "unknown",
-  "installed_version": "0.22.0",
+  "installed_version": "0.23.0",
   "latest_version": null,
   "note": null,
   "schema": "steward.upgrade/0.1",
@@ -70,7 +70,7 @@ the toolkit's `vVERSION` tag. An editable install is updated through its own che
 ## Install
 
 ```bash
-steward upgrade --to 0.22.0
+steward upgrade --to 0.23.0
 steward upgrade --to 0.20.7 --allow-downgrade
 ```
 
@@ -99,5 +99,5 @@ upgrades only while that folder still exists and holds the new version. If it wa
 once from a stable source, and `steward upgrade` can then follow it:
 
 ```bash
-uv tool install --force "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.22.0"   # or, once it is on PyPI: bio-steward
+uv tool install --force "git+https://github.com/MuizZer07/Bio-STEWARD.git@v0.23.0"   # or, once it is on PyPI: bio-steward
 ```

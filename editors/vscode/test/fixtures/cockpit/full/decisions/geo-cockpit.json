@@ -1,0 +1,49 @@
+{
+  "entries": [
+    {
+      "body": "- **Decision:** start the reanalysis.",
+      "consequences": null,
+      "date": "2000-03-01",
+      "decision": "start the reanalysis.",
+      "heading": "2000-03-01: Kick-off approved",
+      "line": 7,
+      "path": "development/DECISIONS.md",
+      "quotes": [],
+      "title": "Kick-off approved"
+    },
+    {
+      "body": "- **Decision:** every table reports effect sizes with intervals.",
+      "consequences": null,
+      "date": "2000-03-01",
+      "decision": "every table reports effect sizes with intervals.",
+      "heading": "2000-03-01: Report effect sizes",
+      "line": 10,
+      "path": "development/DECISIONS.md",
+      "quotes": [],
+      "title": "Report effect sizes"
+    },
+    {
+      "body": "- **Decision:** analyse GSE7621 as deposited, without re-normalising.\n- **Consequences:** the methods cite the deposited processing.",
+      "consequences": "the methods cite the deposited processing.",
+      "date": "2000-02-01",
+      "decision": "analyse GSE7621 as deposited, without re-normalising.",
+      "heading": "2000-02-01: Use the series as published",
+      "line": 3,
+      "path": "development/DECISIONS.md",
+      "quotes": [],
+      "title": "Use the series as published"
+    }
+  ],
+  "open_decisions": [
+    {
+      "line": 4,
+      "options": [
+        "the 2000 release",
+        "the newest release"
+      ],
+      "path": "development/INDEX.md",
+      "question": "Which annotation release to pin?"
+    }
+  ],
+  "schema": "steward.decisions/0.1"
+}

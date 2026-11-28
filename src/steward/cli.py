@@ -20,7 +20,7 @@ from pydantic import ValidationError
 from . import __version__
 from .engine import UnknownGate, run_check
 from .fsutil import canonical_json, find_root, glob_match, inside
-from .init import apply, plan
+from .init import apply, plan, sync_agents_block
 from .interface import (ERROR_SCHEMA, EXIT_NOT_CONFIGURED, add_json_format, add_json_options, describe, wants_json,
                         write_document, write_json)
 from .report import Report, render_markdown, render_summary, render_text, select_results, summary_line
@@ -78,7 +78,7 @@ class _Parser(argparse.ArgumentParser):
         return super()._get_values(action, arg_strings)
 
 
-QUIET_BREAKERS = {"R-53.undelivered", "R-53.upgrade_available"}  # AF19: advice that --quiet must never hide
+QUIET_BREAKERS = {"R-75.sample_imbalance", "R-53.undelivered", "R-53.upgrade_available"}  # advice visible in --quiet
 
 HELP_GROUPS = """Commands by what you do:
   Start            init · example · check · explain · report · interface · skills · next
@@ -128,7 +128,9 @@ def build_parser() -> argparse.ArgumentParser:
     pug.add_argument("--allow-downgrade", action="store_true", help="with --to, permit an older version")
 
     pi = sub.add_parser("init", parents=[common], help="scaffold this repository (never overwrites)")
-    pi.add_argument("--profile", choices=["exploratory", "confirmatory"], default="exploratory")
+    pi.add_argument("--profile", choices=["exploratory", "confirmatory"], default="exploratory",
+                    help="exploratory (default: rules report, few demand) or confirmatory (requires a benchmark "
+                         "contract and prior-work record, and recommends an independent release review)")
     pi.add_argument("--for", dest="goals", action="append", choices=sorted(GOALS), metavar="GOAL",
                     help="set up for a goal (repeatable): " + ", ".join(sorted(GOALS)))
     pi.add_argument("--agents-md", action="store_true", help="append the steward block to an existing AGENTS.md")
@@ -345,6 +347,17 @@ def build_parser() -> argparse.ArgumentParser:
                            help="attempts, estimates, scores and events per task, newest first")
     als.add_argument("task", nargs="?", help="only this task")
     add_json_format(als, "agents list")
+    # 0.23.0 (STW-061 D01): delegation, its setup and the agents' availability
+    asu = agsub.add_parser("setup", parents=[common],
+                           help="find claude, codex and agy, show the [delegation] to write as a diff, write it "
+                                "after confirmation (no model call, no network)")
+    asu.add_argument("--yes", action="store_true", help="write without asking")
+    asu.add_argument("--master", choices=list(_models.DELEGATION_AGENTS),
+                     help="the agent that reviews, fixes and merges (default: the configured one, else claude-code)")
+    ast_ = agsub.add_parser("status", parents=[common],
+                            help="each agent: available, limited until a time, signed out or missing; and the master")
+    ast_.add_argument("--now", metavar="TIME", help="the time to judge reset times against (ISO 8601 with a zone)")
+    add_json_format(ast_, "agents status")
     asc = agsub.add_parser("score", parents=[common], help="score an attempt (never by its author)")
     asc.add_argument("task")
     asc.add_argument("--attempt", type=int, required=True)
@@ -436,6 +449,18 @@ def build_parser() -> argparse.ArgumentParser:
                            help="run a failed task's done commands on its branch's head and record done or failed (0.21.0)")
     sre.add_argument("id")
     sre.add_argument("task")
+    sac = spsub.add_parser("accept", parents=[common],
+                           help="mark a worker's task in review done, after the master verified it (0.23.0)")
+    sac.add_argument("id")
+    sac.add_argument("task")
+    srw = spsub.add_parser("rework", parents=[common],
+                           help="send a worker's task in review back, with a note, to the same agent or the master "
+                                "(0.23.0)")
+    srw.add_argument("id")
+    srw.add_argument("task")
+    srw.add_argument("--note", required=True, help="what to change")
+    srw.add_argument("--to", choices=["same", "master"], default="same",
+                     help="who does it again: the agent of the last attempt (default) or the master")
     sad = spsub.add_parser("add", parents=[common],
                            help="add a task written into the sprint file after the sprint opened (0.21.0)")
     sad.add_argument("id")
@@ -536,7 +561,8 @@ def build_parser() -> argparse.ArgumentParser:
     tkx = tksub.add_parser("dispatch", parents=[common],
                            help="run a task's brief with Codex or Antigravity, headless, and keep the report (0.20.4)")
     tkx.add_argument("task", type=Path)
-    tkx.add_argument("--to", dest="agent", required=True, choices=["codex", "antigravity"])
+    tkx.add_argument("--to", dest="agent", required=True, choices=["codex", "antigravity", "auto"],
+                     help="auto (0.23.0): the first available worker of [delegation] that has a headless dispatch")
     tkx.add_argument("--implement", action="store_true",
                      help="let it change files (in a checkout of its own; nothing is committed); default: a review")
     tkx.add_argument("--inline", action="store_true",
@@ -1061,7 +1087,32 @@ def cmd_init(args: argparse.Namespace) -> int:
     for t in added:
         print(f"append         steward.toml  [{t}]")
     print("Next:\n" + "\n".join(f"  {i}. {st}" for i, st in enumerate(_init_next(goals), start=1)))
-    return EXIT_OK
+    return _offer_delegation(args, root)
+
+
+def _offer_delegation(args: argparse.Namespace, root: Path) -> int:
+    """0.23.0 (STW-061 D01): steward init offers `steward agents setup` when an agent CLI is installed and steward.toml
+    has no [delegation]. In a terminal it asks; the setup then shows its diff and asks again before writing."""
+    from . import delegation as dg
+
+    try:
+        cfg = _models.load_config(root)
+    except Exception:  # noqa: BLE001 - the offer never fails init
+        return EXIT_OK
+    if cfg.delegation is not None or not any(dg.locate(n)[0] for n in dg.ORDER):
+        return EXIT_OK
+    print("Delegation: `steward agents setup` finds claude, codex and agy, and writes [delegation] (the master and "
+          "the workers) after you confirm.")
+    if not sys.stdin.isatty():
+        return EXIT_OK
+    try:
+        answer = input("Set up delegation now? [y/N] ")
+    except EOFError:
+        answer = ""
+        print()
+    if answer.strip().lower() not in ("y", "yes"):
+        return EXIT_OK
+    return _agents_setup(argparse.Namespace(yes=False, master=None), root, cfg)
 
 
 def _planned_tables(root: Path, acts: list[Any], goals: list[str], paper: str | None) -> list[str]:
@@ -1171,50 +1222,96 @@ def _paper_table(root: Path, name: str, planned: str | None = None) -> list[str]
 
 
 @functools.lru_cache(maxsize=1)
-def _toolkit_source() -> str:
+def _toolkit_modules() -> list[tuple[str, str]]:
+    """(module_name, source) for every toolkit module that can emit result codes (excludes documentation tables)."""
     import pkgutil
 
     import steward
 
-    out = []
+    out: list[tuple[str, str]] = []
     for m in pkgutil.iter_modules(steward.__path__):
+        if m.name in ("code_docs", "rule_docs"):
+            continue
         p = Path(steward.__file__).parent / f"{m.name}.py"
         if p.is_file():
-            out.append(p.read_text(encoding="utf-8"))
-    return "\n".join(out)
+            out.append((m.name, p.read_text(encoding="utf-8")))
+    return out
+
+
+@functools.lru_cache(maxsize=1)
+def _toolkit_source() -> str:
+    return "\n".join(src for _, src in _toolkit_modules())
+
+
+@functools.lru_cache(maxsize=1)
+def _helper_codes() -> dict[str, dict[str, str]]:
+    """STW-035 B4: AST extraction of local helper calls that construct `f"R-xx.{param}"` (handles nested calls)."""
+    import ast
+
+    per_rule: dict[str, dict[str, str]] = {}
+    for _, text in _toolkit_modules():
+        tree = ast.parse(text)
+        for node in tree.body:
+            if not isinstance(node, ast.FunctionDef):
+                continue
+            helpers: dict[str, str] = {}
+            for child in ast.walk(node):
+                if isinstance(child, ast.FunctionDef) and child is not node and child.args.args:
+                    p0 = child.args.args[0].arg
+                    for sub in ast.walk(child):
+                        if isinstance(sub, ast.JoinedStr) and len(sub.values) >= 2:
+                            v0, v1 = sub.values[0], sub.values[1]
+                            if (isinstance(v0, ast.Constant) and isinstance(v0.value, str)
+                                    and re.fullmatch(r"R-\d{2}\.", v0.value)
+                                    and isinstance(v1, ast.FormattedValue)
+                                    and isinstance(v1.value, ast.Name) and v1.value.id == p0):
+                                helpers[child.name] = v0.value[:-1]
+            if not helpers:
+                continue
+            for child in ast.walk(node):
+                if not (isinstance(child, ast.Call) and isinstance(child.func, ast.Name) and child.func.id in helpers):
+                    continue
+                if not (child.args and isinstance(child.args[0], ast.Constant) and isinstance(child.args[0].value, str)):
+                    continue
+                suf = child.args[0].value
+                if not re.fullmatch(r"[a-z0-9_]*[a-z0-9]", suf):
+                    continue
+                rule = helpers[child.func.id]
+                code = f"{rule}.{suf}"
+                bucket = per_rule.setdefault(rule, {})
+                bucket.setdefault(code, "")
+                for kw in child.keywords:
+                    if kw.arg == "message" and isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
+                        if not bucket[code] and _remedy(kw.value.value):
+                            bucket[code] = kw.value.value
+    return per_rule
 
 
 def code_fixes(rule: str) -> dict[str, str]:
-    """Every result code a rule can emit, with its own remedy where the source gives one next to it (0.10.0 review
-    S9). Read from the whole toolkit's source (one source of truth):
+    """Every result code a rule can emit, with its one-line description (0.10.0 review S9; STW-035 B4).
+    Read from the whole toolkit's source (one source of truth):
     - literal codes (`"R-07.local_path"`), never a fragment that is completed at run time (`R-07.list_{…}`);
     - codes passed to a local helper that builds `f"R-xx.{code}"` (`bad("invalid")` in R-53);
     - the fixed sets the source builds from values (`rule_docs.DYNAMIC_CODES`).
-    The remedy is the literal `message` of the same detail, when it has one."""
+    Each code gets its literal source remedy when one sits beside it, else its one-line description in `CODE_DOCS`."""
+    from .code_docs import CODE_DOCS
     from .rule_docs import DYNAMIC_CODES
 
     text = _toolkit_source()
     r = re.escape(rule)
     found: dict[str, str] = {c: "" for c in DYNAMIC_CODES.get(rule, [])}
-    for m in re.finditer(rf"(?<![\w-]){r}\.[a-z_]*[a-z](?![a-z_{{])", text):
+    for m in re.finditer(rf"(?<![\w-]){r}\.[a-z0-9_]*[a-z0-9](?![a-z0-9_{{])", text):
         found.setdefault(m.group(), "")
-    for h in re.finditer(rf"def (\w+)\((\w+): str[^\n]*\n(?:[^\n]*\n){{0,3}}?[^\n]*f\"{r}\.\{{(\w+)\}}", text):
-        helper, param, used = h.groups()
-        if param != used:
-            continue
-        # the calls in the enclosing top-level function, which follows the helper's definition
-        start = text.rfind("\ndef ", 0, h.start())
-        end = text.find("\ndef ", h.end())
-        body = text[start:end if end != -1 else len(text)]
-        for c in re.finditer(rf"\b{re.escape(helper)}\(\s*f?\"([a-z_]+)\"((?:[^()]|\([^()]*\))*)\)", body):
-            code = f"{rule}.{c.group(1)}"
-            found.setdefault(code, "")
-            msg = re.search(r"message=\"([^\"{}]+)\"", c.group(2))  # S9 (0.13.0): a helper call's literal remedy
-            if msg and not found[code] and _remedy(msg.group(1)):
-                found[code] = msg.group(1)
-    for m in re.finditer(rf"\"code\": \"({r}\.[a-z_]+)\"(?:(?!\"code\")[^\n])*?\"message\": \"([^\"{{}}]+)\"", text):
+    for code, msg in _helper_codes().get(rule, {}).items():
+        found.setdefault(code, "")
+        if msg and not found[code]:
+            found[code] = msg
+    for m in re.finditer(rf"\"code\": \"({r}\.[a-z0-9_]+)\"(?:(?!\"code\")[^\n])*?\"message\": \"([^\"{{}}]+)\"", text):
         if m.group(1) in found and not found[m.group(1)] and _remedy(m.group(2)):
             found[m.group(1)] = m.group(2)
+    for code in list(found):
+        if not found[code] and code in CODE_DOCS:
+            found[code] = CODE_DOCS[code]
     return dict(sorted(found.items()))
 
 
@@ -2471,6 +2568,10 @@ def cmd_agents(args: argparse.Namespace) -> int:
     ac = cfg.agents or AgentsSection()
     if args.agents_command == "list":
         return _agents_list(args, root, ac)
+    if args.agents_command == "setup":
+        return _agents_setup(args, root, cfg)
+    if args.agents_command == "status":
+        return _agents_status(args, root, cfg)
     led = Ledger(root / ac.ledger, "agents", cfg.steward.repo_id, base=root)
     extra: dict[str, Any] = {}  # X03: only the optional fields given, so an attempt without them is as before
     if args.agents_command == "attempt":
@@ -2636,6 +2737,108 @@ def _agents_list(args: argparse.Namespace, root: Path, ac: Any) -> int:
                       if s["score"] is not None else f"    score by {s['scorer']} (no number)")
         for ev in t["events"]:
             print(f"  event {ev['kind']} at {ev['time']}")
+    return EXIT_OK
+
+
+def _agents_setup(args: argparse.Namespace, root: Path, cfg: Any) -> int:
+    """`steward agents setup` (0.23.0, STW-061 D01): probe the agent CLIs, show the [delegation] diff, write it after
+    confirmation (or with --yes)."""
+    from . import delegation as dg
+    from .fsutil import safe_write
+    from .ledger import LedgerError
+    from .records import RecordRefused, read_rel
+
+    seen = [dg.probe(n) for n in dg.ORDER]
+    for p in seen:
+        if not p["installed"]:
+            print(f"  {p['agent']:<12} not installed ({p['executable']} is not on PATH or in its install folder)")
+            continue
+        signed = {True: "signed in", False: "signed out", None: "sign-in not known"}[p["signed_in"]]
+        print(f"  {p['agent']:<12} {p['version'] or 'version not known'} · {signed} · {p['found']}")
+    proposal = dg.propose(seen, cfg.delegation, getattr(args, "master", None))
+    if proposal is None:
+        print("no agent CLI is installed; nothing to write (install claude, codex or agy, then run this again)")
+        return EXIT_OK
+    try:
+        current = read_rel(root, "steward.toml").decode("utf-8")
+    except (RecordRefused, ValueError) as e:
+        print(f"steward: steward.toml cannot be read ({e}); nothing written", file=sys.stderr)
+        return EXIT_DATAERR
+    updated = dg.replace_table(current, dg.render(proposal))
+    if updated == current:
+        print("[delegation] is up to date")
+    else:
+        print(dg.diff(current, updated), end="")
+        if not getattr(args, "yes", False):
+            if not sys.stdin.isatty():
+                print("not written: confirm in a terminal, or pass --yes")
+                return EXIT_OK
+            try:
+                answer = input("Write this [delegation] to steward.toml? [y/N] ")
+            except EOFError:  # a closed input is a no
+                answer = ""
+                print()
+            if answer.strip().lower() not in ("y", "yes"):
+                print("not written")
+                return EXIT_OK
+        import tomllib
+
+        try:  # the text written must parse, and its [delegation] must pass the schema
+            _models.DelegationSection.model_validate(tomllib.loads(updated)["delegation"])
+        except (ValueError, KeyError) as e:
+            print(f"steward: the proposed steward.toml does not parse ({e}); nothing written", file=sys.stderr)
+            return EXIT_SOFTWARE
+        try:
+            safe_write(root, "steward.toml", updated.encode("utf-8"))
+        except OSError as e:
+            print(f"steward: cannot write steward.toml: {e}", file=sys.stderr)
+            return EXIT_CANTCREAT
+        print("wrote [delegation] to steward.toml")
+    try:
+        if sync_agents_block(root):
+            print("updated AGENTS.md (steward block)")
+    except OSError as e:
+        print(f"steward: AGENTS.md was not updated: {e}", file=sys.stderr)
+    try:
+        dg.record_observed(root, cfg.steward.repo_id, seen)
+    except (LedgerError, OSError) as e:
+        print(f"steward: the availability ledger was not updated: {e}", file=sys.stderr)
+        return EXIT_DATAERR
+    print(f"recorded what was found in {dg.LEDGER}")
+    return EXIT_OK
+
+
+def _agents_status(args: argparse.Namespace, root: Path, cfg: Any) -> int:
+    from . import delegation as dg
+    from .cockpit import parse_now
+
+    try:
+        now = parse_now(args.now)
+    except ValueError as e:
+        print(f"steward: --now: {e}", file=sys.stderr)
+        return EXIT_USAGE
+    if (root / dg.LEDGER).is_symlink():
+        print(f"steward: refused: {dg.LEDGER} is a link", file=sys.stderr)
+        return EXIT_DATAERR
+    try:
+        doc = dg.status(root, cfg, now)
+    except ValueError as e:
+        print(f"steward: {e}", file=sys.stderr)
+        return EXIT_DATAERR
+    if wants_json(args):
+        write_json(args, doc)
+        return EXIT_OK
+    if doc["configured"]:
+        print(f"master {doc['master']} · workers {', '.join(doc['workers']) or 'none'} · on_limit {doc['on_limit']}")
+    else:
+        print("no [delegation] in steward.toml (steward agents setup writes one)")
+    for a in doc["agents"]:
+        role = f"worker {a['rank']}" if a["role"] == "worker" else a["role"]
+        state = {"limited": f"limited until {a['until']}" + ("" if a["reset_known"] else " (no reset time printed)"),
+                 "signed_out": "signed out", "missing": "missing", "available": "available"}[a["state"]]
+        extra = [x for x in (a["version"], a["model"] and f"model {a['model']}") if x]
+        print(f"  {a['agent']:<12} {role:<10} {state}" + (f"  ({', '.join(extra)})" if extra else ""))
+    print(f"ledger: {doc['ledger']}")
     return EXIT_OK
 
 
@@ -2978,6 +3181,23 @@ def cmd_sprint(args: argparse.Namespace) -> int:
         for tid in sp.order(sf):  # STW-051: the permissions each task runs with
             print(f"permissions: {tid}: {sp.permission_summary(tasks[tid])}")
         print("denied for every agent task: " + ", ".join(sp.DEFAULT_DENY))
+        auto = [tid for tid in sp.order(sf) if tasks[tid].agent == sp.AUTO]
+        if auto:  # D02: the order an auto task is tried in, and who can run now
+            from . import delegation as _dg
+
+            print(f"delegation: {', '.join(auto)}: " + _dg.order_text(cfg))
+            if cfg.delegation is not None:
+                try:
+                    now_ = _dt.datetime.now(_dt.timezone.utc)
+                    names = [*cfg.delegation.workers, cfg.delegation.master]
+                    avail = _dg.states_now(root, names, now_)
+                    print("delegation: now " + "; ".join(
+                        _dg.said(n, a) +(" (master)" if n == cfg.delegation.master else "")
+                        for n, a in avail.items()))
+                except ValueError as e:
+                    print(f"warning: {e}")
+            else:
+                print(f"warning: {', '.join(auto)} cannot start: there is no [delegation] in steward.toml")
         for line in sp.warnings(sf):
             print(f"warning: {line}")
         for line in sp.signing_advice(sf):
@@ -3010,9 +3230,14 @@ def cmd_sprint(args: argparse.Namespace) -> int:
                                 **({"reason": args.reason} if c == "skip" else {})})
             print(f"{sf.sprint.id} {args.task}: {c}" + (" (retry)" if c == "go" and args.retry else ""))
             return EXIT_OK
-        if c in ("recheck", "add") and args.task not in {t.id for t in sf.task}:
+        if c in ("recheck", "add", "accept", "rework") and args.task not in {t.id for t in sf.task}:
             print(f"steward: no task {args.task} in {p.relative_to(root).as_posix()}", file=sys.stderr)
             return EXIT_USAGE
+        if c in ("accept", "rework"):  # D02: the master's review step; merging stays the master's own step
+            say = lambda m: print(m, file=sys.stderr if m.startswith("steward:") else sys.stdout)  # noqa: E731
+            if c == "accept":
+                return sp.accept(root, cfg, sf, args.task, out=say)
+            return sp.rework(root, cfg, sf, args.task, args.note, args.to, out=say)
         if c == "recheck":
             code = sp.recheck(root, cfg, sf, args.task,
                               out=lambda m: print(m, file=sys.stderr if m.startswith("steward:") else sys.stdout))

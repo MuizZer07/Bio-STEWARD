@@ -6,6 +6,8 @@
 // `…geminiLogs`). With none set, the panel says how to set them and still shows the windows the CLI reports. Every
 // number shown is the CLI's; the only arithmetic is the sum of the rows' tokens for the totals, labelled as such.
 // Nothing leaves the machine: the CLI reads local files and prints counts. Pure: no `vscode` import.
+import { createHash } from 'node:crypto';
+import { newestFirst } from './order';
 import Ajv from 'ajv';
 import { parseJson } from '../cli/output';
 import type { ViewNode } from './views';
@@ -43,6 +45,16 @@ export interface TokenModel {
   readonly cost: number | null;
 }
 
+// E04: one window of a task and the record it came from (CLI 0.22 `tokens report --format json`): `task-tokens` (Start
+// / Done Task Window), `agents` (the agents ledger), `sprint` (a sprint ledger), `run` (the run ledger), or `all
+// activity` (no window recorded).
+export interface TokenWindow {
+  readonly source: string;
+  readonly ledger: string | null;
+  readonly start: string;
+  readonly end: string | null;
+}
+
 export interface TokenTask {
   readonly task: string;
   readonly tokens: number | null;
@@ -52,6 +64,8 @@ export interface TokenTask {
   readonly models: readonly TokenModel[];
   readonly agents: readonly { readonly agent: string; readonly tokens: number }[];
   readonly files_read: readonly { readonly path: string; readonly reads: number }[];
+  // With the versioned document only (CLI 0.21 and later); oldest first.
+  readonly windows?: readonly TokenWindow[];
 }
 
 export interface TokenSource {
@@ -102,6 +116,14 @@ const validateReport = ajv.compile<TokensReport>({
             type: 'array', maxItems: 1000,
             items: { type: 'object', required: ['path', 'reads'], properties: { path: text, reads: count } },
           },
+          windows: {
+            type: 'array', maxItems: 10000,
+            items: {
+              type: 'object', required: ['source', 'ledger', 'start', 'end'],
+              properties: { source: text, ledger: { type: ['string', 'null'], maxLength: 1000 }, start: text,
+                end: { type: ['string', 'null'], maxLength: 1000 } },
+            },
+          },
         },
       },
     },
@@ -128,6 +150,34 @@ export function parseTokensReport(stdout: string): TokensReport | undefined {
   if (parsed.kind !== 'valid') return undefined;
   // Defaults for the optional lists, so the views never meet `undefined`.
   return { ...parsed.value, tasks: parsed.value.tasks.map((task) => ({ ...task, files_read: task.files_read ?? [] })) };
+}
+
+// The task rows, newest first: by the start of a task's latest window (CLI 0.21 and later give windows), then by task
+// label, highest first (the JSON keeps the CLI's documented order, A to Z).
+export function tasksNewestFirst(tasks: readonly TokenTask[]): TokenTask[] {
+  const latest = (task: TokenTask) => {
+    const starts = (task.windows ?? []).map((w) => Date.parse(w.start)).filter(Number.isFinite);
+    return starts.length ? Math.max(...starts) : undefined;
+  };
+  return newestFirst(tasks, latest, (task) => task.task);
+}
+
+// ── Where each agent usually keeps its logs for one project (E04) ──────────────────────────────────────────────
+//
+// Computed from the project's folder and the home folder only: nothing is read, listed or checked here. The panel
+// names the folder where a setting is empty and offers "Use this folder", which writes the machine setting.
+//   - Claude Code: ~/.claude/projects/<the project's absolute path, each character other than a letter or a digit
+//     replaced by "-">;
+//   - Codex: ~/.codex/sessions (one folder for every project);
+//   - Gemini CLI: ~/.gemini/tmp/<the SHA-256 of the project's absolute path, in hex>.
+// These follow the agents' current log layouts, which may change.
+export function logFolderHints(root: string, home: string): Readonly<Record<TokenAgent, string>> {
+  const join = (...parts: string[]) => parts.join(home.includes('\\') && !home.includes('/') ? '\\' : '/');
+  return Object.freeze({
+    claude: join(home, '.claude', 'projects', root.replace(/[^A-Za-z0-9]/g, '-')),
+    codex: join(home, '.codex', 'sessions'),
+    gemini: join(home, '.gemini', 'tmp', createHash('sha256').update(root).digest('hex')),
+  });
 }
 
 export type TokensState =
@@ -163,10 +213,44 @@ export function costText(cost: number | null, currency: string | null): string {
   return cost === null ? 'estimated cost unavailable' : `estimated cost ${Number(cost.toPrecision(6))} ${currency ?? ''}`.trimEnd();
 }
 
+const amount = (value: number | null | undefined) => (value === null || value === undefined ? 'unavailable' : number(value));
+
+// "13,500 tokens · input 13,000 · output 500 · cache read 10,000 · cache write 1,000 · estimated cost 0.02025 USD":
+// the CLI's numbers for one model of one task; the cost only where the CLI gives one.
+export function modelText(model: TokenModel, currency: string | null): string {
+  return [`${number(model.tokens)} tokens`, `input ${amount(model.input)}`, `output ${amount(model.output)}`,
+    `cache read ${amount(model.cache_read)}`, `cache write ${amount(model.cache_write)}`,
+    ...(model.cost === null ? [] : [costText(model.cost, currency)])].join(' · ');
+}
+
+const WINDOW_WORDS: Readonly<Record<string, string>> = Object.freeze({
+  'task-tokens': 'started and done by hand', agents: 'agents ledger', sprint: 'sprint ledger', run: 'run ledger',
+  'all activity': 'no window recorded',
+});
+
+function windowNode(window: TokenWindow, id: string): ViewNode {
+  return {
+    id, kind: 'tokens-item', label: `${window.start} → ${window.end ?? 'still open'}`,
+    description: `${WINDOW_WORDS[window.source] ?? window.source}${window.ledger ? ` · ${window.ledger}` : ''}`,
+    tooltip: `A window from ${window.ledger ?? window.source} (${window.source}): the usage logged in it counts for this task.`,
+    icon: { codicon: 'clock' },
+  };
+}
+
+// What a task's total covers: its windows (by record) and the logs the CLI read (by agent).
+export function coverText(task: TokenTask, report: TokensReport): string {
+  const sources = [...new Set((task.windows ?? []).map((w) => w.ledger ?? WINDOW_WORDS[w.source] ?? w.source))];
+  const windows = task.windows ? `${task.windows.length} window${task.windows.length === 1 ? '' : 's'}` +
+    (sources.length ? ` from ${sources.join(', ')}` : '') : 'its task windows';
+  const logs = Object.entries(report.sources).filter(([, source]) => source.files.length)
+    .map(([agent, source]) => `${agent} (${source.files.length} log${source.files.length === 1 ? '' : 's'}, ${source.status})`);
+  return `Covers ${windows}; logs read: ${logs.length ? logs.join(', ') : 'none'}.`;
+}
+
 function modelNode(model: TokenModel, currency: string | null, id: string): ViewNode {
   return {
     id, kind: 'tokens-model', label: `${model.agent} / ${model.model ?? 'unknown model'}`,
-    description: `${number(model.tokens)} tokens`,
+    description: modelText(model, currency),
     tooltip: [`${number(model.tokens)} tokens (input ${or(model.input)}, output ${or(model.output)}, ` +
       `cache read ${or(model.cache_read)}, cache write ${or(model.cache_write)})`, costText(model.cost, currency),
     `From ${SOURCE}.`].join('\n'),
@@ -181,7 +265,8 @@ export const SHARED_NOTE = 'Shared activity: the agent logs are this machine\'s,
   'The CLI attributes records to a task window by time, agent, model and session, not by project, so activity of ' +
   'another project in the same period is counted too.';
 
-function taskNode(task: TokenTask, currency: string | null, prefix: string): ViewNode {
+function taskNode(task: TokenTask, report: TokensReport, prefix: string, root: string): ViewNode {
+  const { currency } = report;
   const id = `${prefix}/task/${task.task}`;
   const tokens = task.tokens === null ? 'no counts' : `${number(task.tokens)} tokens`;
   const shared = task.task === ALL_ACTIVITY;
@@ -190,6 +275,15 @@ function taskNode(task: TokenTask, currency: string | null, prefix: string): Vie
     ...task.issues.map((issue, i): ViewNode => ({ id: `${id}/issue/${i}`, kind: 'tokens-issue', label: issue,
       icon: { codicon: 'warning', tone: 'warning' } })),
   ];
+  if (task.windows?.length) {
+    children.push({
+      id: `${id}/windows`, kind: 'tokens-group', label: `Windows (${task.windows.length})`, expanded: false,
+      description: [...new Set(task.windows.map((w) => WINDOW_WORDS[w.source] ?? w.source))].join(', '),
+      tooltip: coverText(task, report), icon: { codicon: 'clock' },
+      // Newest first: the CLI lists them oldest first.
+      children: [...task.windows].reverse().map((window, i) => windowNode(window, `${id}/windows/${i}`)),
+    });
+  }
   if (task.files_read.length) {
     children.push({
       id: `${id}/files`, kind: 'tokens-group', label: `Most-read files (${task.files_read.length})`, expanded: false,
@@ -197,10 +291,12 @@ function taskNode(task: TokenTask, currency: string | null, prefix: string): Vie
         description: `${file.reads} read${file.reads === 1 ? '' : 's'}` })),
     });
   }
+  const cost = task.cost === null ? '' : ` · ${costText(task.cost, currency)}`;
   return {
-    id, kind: 'tokens-task', label: task.task, description: `${tokens} · ${task.status}${shared ? ' · shared, not this project\'s alone' : ''}`,
-    tooltip: [`${task.task}: ${tokens} (${task.status})`, costText(task.cost, currency), ...task.issues, `From ${SOURCE}.`,
-      ...(shared ? [SHARED_NOTE] : [])].join('\n'),
+    id, root, kind: 'tokens-task', label: task.task,
+    description: `${tokens}${cost} · ${task.status}${shared ? ' · shared, not this project\'s alone' : ''}`,
+    tooltip: [`${task.task}: ${tokens} (${task.status})`, costText(task.cost, currency), coverText(task, report), ...task.issues,
+      `From ${SOURCE}.`, ...(shared ? [SHARED_NOTE] : [])].join('\n'),
     icon: { codicon: task.status === 'available' ? 'pulse' : 'circle-outline', tone: task.status === 'available' ? undefined : 'warning' },
     expanded: task.status !== 'unavailable', children,
   };
@@ -238,24 +334,46 @@ export function totals(report: TokensReport): TokenTotals {
 function totalsNode(report: TokensReport, prefix: string): ViewNode {
   const sum = totals(report);
   const gaps = [sum.withoutCounts && `${sum.withoutCounts} without counts`, sum.partial && `${sum.partial} partial`].filter(Boolean);
+  const priced = report.tasks.filter((task) => task.cost !== null);
+  const cost = priced.length
+    ? ` · ${costText(priced.reduce((total, task) => total + (task.cost ?? 0), 0), report.currency)} (${priced.length} of ` +
+      `${report.tasks.length} tasks priced)`
+    : '';
   return {
     id: `${prefix}/totals`, kind: 'tokens-total', label: 'Total',
-    description: `${number(sum.tokens)} tokens · ${sum.rows} task window${sum.rows === 1 ? '' : 's'}${gaps.length ? ` (${gaps.join(', ')})` : ''}`,
-    tooltip: `The sum of the rows of ${SOURCE} below, added up by the extension.` +
-      (gaps.length ? ' Rows without counts add nothing, so the total covers only what the logs held.' : ''),
+    description: `${number(sum.tokens)} tokens · ${sum.rows} task${sum.rows === 1 ? '' : 's'}${gaps.length ? ` (${gaps.join(', ')})` : ''}${cost}`,
+    tooltip: `The sum of the tasks' totals of ${SOURCE} below, added up by the extension; each task's total is the CLI's.` +
+      (gaps.length ? ' Tasks without counts add nothing, so the total covers only what the logs held.' : '') +
+      (cost ? ' The estimated cost adds the tasks the CLI priced; a task with a model it has no price for has none.' : ''),
     icon: { codicon: 'graph' }, expanded: false,
     children: sum.models.map((model, i): ViewNode => ({ id: `${prefix}/totals/${i}`, kind: 'tokens-item',
       label: `${model.agent} / ${model.model ?? 'unknown model'}`, description: `${number(model.tokens)} tokens` })),
   };
 }
 
-function setupNode(selection: LogSelection, prefix: string): ViewNode {
+// E04: "Use this folder" for each agent whose setting is empty: the folder it usually keeps this project's logs in.
+// The row's click (and its inline button) writes the machine setting; nothing is read before it.
+function useFolderNodes(input: TokensInput, prefix: string): ViewNode[] {
+  const hints = input.hints;
+  if (!hints) return [];
+  return TOKEN_AGENTS.filter((agent) => input.empty?.includes(agent)).map((agent): ViewNode => ({
+    id: `${prefix}/use/${agent}`, kind: 'tokens-use-folder', label: `${AGENT_NAMES[agent]}: Use this folder`,
+    description: hints[agent],
+    tooltip: `${AGENT_NAMES[agent]} usually keeps this project's session logs in ${hints[agent]}. Click to set ` +
+      `${SETTING_KEYS[agent]} to it in your user settings (machine scope; a repository cannot set it). Nothing is read ` +
+      'before you click; then steward tokens report reads only the logs in that folder, and prints counts only.',
+    icon: { codicon: 'folder-opened', tone: 'info' }, command: 'useTokenFolder', path: hints[agent], code: agent,
+    root: input.root,
+  }));
+}
+
+function settingsNode(selection: LogSelection, prefix: string): ViewNode {
   return {
-    id: `${prefix}/setup`, kind: 'tokens-setup', label: 'No agent logs selected',
+    id: `${prefix}/setup`, kind: 'tokens-setup', label: 'Agent log settings',
     description: 'set where your agents keep their logs',
-    tooltip: 'steward tokens report reads only the agent logs it is given. Add the log files or folders of your ' +
-      'agents to the settings below (user settings; a repository cannot set them). Nothing leaves this machine.',
-    icon: { codicon: 'gear', tone: 'info' }, command: 'openTokenSettings', expanded: true,
+    tooltip: 'steward tokens report reads only the agent logs it is given. The settings below hold log files or ' +
+      'folders (user settings; a repository cannot set them). Nothing leaves this machine.',
+    icon: { codicon: 'gear', tone: 'info' }, command: 'openTokenSettings', expanded: selection.problems.length > 0,
     children: [
       ...TOKEN_AGENTS.map((agent): ViewNode => ({
         id: `${prefix}/setup/${agent}`, kind: 'tokens-item', label: AGENT_NAMES[agent], description: SETTING_KEYS[agent],
@@ -312,11 +430,50 @@ export interface TokensInput {
   readonly name: string;
   readonly tokens?: TokensState;
   readonly logs: LogSelection;
+  // E04: the agents whose log setting is empty, and the folder each usually keeps this project's logs in.
+  readonly empty?: readonly TokenAgent[];
+  readonly hints?: Readonly<Record<TokenAgent, string>>;
+}
+
+// Whether the report holds a task window from a record: a task row other than "all activity".
+export function hasWindows(report: TokensReport): boolean {
+  return report.tasks.some((task) => task.task !== ALL_ACTIVITY);
+}
+
+// E04: the one sentence an empty panel says, naming the input that is missing, and the button that fixes it.
+export const EMPTY_SENTENCES = Object.freeze({
+  both: 'Nothing to count yet: no agent log is selected and no task window is recorded; choose Use this folder for ' +
+    'your agent, then start a task window or run a sprint task.',
+  logs: 'No agent log is selected, so the task windows below have no counts: choose Use this folder for your agent.',
+  windows: 'No task window is recorded yet, so usage is not split by task: start one with Start Task Window…, or run ' +
+    'a sprint task.',
+});
+
+export function emptyState(input: TokensInput): keyof typeof EMPTY_SENTENCES | undefined {
+  const state = input.tokens;
+  if (state?.kind !== 'ready') return undefined;
+  const logs = configuredAgents(input.logs).length > 0;
+  const windows = hasWindows(state.report);
+  if (!logs && !windows) return 'both';
+  if (!logs) return 'logs';
+  if (!windows) return 'windows';
+  return undefined;
+}
+
+function emptyNode(key: keyof typeof EMPTY_SENTENCES, prefix: string): ViewNode {
+  return {
+    id: `${prefix}/empty`, kind: 'tokens-empty', label: EMPTY_SENTENCES[key],
+    tooltip: EMPTY_SENTENCES[key], icon: { codicon: 'lightbulb', tone: 'info' },
+    command: key === 'windows' ? 'startTokenWindow' : 'openTokenSettings',
+  };
 }
 
 function projectNodes(input: TokensInput, prefix: string): ViewNode[] {
   const nodes: ViewNode[] = [];
-  if (!configuredAgents(input.logs).length) nodes.push(setupNode(input.logs, prefix));
+  const empty = emptyState(input);
+  if (empty) nodes.push(emptyNode(empty, prefix));
+  nodes.push(...useFolderNodes(input, prefix));
+  if (!configuredAgents(input.logs).length) nodes.push(settingsNode(input.logs, prefix));
   const state = input.tokens ?? { kind: 'none' };
   if (state.kind !== 'ready') {
     nodes.push({ id: `${prefix}/state`, kind: 'tokens-issue', label: SOURCE, description: problemText(state),
@@ -325,22 +482,26 @@ function projectNodes(input: TokensInput, prefix: string): ViewNode[] {
     return nodes;
   }
   const { report } = state;
-  nodes.push(totalsNode(report, prefix), ...report.tasks.map((task) => taskNode(task, report.currency, prefix)));
+  if (report.tasks.length) nodes.push(totalsNode(report, prefix));
+  // Newest first: the latest window first, then the highest task label.
+  nodes.push(...tasksNewestFirst(report.tasks).map((task) => taskNode(task, report, prefix, input.root)));
   nodes.push(...report.issues.map((issue, i): ViewNode => ({ id: `${prefix}/issue/${i}`, kind: 'tokens-issue', label: issue,
     description: SOURCE, icon: { codicon: 'warning', tone: 'warning' } })));
   if (configuredAgents(input.logs).length) nodes.push(sourcesNode(report, input.logs, prefix));
   return nodes;
 }
 
+export const TOKENS_NOTE = `Each task's tokens, from ${SOURCE}: its total, then its split by agent and model (input, ` +
+  'output, cache read, cache write) with the estimated cost where the CLI gives one. The windows come from the ' +
+  'project\'s records: each sprint task\'s run (its sprint ledger), each steward run (the run ledger), the agents ' +
+  'ledger, and the windows started and done by hand. With no window at all, the CLI reports "all activity". Newest ' +
+  `first. ${SHARED_NOTE}`;
+
 // The note on what the rows are, then one project's rows, or one block per project in the order given.
 export function tokensNodes(inputs: readonly TokensInput[]): ViewNode[] {
   if (!inputs.length) return [];
   const note: ViewNode = {
-    id: 'tokens/note', kind: 'tokens-note', label: 'Per task window', description: SOURCE,
-    tooltip: `Rows are the task windows ${SOURCE} --json prints: those opened with steward task start / done, and ` +
-      'agent attempts in the agents ledger. With no window yet, the CLI reports "all activity". Each row splits by ' +
-      'agent and model, and lists the model names and the relative paths of the files read that the CLI prints. ' +
-      `Totals per sprint and per day need the cockpit CLI. ${SHARED_NOTE}`,
+    id: 'tokens/note', kind: 'tokens-note', label: 'Per task', description: SOURCE, tooltip: TOKENS_NOTE,
     icon: { codicon: 'info', tone: 'info' },
   };
   if (inputs.length === 1) return [note, ...projectNodes(inputs[0], `tokens/${inputs[0].root}`)];

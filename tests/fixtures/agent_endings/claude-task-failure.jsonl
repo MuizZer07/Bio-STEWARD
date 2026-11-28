@@ -1,0 +1,4 @@
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","name":"Read","input":{"file_path":"tests/fixtures/agent_endings/claude-limit-weekly.txt"}}]}}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"You've hit your weekly limit · resets Nov 19 at 9pm (UTC)"}]}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"The tests fail: 3 failed, 120 passed."}]}}
+{"type":"result","subtype":"error_max_turns","is_error":true,"num_turns":40,"result":"Reached the maximum number of turns (40)"}

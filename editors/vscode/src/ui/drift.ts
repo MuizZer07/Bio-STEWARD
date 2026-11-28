@@ -1,4 +1,4 @@
-// P7 Drift, reduced form (RELEASE_vscode_0.2.0_SPEC §3): the timeline states only. Each open project's milestones,
+// P7 Milestones and Drift (RELEASE_vscode_0.2.0_SPEC §3): the timeline states, latest due first. Each open project's milestones,
 // each with the state `steward timeline --json` gives it (on track, at risk, late, due, …), in the CLI's words.
 // The timeline is the one the countdown already reads (src/project.ts); this view adds no CLI command.
 import * as vscode from 'vscode';
@@ -17,7 +17,6 @@ export class DriftView implements vscode.Disposable {
 
   constructor() {
     this.#view = vscode.window.createTreeView(DRIFT_VIEW, { treeDataProvider: this.tree, showCollapseAll: true });
-    this.#view.description = 'reduced';
   }
 
   // Every project, in the Today order (one block each, never mixed).

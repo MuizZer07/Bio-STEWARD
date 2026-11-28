@@ -426,7 +426,8 @@
               "boolean",
               "ensembl",
               "entrez",
-              "hgnc"
+              "hgnc",
+              "gene_symbol"
             ],
             "type": "string"
           },
@@ -443,6 +444,18 @@
           "title": "Format",
           "type": "string"
         },
+        "hgnc_table": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hgnc Table"
+        },
         "id_column": {
           "anyOf": [
             {
@@ -454,6 +467,23 @@
           ],
           "default": null,
           "title": "Id Column"
+        },
+        "log_base": {
+          "anyOf": [
+            {
+              "const": "e",
+              "type": "string"
+            },
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Log Base"
         },
         "log_fold_change": {
           "anyOf": [
@@ -514,6 +544,19 @@
             }
           ],
           "default": null
+        },
+        "study": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Study"
         }
       },
       "required": [
@@ -534,6 +577,64 @@
         }
       },
       "title": "DataSection",
+      "type": "object"
+    },
+    "DelegationSection": {
+      "additionalProperties": false,
+      "description": "0.23.0 (STW-061 D01): who reviews and merges (the master) and who takes delegated tasks (the workers, in order).\n`on_limit` says what happens when no worker can run: the next worker, then the master (\"next\"), the master\n(\"master\"), or a wait until the earliest reset time (\"wait\").",
+      "properties": {
+        "master": {
+          "enum": [
+            "claude-code",
+            "codex",
+            "antigravity"
+          ],
+          "title": "Master",
+          "type": "string"
+        },
+        "models": {
+          "additionalProperties": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "propertyNames": {
+            "enum": [
+              "claude-code",
+              "codex",
+              "antigravity"
+            ]
+          },
+          "title": "Models",
+          "type": "object"
+        },
+        "on_limit": {
+          "default": "next",
+          "enum": [
+            "next",
+            "master",
+            "wait"
+          ],
+          "title": "On Limit",
+          "type": "string"
+        },
+        "workers": {
+          "items": {
+            "enum": [
+              "claude-code",
+              "codex",
+              "antigravity"
+            ],
+            "type": "string"
+          },
+          "title": "Workers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "master"
+      ],
+      "title": "DelegationSection",
       "type": "object"
     },
     "DependenciesSection": {
@@ -2860,6 +2961,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/DataSection"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "delegation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DelegationSection"
         },
         {
           "type": "null"

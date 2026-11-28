@@ -195,6 +195,13 @@
           ],
           "schema": "steward.agents_list/0.1"
         },
+        "agents status": {
+          "argv": [
+            "--format",
+            "json"
+          ],
+          "schema": "steward.agents_status/0.1"
+        },
         "audit progress": {
           "argv": [
             "--format",
@@ -604,6 +611,7 @@
       "schema": "steward.interface/1",
       "schema_files": {
         "steward.agents_list/0.1": "steward.agents_list-0.1.schema.json",
+        "steward.agents_status/0.1": "steward.agents_status-0.1.schema.json",
         "steward.artifacts/0.1": "steward.artifacts-0.1.schema.json",
         "steward.authorize_keys/0.1": "steward.authorize_keys-0.1.schema.json",
         "steward.authorize_list/0.1": "steward.authorize_list-0.1.schema.json",

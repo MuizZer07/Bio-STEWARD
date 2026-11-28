@@ -21,6 +21,11 @@ from typing import Any
 from .fsutil import glob_match
 
 MARKER = "steward: allow R-07"
+CONTROLLED_ACCESS = re.compile(
+    r"(?<![A-Za-z0-9])(?:ph[astv][0-9]{6}|EGA[CDFNPRS][0-9]{11})(?![A-Za-z0-9])",
+    re.IGNORECASE | re.ASCII,
+)
+CONTROLLED_ACCESS_MESSAGE = "A controlled-access accession. Keep it in a private record."
 # a macOS user name may contain spaces (review N7)
 # T8: a bare home directory (no separator after the name) is a local path too; it ends at a character that cannot
 # continue a user name or a path. The bare forms take a name without spaces, as a space ends the path in prose.
@@ -166,8 +171,8 @@ def _accepted(line: str, m: re.Match[str], rules: list[Any], used: dict[int, int
 
 
 def scan_text(text: str, terms: list[Term], local_paths: bool, honour_marker: bool = True, rel: str | None = None,
-              sha: str | None = None) -> tuple[list[dict[str, Any]], int]:
-    """(hits, allowed line count). A hit is {line, column, kind: term|local_path, term?}. Publication scans pass
+              sha: str | None = None, *, controlled_access: bool = False) -> tuple[list[dict[str, Any]], int]:
+    """(hits, allowed line count). A hit is {line, column, kind, term?}. Publication scans pass
     `honour_marker=False`: a repository's waiver for committed text never waives what is published (T3). With `rel`
     (and the file's `sha`), a list's accepted occurrences apply: an occurrence is accepted only where a rule's path,
     term, context, count and hash all hold; any other occurrence in the same file is a hit (REQ-009)."""
@@ -194,6 +199,8 @@ def scan_text(text: str, terms: list[Term], local_paths: bool, honour_marker: bo
             first = next((m for m in LOCAL_PATH.finditer(line) if _path_start(line, m) and local_user(m)), None)
             if first is not None:
                 hits.append({"line": lineno, "column": first.start() + 1, "kind": "local_path"})
+        if controlled_access and (first := CONTROLLED_ACCESS.search(line)):
+            hits.append({"line": lineno, "column": first.start() + 1, "kind": "controlled_access"})
     return hits, allowed
 
 
@@ -219,19 +226,22 @@ def screen_incoming(root: Path, cfg: Any, rel: str, data: bytes) -> list[dict[st
     scope_inc = priv.include if priv else ["**/*"]
     scope_exc = priv.exclude if priv else [".git/**", ".steward/**"]
     allow = priv.allow if priv else []
-    lp = (priv is None or priv.local_paths) and any(glob_match(rel, p) for p in scope_inc) \
-        and not any(glob_match(rel, p) for p in scope_exc) and not any(glob_match(rel, p) for p in allow)
-    if not own and not lp:
+    in_scope = any(glob_match(rel, p) for p in scope_inc) and not any(glob_match(rel, p) for p in scope_exc) \
+        and not any(glob_match(rel, p) for p in allow)
+    lp = (priv is None or priv.local_paths) and in_scope
+    if not own and not in_scope:
         return []
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError:
-        return [{"line": 0, "what": "not UTF-8 text"}]
-    found, _ = scan_text(text, own, lp, rel=rel, sha=hashlib.sha256(data).hexdigest())
+        return [{"line": 0, "what": "not UTF-8 text"}] if own or lp else []
+    found, _ = scan_text(text, own, lp, rel=rel, sha=hashlib.sha256(data).hexdigest(), controlled_access=in_scope)
     out = []
     for h in found:
         if h["kind"] == "local_path":
             out.append({"line": h["line"], "what": "a local path with a user name"})
+        elif h["kind"] == "controlled_access":
+            out.append({"line": h["line"], "what": CONTROLLED_ACCESS_MESSAGE})
         else:
             t = h["term"]
             out.append({"line": h["line"], "what": f"term {t.label}" + (f" ({t.text})" if t.public else "")})

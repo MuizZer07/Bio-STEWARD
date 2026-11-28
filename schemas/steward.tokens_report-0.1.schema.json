@@ -164,6 +164,74 @@
       "title": "SourceFile",
       "type": "object"
     },
+    "TaskAttempt": {
+      "additionalProperties": false,
+      "description": "0.23.0 (STW-061 D02): one attempt of a delegated sprint task, as the agents ledger records it.",
+      "properties": {
+        "agent": {
+          "title": "Agent",
+          "type": "string"
+        },
+        "attempt": {
+          "title": "Attempt",
+          "type": "integer"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Model"
+        },
+        "outcome": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Outcome"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reason"
+        },
+        "tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Tokens"
+        }
+      },
+      "required": [
+        "attempt",
+        "agent",
+        "model",
+        "outcome",
+        "reason",
+        "tokens"
+      ],
+      "title": "TaskAttempt",
+      "type": "object"
+    },
     "TaskTokens": {
       "additionalProperties": false,
       "properties": {
@@ -172,6 +240,13 @@
             "$ref": "#/$defs/AgentTotal"
           },
           "title": "Agents",
+          "type": "array"
+        },
+        "attempts": {
+          "items": {
+            "$ref": "#/$defs/TaskAttempt"
+          },
+          "title": "Attempts",
           "type": "array"
         },
         "cost": {
@@ -357,7 +432,7 @@
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Order: tasks by task label (A to Z); per task, models by agent then model, agents by name, files most read first, tool outputs largest first, windows oldest first; `issues` A to Z. The text view prints the newest entry first.",
+  "description": "Order: tasks by task label (A to Z); per task, models by agent then model, agents by name, files most read first, tool outputs largest first, windows oldest first, attempts newest first; `issues` A to Z. The text view prints the newest entry first.",
   "properties": {
     "currency": {
       "anyOf": [

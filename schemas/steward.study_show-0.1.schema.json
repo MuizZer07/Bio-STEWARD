@@ -256,6 +256,37 @@
           "title": "Allowed",
           "type": "object"
         },
+        "batch_column": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Batch Column"
+        },
+        "condition_column": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Condition Column"
+        },
+        "covariates": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Covariates",
+          "type": "array"
+        },
         "id_column": {
           "default": "sample",
           "title": "Id Column",
@@ -371,7 +402,7 @@
           "title": "Plan Sha256"
         },
         "references": {
-          "$ref": "#/$defs/References"
+          "$ref": "#/$defs/StudyReferences"
         },
         "results": {
           "items": {
@@ -498,6 +529,137 @@
         "id"
       ],
       "title": "StudyInput",
+      "type": "object"
+    },
+    "StudyReferences": {
+      "additionalProperties": false,
+      "properties": {
+        "annotation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Annotation"
+        },
+        "chromosome_naming": {
+          "anyOf": [
+            {
+              "enum": [
+                "ucsc",
+                "ensembl",
+                "refseq"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Chromosome Naming"
+        },
+        "chromosome_sizes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Chromosome Sizes"
+        },
+        "coordinate_base": {
+          "anyOf": [
+            {
+              "enum": [
+                0,
+                1
+              ],
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coordinate Base"
+        },
+        "databases": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Databases",
+          "type": "object"
+        },
+        "genome": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Genome"
+        },
+        "id_namespace": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id Namespace"
+        },
+        "mapping": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Mapping"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "organism": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Organism"
+        },
+        "taxon": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Taxon"
+        }
+      },
+      "title": "StudyReferences",
       "type": "object"
     },
     "Tool": {

@@ -61,7 +61,8 @@ describe('extension in the test host', () => {
       assert.ok(api);
       await until(() => api?.project.state.cli.kind === 'ready', 'CLI detection');
       const { cli } = api.project.state;
-      assert.equal(cli.kind === 'ready' && cli.version, '0.20.6');
+      // The CLI the tests run on: the manifest's testedWithCli (rule G2).
+      assert.equal(cli.kind === 'ready' && cli.version, vscode.extensions.getExtension(EXTENSION_ID)?.packageJSON.bioSteward.testedWithCli);
       console.log(`    Host tests use steward ${cli.kind === 'ready' ? cli.version : '?'} (${cli.kind === 'ready' ? cli.mode : ''} mode)`);
       assert.equal(api.statusBar.text, '$(shield) default ? · no report');
       assert.equal(api.overview.tree.nodes.length, 0);
@@ -250,7 +251,8 @@ describe('extension in the test host', () => {
         ];
         const gate = report.verdict.gates[0];
         const ref = { rule: result.rule, subject: result.subject, status: result.status };
-        gate.waived = [ref];
+        // CLI 0.21 and later name the authorization that waived a result (WaivedGateRef).
+        gate.waived = [{ ...ref, authorization: `steward/auth/${'0'.repeat(32)}` }];
         report.verdict.gates.push({ ...gate, name: 'submission', eligible: false, blocking: [ref], waived: [] });
         const findDiagnostic = () => diagnostics(file).find((item) => diagnosticCode(item) === 'R-85.accession_missing');
         try {
@@ -274,7 +276,12 @@ describe('extension in the test host', () => {
           const detailItem = api.results.tree.getTreeItem(detail);
           assert.equal(detailItem.label, reason);
           assert.ok(detailItem.accessibilityInformation?.label.startsWith(reason));
-          assert.equal(detailItem.command, undefined);
+          assert.equal(detailItem.command?.command, 'bioSteward.row.open');
+          const details = await vscode.commands.executeCommand<vscode.Uri>(detailItem.command.command, ...detailItem.command.arguments ?? []);
+          assert.equal(details.scheme, 'bio-steward-details');
+          const markdown = (await vscode.workspace.openTextDocument(details)).getText();
+          assert.ok(markdown.includes(`    ${reason}`), 'CLI text is in a literal Markdown block');
+          assert.match(markdown, /## Source\n\n {4}steward check/);
           assert.match(item.message, /waived in gate default/);
           assert.match(item.message, /blocks gate submission/);
           assert.deepEqual(item.relatedInformation?.map((info) => info.location.uri.fsPath), [join(root.fsPath, 'steward.toml')]);

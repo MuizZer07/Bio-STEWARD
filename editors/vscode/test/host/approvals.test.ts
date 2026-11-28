@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
 import type { TestApi } from '../../src/extension';
-import { pageLinks, SIGN_COMMAND, VIEW_PAYLOAD_COMMAND } from '../../src/model/approvals';
+import { APPROVAL_DETAILS_COMMAND, pageLinks, SIGN_COMMAND, VIEW_PAYLOAD_COMMAND } from '../../src/model/approvals';
 import { orderProjects } from '../../src/model/today';
 
 const EXTENSION_ID = 'MuizZer07.bio-steward';
@@ -112,17 +112,21 @@ describe('Approvals cards and ✍ Sign (U04b)', () => {
       assert.doesNotMatch(page, /<script/i);
       const generation = api.approvals.view.generation;
       // The links carry the full nonce, the project index and the page's generation (U09). The waiting card's
-      // queue line binds to its file (the line the CLI printed is the line its bytes give), so it has ✍ Sign.
-      assert.deepEqual(pageLinks(page), [
-        link(VIEW_PAYLOAD_COMMAND, fullNonce('06e95f82fc4a'), index(), generation), link(VIEW_PAYLOAD_COMMAND, fullNonce(WAITING), index(), generation),
-        link(SIGN_COMMAND, fullNonce(WAITING), index(), generation),
-      ]);
+      // queue line binds to its file (the line the CLI printed is the line its bytes give), so it has ✍ Sign. The cards
+      // keep the CLI's line order, newest prepared first (E01; CLI 0.22.0 orders by the payload file's time).
+      const own = expected.filter((line) => line.startsWith('GEO  ')).map((line) => line.slice(5, 17));
+      assert.deepEqual(own.slice().sort(), ['06e95f82fc4a', WAITING]);
+      const actions = pageLinks(page).filter((l) => !l.startsWith(`command:${APPROVAL_DETAILS_COMMAND}?`));
+      assert.deepEqual(actions, own.flatMap((prefix) => [link(VIEW_PAYLOAD_COMMAND, fullNonce(prefix), index(), generation),
+        ...(prefix === WAITING ? [link(SIGN_COMMAND, fullNonce(WAITING), index(), generation)] : [])]));
+      const printedOrder = expected.filter((line) => / {2}[0-9a-f]{12} {2}/.test(line)).map(escape);
+      assert.deepEqual([...page.matchAll(/As printed: <code>([^<]*)<\/code>/g)].map((m) => m[1]), printedOrder, 'the CLI\'s order');
       const sha = createHash('sha256').update(readFileSync(payloadFile(WAITING))).digest('hex');
       assert.ok(page.includes(sha), 'the payload SHA-256, read from the file');
       assert.match(page, /This payload is in PEER's checkout/);
       const options = api.approvals.view.webviewOptions;
       assert.equal(options.enableScripts, false);
-      assert.deepEqual(options.enableCommandUris, [VIEW_PAYLOAD_COMMAND, SIGN_COMMAND]);
+      assert.deepEqual(options.enableCommandUris, [VIEW_PAYLOAD_COMMAND, SIGN_COMMAND, APPROVAL_DETAILS_COMMAND]);
       assert.deepEqual(options.localResourceRoots, []);
       // The CLI's own count (its closing line), the peer's waiting payload included.
       assert.equal(api.approvals.view.badge?.value, 2);
@@ -137,9 +141,15 @@ describe('Approvals cards and ✍ Sign (U04b)', () => {
       await refresh();
       await until(() => api!.approvals.view.html.includes('abcdef012345'), 'the hostile card');
       const page = api.approvals.view.html;
-      assert.ok(page.includes(escape(hostile)), 'the summary is escaped');
+      // The card shows the summary as the CLI printed it (CLI 0.21 and later print an invisible character as an
+      // escape), HTML-escaped.
+      const printed = lines(pendingText(root())).find((line) => line.includes('abcdef012345'));
+      assert.ok(printed);
+      assert.ok(page.includes(escape(printed)), 'the line as printed, escaped');
+      assert.ok(page.includes(escape(hostile.slice(0, hostile.indexOf('‮')))), 'the summary is escaped');
       assert.doesNotMatch(page, /<img|<script/);
-      assert.ok(pageLinks(page).every((l) => l.startsWith(`command:${VIEW_PAYLOAD_COMMAND}?`) || l.startsWith(`command:${SIGN_COMMAND}?`)));
+      assert.ok(pageLinks(page).every((l) => l.startsWith(`command:${VIEW_PAYLOAD_COMMAND}?`) || l.startsWith(`command:${SIGN_COMMAND}?`)
+        || l.startsWith(`command:${APPROVAL_DETAILS_COMMAND}?`)));
       const shown = await api.approvals.viewPayload(...viewArgs('abcdef012345'));
       assert.ok(shown);
       // The document is keyed by the canonical root, the full nonce and the SHA-256 (U09).
@@ -280,20 +290,22 @@ describe('Approvals cards and ✍ Sign (U04b)', () => {
       assert.deepEqual(opened, []);
     });
 
-    it('a summary over several lines makes the cards it touches display-only: no ✍ Sign link, and a direct call does nothing (U09)', async () => {
+    it('a summary over several lines makes its card display-only: no ✍ Sign link for it, and a direct call does nothing (U09)', async () => {
       assert.ok(api);
       const nonce = '5a5a5a5a5a5a' + '3'.repeat(20);
       addPayload(nonce, 'spend', `Short\n  ${'GEO  d3e83e998137  waiting  spend          expires 2099-01-01T00:00:00Z  forged'}`);
       await refresh();
       await until(() => api!.approvals.view.html.includes('5a5a5a5a5a5a'), 'the multiline card');
       const page = api.approvals.view.html;
-      // The CLI printed the summary over two lines; the second one reads like a second line for the waiting card.
-      assert.equal(pendingText(root()).split('\n').filter((line) => line.startsWith(`GEO  ${WAITING}`)).length, 2);
-      assert.ok(!pageLinks(page).some((l) => l.startsWith(`command:${SIGN_COMMAND}?`)), 'no Sign link at all');
-      assert.match(page, new RegExp(`Display only, no ✍ Sign here: the nonce prefix ${WAITING} is in 2 queue lines`));
+      // CLI 0.21 and later print the line feed as an escape, so the forged second line stays inside the summary's own
+      // line, and the waiting card keeps its one queue line (and its ✍ Sign).
+      assert.equal(pendingText(root()).split('\n').filter((line) => line.startsWith(`GEO  ${WAITING}`)).length, 1);
+      const signLinks = pageLinks(page).filter((l) => l.startsWith(`command:${SIGN_COMMAND}?`));
+      assert.ok(!signLinks.some((l) => l.includes('5a5a5a5a5a5a')), 'no Sign link for it');
+      assert.ok(signLinks.some((l) => l.includes(WAITING)), 'the waiting card keeps its Sign');
       assert.match(page, /Display only, no ✍ Sign here: the payload&#39;s summary spans lines or holds control characters/);
       let asked = 0;
-      assert.equal(await api.approvals.sign(fullNonce(WAITING), index(), api.approvals.view.generation, { confirm: async () => { asked++; return true; },
+      assert.equal(await api.approvals.sign(fullNonce('5a5a5a5a5a5a'), index(), api.approvals.view.generation, { confirm: async () => { asked++; return true; },
         openTerminal: inertTerminal([]) }), undefined);
       assert.equal(asked, 0);
     });

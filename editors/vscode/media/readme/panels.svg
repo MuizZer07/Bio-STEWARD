@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="689" viewBox="0 0 860 689" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
+<rect width="860" height="689" rx="10" fill="#1f1f1f"/>
+<rect width="860" height="639" rx="10" fill="#181818"/>
+<text x="20" y="24" fill="#bbbbbb" font-size="11" font-weight="700">BIO-STEWARD · ONE CONTAINER, FIVE GROUPS, TEN PANELS</text>
+<text x="36" y="66" fill="#ffffff" font-size="14" font-weight="700">Now</text>
+<text x="52" y="88" fill="#cccccc" font-size="12.5" font-weight="700">Now · Today</text>
+<text x="824" y="88" fill="#9d9d9d" font-size="12" text-anchor="end">⟳ ?</text>
+<text x="270" y="88" fill="#9d9d9d" font-size="12.5">Today shows what waits for you and what your agents are on, so each session</text>
+<text x="270" y="105" fill="#9d9d9d" font-size="12.5">starts where the work is.</text>
+<text x="52" y="127" fill="#cccccc" font-size="12.5" font-weight="700">Now · Approvals</text>
+<text x="824" y="127" fill="#9d9d9d" font-size="12" text-anchor="end">⟳ ?</text>
+<text x="270" y="127" fill="#9d9d9d" font-size="12.5">Approvals lists what your agents prepared that only you can sign, with the exact</text>
+<text x="270" y="144" fill="#9d9d9d" font-size="12.5">text you approve.</text>
+<rect x="20" y="46" width="820" height="112" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.2"/>
+<text x="36" y="188" fill="#ffffff" font-size="14" font-weight="700">Quality</text>
+<text x="52" y="210" fill="#cccccc" font-size="12.5" font-weight="700">Quality · Overview</text>
+<text x="824" y="210" fill="#9d9d9d" font-size="12" text-anchor="end">⟳ ?</text>
+<text x="270" y="210" fill="#9d9d9d" font-size="12.5">Overview shows whether your agents' work passes this project's checks and may</text>
+<text x="270" y="227" fill="#9d9d9d" font-size="12.5">move on.</text>
+<text x="52" y="249" fill="#cccccc" font-size="12.5" font-weight="700">Quality · Results</text>
+<text x="824" y="249" fill="#9d9d9d" font-size="12" text-anchor="end">⟳ ?</text>
+<text x="270" y="249" fill="#9d9d9d" font-size="12.5">Results lists every check result, so you can hand one problem at a time to an</text>
+<text x="270" y="266" fill="#9d9d9d" font-size="12.5">agent.</text>
+<rect x="20" y="168" width="820" height="112" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.2"/>
+<text x="36" y="310" fill="#ffffff" font-size="14" font-weight="700">Work</text>
+<text x="52" y="332" fill="#cccccc" font-size="12.5" font-weight="700">Work · Tasks</text>
+<text x="824" y="332" fill="#9d9d9d" font-size="12" text-anchor="end">⟳ ?</text>
+<text x="270" y="332" fill="#9d9d9d" font-size="12.5">Tasks lists every task your agents work on, the latest change first.</text>
+<text x="52" y="354" fill="#cccccc" font-size="12.5" font-weight="700">Work · Sprint</text>
+<text x="824" y="354" fill="#9d9d9d" font-size="12" text-anchor="end">⟳ ?</text>
+<text x="270" y="354" fill="#9d9d9d" font-size="12.5">Sprint shows what each agent of a running sprint is doing and which of its</text>
+<text x="270" y="371" fill="#9d9d9d" font-size="12.5">checks passed.</text>
+<text x="52" y="393" fill="#cccccc" font-size="12.5" font-weight="700">Work · Tokens</text>
+<text x="824" y="393" fill="#9d9d9d" font-size="12" text-anchor="end">⟳ ?</text>
+<text x="270" y="393" fill="#9d9d9d" font-size="12.5">Tokens shows what each agent task cost, counted from the agents' own logs on</text>
+<text x="270" y="410" fill="#9d9d9d" font-size="12.5">this machine.</text>
+<rect x="20" y="290" width="820" height="134" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.2"/>
+<text x="36" y="454" fill="#ffffff" font-size="14" font-weight="700">Direction</text>
+<text x="52" y="476" fill="#cccccc" font-size="12.5" font-weight="700">Direction · Milestones and Drift</text>
+<text x="824" y="476" fill="#9d9d9d" font-size="12" text-anchor="end">⟳ ?</text>
+<text x="270" y="476" fill="#9d9d9d" font-size="12.5">Milestones and Drift shows whether the work your agents do keeps to the plan,</text>
+<text x="270" y="493" fill="#9d9d9d" font-size="12.5">the latest target first.</text>
+<text x="52" y="515" fill="#cccccc" font-size="12.5" font-weight="700">Direction · Decisions</text>
+<text x="824" y="515" fill="#9d9d9d" font-size="12" text-anchor="end">⟳ ?</text>
+<text x="270" y="515" fill="#9d9d9d" font-size="12.5">Decisions keeps the owner's decisions one click away, so you and your agents</text>
+<text x="270" y="532" fill="#9d9d9d" font-size="12.5">work from the same record.</text>
+<rect x="20" y="434" width="820" height="112" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.2"/>
+<text x="36" y="576" fill="#ffffff" font-size="14" font-weight="700">Agents</text>
+<text x="52" y="598" fill="#cccccc" font-size="12.5" font-weight="700">Agents · Agent Skills</text>
+<text x="824" y="598" fill="#9d9d9d" font-size="12" text-anchor="end">⟳ ?</text>
+<text x="270" y="598" fill="#9d9d9d" font-size="12.5">Agent Skills shows whether every agent in this project reads the same working</text>
+<text x="270" y="615" fill="#9d9d9d" font-size="12.5">rules.</text>
+<rect x="20" y="556" width="820" height="73" rx="8" fill="none" stroke="#3c3c3c" stroke-width="1.2"/>
+<text x="16" y="661" font-size="11.5" fill="#8b949e">The ten panels grouped by the job they help with, each header named with its group, and the sentence each panel's empty state and ?</text>
+<text x="16" y="677" font-size="11.5" fill="#8b949e">help open with (from the extension's panel list). Every panel has a refresh button (⟳) and a ? help in its title bar.</text>
+</svg>

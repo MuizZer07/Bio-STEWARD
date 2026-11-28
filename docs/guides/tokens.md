@@ -78,6 +78,12 @@ flowchart LR
 - `--format json` gives each task a `windows` list (oldest first) naming each window's `source`, `ledger`, `start`
   and `end`. The legacy `--json` output and `steward tokens check` use the windows by hand and the agents ledger
   only, as in 0.21.
+- **Delegated sprint tasks (0.23.0).** With `[delegation]`, the sprint supervisor records each attempt in the agents
+  ledger as task `<sprint>/<task>`, with its agent (`claude-code`, `codex`, `antigravity`), model and outcome. The
+  report then lists that task with an `attempts` list (newest first): each attempt's number, agent, model, outcome
+  (`redelegated`, `review`, `done`, `failed`), the reason of a re-delegation, and the tokens its agent's logs recorded
+  inside it. The text report prints one `attempt N` line per attempt. See
+  [Hand a task to whoever can run it](dispatch.md#hand-a-task-to-whoever-can-run-it-0230).
 - The text report lists the task whose latest window started last first.
 
 ## Check a budget

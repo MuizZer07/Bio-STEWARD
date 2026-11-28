@@ -31,6 +31,9 @@ interface RunnerOptions {
   timeoutMs?: number;
   maxOutputBytes?: number;
   logStderr?: (stderr: string) => void;
+  // Called with the arguments of each invocation that is allowed and trusted, as it is queued (for the log of runs
+  // a project keeps; see Project.recentRuns).
+  onRun?: (args: readonly string[]) => void;
 }
 
 interface RunOptions {
@@ -78,6 +81,7 @@ export class CliRunner {
     if (!this.options.isTrusted()) return Promise.resolve({ kind: 'untrusted' });
     const { signal } = options;
     if (signal?.aborted) return Promise.resolve({ kind: 'cancelled' });
+    this.options.onRun?.(invocation.args);
 
     return new Promise((resolve) => {
       const flight = flights.get(this.#flight);

@@ -1,16 +1,16 @@
 import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
-import { mkdir, mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, rm, symlink, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import {
   configuredStatus, DEFAULT_SPECS, globBase, globMatch, idLine, isClosed, READ_FROM_FILE, selectTaskFiles, statusLine, statusValue,
-  taskSettings, tasksNodes, TASKS_REDUCED_NOTE, windowCandidates, type TaskSettings,
+  taskSettings, tasksNodes, TASKS_SOURCE_NOTE, windowCandidates, type TaskSettings,
 } from '../../src/model/tasks';
 import type { ViewNode } from '../../src/model/views';
 import { listTaskFiles } from '../../src/taskFiles';
 
-// P3 Tasks, reduced form (task U03, AC-P3): the task files listed by name, each Status line shown exactly as written
+// P3 Tasks (task U03, AC-P3): the task files listed by name, each Status line shown exactly as written
 // and labelled "read from the file", nothing for a file without one, open first.
 
 const fixtures = join(__dirname, '..', '..', '..', 'test', 'fixtures');
@@ -26,10 +26,11 @@ const taskText = ({ id, status }: { id: string; status: string | null }) => [
   '## Work', '', 'Text.', '',
 ].join('\n');
 
+const FIXED_TIME = new Date('2026-01-01T00:00:00Z');
 const walk = (node: ViewNode): ViewNode[] => [node, ...(node.children ?? []).flatMap(walk)];
 const defaults: TaskSettings = { configured: false, specs: DEFAULT_SPECS, archive: [], statuses: ['proposed', 'on hold', 'GO recorded', 'in progress', 'in review', 'done'], closed: ['done'] };
 
-describe('Tasks (U03, reduced form)', () => {
+describe('Tasks (U03)', () => {
   let scratch: string;
 
   beforeEach(async () => {
@@ -40,6 +41,8 @@ describe('Tasks (U03, reduced form)', () => {
   async function write(root: string, path: string, text: string | Buffer): Promise<void> {
     await mkdir(dirname(join(root, path)), { recursive: true });
     await writeFile(join(root, path), text);
+    // One fixed time for every file, so the newest-first order falls back to the IDs unless a test changes it.
+    await utimes(join(root, path), FIXED_TIME, FIXED_TIME);
   }
 
   async function cockpitLike(): Promise<string> {
@@ -144,8 +147,8 @@ describe('Tasks (U03, reduced form)', () => {
       const tasks = await listTaskFiles(root);
       assert.equal(tasks.kind, 'ready');
       const nodes = tasksNodes([{ root, name: 'geo-cockpit', tasks }]);
-      assert.equal(nodes[0].label, 'Reduced form');
-      assert.equal(nodes[0].tooltip, TASKS_REDUCED_NOTE);
+      assert.equal(nodes[0].label, 'Task files');
+      assert.equal(nodes[0].tooltip, TASKS_SOURCE_NOTE);
       const files = nodes.flatMap(walk).filter((n) => n.kind === 'task-file');
       assert.deepEqual(files.map((n) => n.label).sort(), recorded.files.map((f) => f.path.split('/').pop()).sort(),
         'every task file, the board excluded');
@@ -160,16 +163,32 @@ describe('Tasks (U03, reduced form)', () => {
       console.log(`      tasks: ${files.map((n) => `${n.label}${n.description ? ` [${n.description}]` : ''}`).join(' | ')}`);
     });
 
-    it('lists open tasks first, and closed ones in their own group after them', async () => {
+    it('lists open tasks first, and closed ones in their own group after them, each newest first (E01)', async () => {
       const root = await cockpitLike();
       const nodes = tasksNodes([{ root, name: 'geo-cockpit', tasks: await listTaskFiles(root) }]);
       const top = nodes.slice(1);
       const closed = top.findIndex((n) => n.kind === 'task-group');
       assert.equal(closed, top.length - 1, 'the closed group is last');
       assert.deepEqual(top[closed].children?.map((n) => n.label), ['GEO-002-normalise.md']);
-      assert.deepEqual(top.slice(0, closed).map((n) => n.label), ['GEO-001-load-series.md', 'GEO-003-annotate.md',
-        'GEO-004-figures.md', 'GEO-005-methods.md', 'GEO-006-notes.md']);
+      // Every file has the same time: the highest ID first.
+      assert.deepEqual(top.slice(0, closed).map((n) => n.label), ['GEO-006-notes.md', 'GEO-005-methods.md',
+        'GEO-004-figures.md', 'GEO-003-annotate.md', 'GEO-001-load-series.md']);
       assert.equal(top[closed].expanded, false);
+    });
+
+    it('puts the task changed last first, then the highest ID (E01, newest first)', async () => {
+      const root = await cockpitLike();
+      const at = (path: string, iso: string) => utimes(join(root, path), new Date(iso), new Date(iso));
+      await at('development/tasks/GEO-003-annotate.md', '2026-11-27T10:00:00Z');
+      await at('development/tasks/GEO-001-load-series.md', '2026-11-26T10:00:00Z');
+      await at('development/tasks/GEO-002-normalise.md', '2026-11-25T10:00:00Z');
+      const tasks = await listTaskFiles(root);
+      const top = tasksNodes([{ root, name: 'geo-cockpit', tasks }]).slice(1);
+      assert.deepEqual(top.filter((n) => n.kind === 'task-file').map((n) => n.label), ['GEO-003-annotate.md',
+        'GEO-001-load-series.md', 'GEO-006-notes.md', 'GEO-005-methods.md', 'GEO-004-figures.md']);
+      assert.equal(tasks.kind === 'ready' ? tasks.files.find((f) => f.id === 'GEO-003')?.changed : undefined, '2026-11-27T10:00:00.000Z');
+      // The window picker offers the same order, open tasks first.
+      assert.deepEqual(windowCandidates(tasks).map((c) => c.id), ['GEO-003', 'GEO-001', 'GEO-006', 'GEO-005', 'GEO-004', 'GEO-002']);
     });
 
     it('uses the default glob without [tasks], walks no links, skips .git, and names a file it cannot read', async () => {
@@ -226,7 +245,7 @@ describe('Tasks (U03, reduced form)', () => {
     it('offers each file\'s ID line for a task window, open tasks first', async () => {
       const root = await cockpitLike();
       const ids = windowCandidates(await listTaskFiles(root)).map((c) => c.id);
-      assert.deepEqual(ids, ['GEO-001', 'GEO-003', 'GEO-004', 'GEO-005', 'GEO-006', 'GEO-002']);
+      assert.deepEqual(ids, ['GEO-006', 'GEO-005', 'GEO-004', 'GEO-003', 'GEO-001', 'GEO-002']);
     });
   });
 });

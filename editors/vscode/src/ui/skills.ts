@@ -74,7 +74,7 @@ export class SkillsView implements vscode.Disposable {
       // The project folder itself is unreadable: no folders to show.
     }
     if (generation === this.#generation) {
-      this.tree.set(skillsNodes(state, listings));
+      this.tree.set(skillsNodes(state, listings), project.root);
       this.renders++;
     }
   }

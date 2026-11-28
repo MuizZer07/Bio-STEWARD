@@ -1,0 +1,133 @@
+{
+  "check": {
+    "results": [
+      {
+        "area": "privacy",
+        "details": [
+          {
+            "code": "R-07.controlled_access",
+            "column": 8,
+            "line": 1,
+            "message": "A controlled-access accession. Keep it in a private record.",
+            "path": "fixture-accession.txt"
+          }
+        ],
+        "evidence": [],
+        "name": "privacy.denylist",
+        "reason": "1 privacy occurrence(s) found",
+        "rule": "R-07",
+        "rule_version": 2,
+        "status": "FAIL",
+        "subject": "."
+      },
+      {
+        "area": "studies",
+        "details": [
+          {
+            "code": "R-75.sample_confounding",
+            "message": "Complete confounding prevents separating some condition contrasts from this factor. group columns 'case', 'control'. site rows 'A': 'case'=1, 'B': 'control'=1. Unlisted cells have zero samples.",
+            "path": "fixture-samples.tsv",
+            "value": "site"
+          }
+        ],
+        "evidence": [],
+        "name": "studies.records",
+        "reason": "sample design has complete confounding",
+        "rule": "R-75",
+        "rule_version": 1,
+        "status": "FAIL",
+        "subject": "development/studies/biology-fixture.toml"
+      },
+      {
+        "area": "data",
+        "details": [
+          {
+            "code": "R-83.mixed_ensembl_versions",
+            "column": 1,
+            "message": "Use consistent Ensembl version suffixes within this column.",
+            "path": "fixture-results.tsv",
+            "row": 3
+          },
+          {
+            "code": "R-83.p_zero",
+            "column": 2,
+            "message": "1 p-value(s) of exactly 0 in 'p': an underflow; report them as below the smallest value the method can give",
+            "path": "fixture-results.tsv",
+            "row": 3
+          }
+        ],
+        "evidence": [
+          {
+            "path": "fixture-results.tsv",
+            "sha256": "bc944cf55c2961023e20f9a75592d71dbb075dccb68a2c67cd7bf2f2fd7dda06"
+          }
+        ],
+        "name": "data.contracts",
+        "reason": "table contract findings need attention",
+        "rule": "R-83",
+        "rule_version": 1,
+        "status": "FAIL",
+        "subject": "fixture-results.tsv"
+      }
+    ],
+    "schema": "steward.report/0.1"
+  },
+  "study show": {
+    "check": "FAIL",
+    "path": "development/studies/biology-fixture.toml",
+    "schema": "steward.study_show/0.1",
+    "study": {
+      "depends_on": [],
+      "id": "biology-fixture",
+      "inputs": [
+        {
+          "accession": null,
+          "files": [],
+          "id": "fixture",
+          "references": null,
+          "retrieved": null,
+          "source": "local",
+          "url": null
+        }
+      ],
+      "kind": "study",
+      "notes": null,
+      "papers": [],
+      "plan": null,
+      "plan_sha256": null,
+      "references": {
+        "annotation": null,
+        "chromosome_naming": null,
+        "coordinate_base": null,
+        "databases": {},
+        "genome": null,
+        "id_namespace": null,
+        "mapping": null,
+        "organism": null,
+        "taxon": null
+      },
+      "results": [],
+      "samples": {
+        "allowed": {},
+        "condition_column": "group",
+        "covariates": [
+          "site"
+        ],
+        "id_column": "sample",
+        "matrix": [],
+        "path": "fixture-samples.tsv",
+        "required": [],
+        "sha256": "108b9294f6181ec4bc67a1b0577bb89e64fe18471ed322ab882f706de82a0160"
+      },
+      "schema": "steward.study/1",
+      "status": "active",
+      "title": "Biology fixture",
+      "tools": [
+        {
+          "name": "Bioconductor",
+          "version": "3.21"
+        }
+      ]
+    }
+  }
+}

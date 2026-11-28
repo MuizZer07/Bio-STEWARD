@@ -1,7 +1,8 @@
 # Troubleshooting
 
 1. **Read the code, not only the reason.** Every detail has a code such as `R-42.no_manifest`.
-2. **`steward explain R-42`** prints what the rule checks, each of its codes and the fix.
+2. **`steward explain R-42`** prints what the rule checks, each of its codes with a one-line description (0.23.0:
+   every code has one), and the fix.
 3. **`steward report .steward/report.json --format text --rule R-42`** shows one rule's full evidence
    (after `steward check --output .steward/report.json`).
 4. **An `internal_error`** is a toolkit defect: report it with the command and the code.

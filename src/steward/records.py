@@ -29,7 +29,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, SerializerFunctionWrapHandler, model_serializer, model_validator
 
 from .models import FileRef, Hex64, SafePath, Strict, Text
 
@@ -55,6 +55,26 @@ class References(Strict):
     coordinate_base: Literal[0, 1] | None = None      # 0 (BED, half-open) or 1 (GTF, VCF, SAM)
     chromosome_naming: Literal["ucsc", "ensembl", "refseq"] | None = None  # chr1 / 1 / NC_000001.11
     mapping: Mapping | None = None
+
+
+class StudyReferences(References):
+    chromosome_sizes: SafePath | None = None
+
+    @model_validator(mode="after")
+    def _sizes_need_genome(self) -> "StudyReferences":
+        if self.chromosome_sizes is not None:
+            if not Path(self.chromosome_sizes).parts or "\0" in self.chromosome_sizes:
+                raise ValueError("chromosome_sizes must name a repository file")
+            if not self.genome or not self.genome.strip():
+                raise ValueError("declare the genome build for the chromosome-sizes file")
+        return self
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: SerializerFunctionWrapHandler):
+        data = handler(self)
+        if self.chromosome_sizes is None:
+            data.pop("chromosome_sizes", None)
+        return data
 
 
 CONVENTIONS = ("genome", "annotation", "id_namespace", "organism", "taxon", "coordinate_base", "chromosome_naming")
@@ -84,11 +104,36 @@ class SampleSheet(Strict):
     required: list[Text] = Field(default_factory=lambda: ["organism", "tissue", "condition", "batch"])
     allowed: dict[str, list[Text]] = Field(default_factory=dict)
     matrix: list[MatrixRef] = Field(default_factory=list)
+    condition_column: Text | None = None
+    batch_column: Text | None = None
+    covariates: list[Text] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _design_columns(self) -> "SampleSheet":
+        condition = self.condition_column or "condition"
+        factors = [self.batch_column or "batch", *self.covariates]
+        if len({self.id_column, condition, *factors}) != len(factors) + 2:
+            if self.condition_column or self.batch_column or self.covariates:
+                raise ValueError("the sample ID, condition, batch and covariate columns must be distinct")
+        return self
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: SerializerFunctionWrapHandler):
+        data = handler(self)
+        for key in {"condition_column", "batch_column", "covariates"} - self.model_fields_set:
+            data.pop(key, None)
+        return data
 
 
 class Tool(Strict):
     name: Text
     version: Text
+
+    @model_validator(mode="after")
+    def _bioconductor_release(self) -> "Tool":
+        if self.name.strip().casefold() == "bioconductor" and not re.fullmatch(r"[0-9]+\.[0-9]+", self.version):
+            raise ValueError("record the Bioconductor major.minor release")
+        return self
 
 
 class Study(Strict):
@@ -98,7 +143,7 @@ class Study(Strict):
     kind: Text = "study"
     status: Literal["active", "frozen", "retired"] = "active"
     inputs: list[StudyInput] = Field(default_factory=list)
-    references: References = Field(default_factory=References)
+    references: StudyReferences = Field(default_factory=StudyReferences)
     tools: list[Tool] = Field(default_factory=list)
     plan: SafePath | None = None
     plan_sha256: Hex64 | None = None   # AE6: the plan is evidence too
@@ -247,7 +292,7 @@ def study_files(st: Study) -> list[tuple[str, FileRef]]:
 
 
 def check_studies(root: Path, cfg: Any, read=None, observe=None) -> list[tuple[str, str, str, list[dict[str, Any]]]]:
-    """[(subject, status, reason, details)] for R-75. `observe(rel, sha)` receives every file digest it relied on."""
+    """R-75 rows. `observe` receives file digests, with a subject for chromosome-sizes evidence."""
     studies, bad = load_studies(root, cfg, read)
     rows: list[tuple[str, str, str, list[dict[str, Any]]]] = []
     for rel, err in bad:
@@ -258,6 +303,9 @@ def check_studies(root: Path, cfg: Any, read=None, observe=None) -> list[tuple[s
     for sid, (rel, st) in studies.items():
         causes: list[str] = []
         details: list[dict[str, Any]] = []
+        for status, detail in _reference_preflight(root, st, rel, observe):
+            causes.append(status)
+            details.append(detail)
         for what, fr in study_files(st):
             sha = _sha_file(root, fr.path, observe)
             if sha is None:
@@ -336,14 +384,53 @@ def check_studies(root: Path, cfg: Any, read=None, observe=None) -> list[tuple[s
         reason = {"FAIL": "a recorded file is missing or changed, or a reference is unknown",
                   "INCOMPLETE": "the record is incomplete, stale or inconsistent",
                   "PASS": f"{len(study_files(studies[sid][1]))} recorded file(s) present and unchanged"}[st_]
+        if any(detail["code"] == "R-75.sample_confounding" for detail in details):
+            reason = "sample design has complete confounding"
+        if any(detail["code"] in {"R-75.reference_mismatch", "R-75.reference_sizes"} for detail in details):
+            reason = "genome reference preflight failed"
         rows.append((studies[sid][0], st_, reason, details))
     return rows
+
+
+def _reference_preflight(root: Path, st: Study, subject: str, observe):
+    from . import reference_preflight as preflight
+
+    path = st.references.chromosome_sizes
+    if path is None:
+        return
+    genome = st.references.genome
+    try:
+        sizes, digest = preflight.chromosome_sizes(root, path)
+    except (OSError, preflight.PreflightError) as exc:
+        yield "FAIL", {"code": "R-75.reference_sizes", "path": path, "row": getattr(exc, "row", None),
+                       "message": f"{genome}: cannot use the chromosome-sizes file ({exc})"}
+        return
+    if observe is not None:
+        observe(path, digest, subject=subject)
+    files = dict.fromkeys(file.path for inp in st.inputs for file in inp.files)
+    for file in files:
+        kind = preflight.input_kind(file)
+        if not kind:
+            continue
+        try:
+            incomplete = preflight.check_input(root, file, kind, sizes)
+        except RecordRefused:
+            continue  # the fingerprint check reports missing or refused study inputs
+        except (OSError, preflight.PreflightError) as exc:
+            yield "FAIL", {"code": "R-75.reference_mismatch", "path": file, "row": getattr(exc, "row", None),
+                           "message": f"{genome} ({path}): {exc}"}
+            continue
+        if incomplete is not None:
+            row, message = incomplete
+            yield "INCOMPLETE", {"code": "R-75.reference_incomplete", "path": file, "row": row,
+                                 "message": f"{genome} ({path}): {message}"}
 
 
 def _conventions(root: Path, st: Study, read=None) -> list[tuple[str, dict[str, Any]]]:
     """0.20.0 (B3, B4): (status, detail) for an input whose declared conventions differ from its study's, a file whose
     chromosome names are not the declared naming, and the sample sheet's contract."""
     from . import biodata as bd
+    from .reference_preflight import input_kind
 
     read = read or (lambda rel: read_rel(root, rel))
     out: list[tuple[str, dict[str, Any]]] = []
@@ -361,6 +448,8 @@ def _conventions(root: Path, st: Study, read=None) -> list[tuple[str, dict[str, 
         if naming is None:
             continue
         for f in inp.files:
+            if ref.chromosome_sizes is not None and input_kind(f.path):
+                continue  # the reference preflight compares exact contig names using bounded reads
             if not bd.chrom_kind(f.path):
                 continue
             try:
@@ -379,7 +468,7 @@ def _conventions(root: Path, st: Study, read=None) -> list[tuple[str, dict[str, 
             found = [] if e.reason == "missing" else [{"code": "R-75.samples_refused", "path": st.samples.path,
                                                        "message": str(e)}]
         for d in found:  # AN2: never truncated
-            out.append(("FAIL", d))
+            out.append(("PASS" if d["code"] == "R-75.sample_imbalance" else "FAIL", d))
         recorded = {f.path for i in st.inputs for f in i.files}
         for mx in st.samples.matrix:
             if mx.path not in recorded:
@@ -580,6 +669,7 @@ status = "active"          # active | frozen (every file fingerprinted) | retire
 # files = [{{ path = "data/GSE00000_series_matrix.txt" }}]
 
 [references]
+# chromosome_sizes = "data/GRCh38.chrom.sizes"  # local contig names and lengths for genome
 # genome = "GRCh38"
 # annotation = "GENCODE 44"
 # id_namespace = "Entrez"
@@ -625,7 +715,7 @@ def card(st: Study, rows: dict[str, str]) -> str:
         for i in st.inputs:
             lines.append(f"| {_md(i.id)} | {_md(i.source)} | {_md(i.accession or '—')} | {i.retrieved or '—'} | {len(i.files)} |")
         lines.append("")
-    refs = [(k, getattr(ref, k)) for k in ("genome", "annotation", "id_namespace") if getattr(ref, k)]
+    refs = [(k, getattr(ref, k)) for k in ("chromosome_sizes", "genome", "annotation", "id_namespace") if getattr(ref, k)]
     refs += [(f"database {k}", v) for k, v in sorted(ref.databases.items())]
     if refs:
         lines.append("**References:** " + " · ".join(f"{_md(k)}: {_md(v)}" for k, v in refs))

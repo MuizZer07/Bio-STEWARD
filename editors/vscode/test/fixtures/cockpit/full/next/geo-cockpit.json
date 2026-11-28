@@ -1,0 +1,101 @@
+{
+  "milestone": {
+    "blockers": [],
+    "command": "steward timeline",
+    "days_left": -9675.0,
+    "due": "2000-06-01T00:00:00+00:00",
+    "id": "abstract",
+    "kind": "submission",
+    "open_work": 0,
+    "state": "due (record its outcome)",
+    "title": "Conference abstract"
+  },
+  "notes": [
+    "exchange peer GONE: not checked (a peer declared by URL is read only with `steward exchange status --fetch`)"
+  ],
+  "now": "2026-11-27T00:00:00Z",
+  "project": "biology-geo",
+  "resume": {
+    "age_days": 9827.0,
+    "command": "steward session start",
+    "committed": true,
+    "next": [
+      "Finish GEO-001 and hand GEO-004 to review."
+    ],
+    "open_decisions": [],
+    "path": "development/HANDOFF.md"
+  },
+  "schema": "steward.next/0.1",
+  "tidy": {
+    "command": "steward tidy",
+    "counts": {
+      "contradiction": 0,
+      "exchange": 0,
+      "leftover": 0,
+      "memory": 0,
+      "stale_page": 1,
+      "stale_task": 5
+    },
+    "total": 6
+  },
+  "tool_version": "0.22.0",
+  "waiting_on_agents": [],
+  "waiting_on_human": [
+    {
+      "command": "steward authorize sign-pending",
+      "id": "d3e83e998137f78c0c7e973875d6e77e",
+      "kind": "signature",
+      "source": ".steward/pending/d3e83e998137f78c0c7e973875d6e77e.txt",
+      "time": "2000-01-01T00:00:00Z",
+      "title": "spend (scope -, expires 2099-01-01T00:00:00Z)"
+    },
+    {
+      "command": "steward exchange respond PEER-REQ-001 STATE --note \"…\"",
+      "id": "PEER-REQ-001",
+      "kind": "exchange",
+      "source": "exchange/inbox/PEER-REQ-001.md",
+      "time": "2000-01-01T00:00:00Z",
+      "title": "request from PEER: Add a gene-set enrichment table"
+    },
+    {
+      "command": "steward sprint go fixture-sprint T1",
+      "id": "fixture-sprint/T1",
+      "kind": "task_waiting",
+      "source": "development/sprints/fixture-sprint.jsonl",
+      "time": "2099-01-05T09:00:00Z",
+      "title": "sprint fixture-sprint task T1: GEO-001 waits for an order"
+    },
+    {
+      "command": "steward sprint go fixture-sprint T2",
+      "id": "fixture-sprint/T2",
+      "kind": "task_waiting",
+      "source": "development/sprints/fixture-sprint.jsonl",
+      "time": "2099-01-05T09:00:00Z",
+      "title": "sprint fixture-sprint task T2: GEO-003 waits for an order"
+    },
+    {
+      "command": "steward sprint go fixture-sprint T3",
+      "id": "fixture-sprint/T3",
+      "kind": "task_waiting",
+      "source": "development/sprints/fixture-sprint.jsonl",
+      "time": "2099-01-05T09:00:00Z",
+      "title": "sprint fixture-sprint task T3: GEO-004 waits for an order"
+    },
+    {
+      "command": "steward sprint go fixture-sprint T4",
+      "id": "fixture-sprint/T4",
+      "kind": "task_waiting",
+      "source": "development/sprints/fixture-sprint.jsonl",
+      "time": "2099-01-05T09:00:00Z",
+      "title": "sprint fixture-sprint task T4: GEO-005 waits for an order"
+    },
+    {
+      "command": "steward sprint go fixture-sprint T5",
+      "id": "fixture-sprint/T5",
+      "kind": "task_waiting",
+      "source": "development/sprints/fixture-sprint.jsonl",
+      "time": "2099-01-05T09:00:00Z",
+      "title": "sprint fixture-sprint task T5: GEO-006 waits for an order"
+    }
+  ]
+}

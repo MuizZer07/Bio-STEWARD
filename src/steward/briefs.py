@@ -66,23 +66,28 @@ def brief(text: str, agent: str, repo: Path, git: dict[str, str]) -> str:
     return "\n".join(out).rstrip() + "\n"
 
 
-TEMPLATES = ("review", "reverification", "literature-review", "novelty-check", "figure-check")
+TEMPLATES = ("analysis-review", "review", "reverification", "literature-review", "novelty-check", "figure-check")
 
 
-# a template's own placeholders: a value that is (or starts with) "…", "… (e.g. …)", and its capitalised slots; an
-# ellipsis inside a quotation is not one
-PLACEHOLDER = re.compile(r"^\s*…|…\s*\(|\bVERSION\b|\bBASE\.\.BRANCH\b|\bDATE\b|\bSHA\b")
+# a template's own placeholders: a value that is (or starts with) "…", "… (e.g. …)", a checklist slot "- [ ] …",
+# and its capitalised slots; an ellipsis inside a quotation is not one
+PLACEHOLDER = re.compile(
+    r"(?m)^\s*(?:-\s*\[\s*\]\s*)?…|…\s*\("
+    r"|\bANALYSIS\b|\bVERSION\b|\bBASE\.\.BRANCH\b|\bREVIEWED\.\.BRANCH\b|\bDATE\b|\bSHA\b"
+    r"|\bPAPER-OR-PLAN\b|\bPAPER\b|\bQUESTION\b|\bCONTRIBUTION\b"
+)
 
 
 def unfilled(text: str) -> list[str]:
-    """0.20.2 (STW-040): the template words a task still holds (its header and its Scope), so a brief is not sent with
-    them."""
+    """0.20.2 (STW-040) / STW-035 B5: the template words a task still holds (its header and key sections), so a brief
+    is not sent with them."""
     t = parse_task(text)
     out = [k for k, v in t["fields"].items() if PLACEHOLDER.search(v)]
     if PLACEHOLDER.search(t["title"]):
         out.insert(0, "title")
-    if PLACEHOLDER.search(t["sections"].get("Scope", "")):
-        out.append("Scope")
+    for sec in ("Goal", "Scope", "Acceptance criteria"):
+        if PLACEHOLDER.search(t["sections"].get(sec, "")):
+            out.append(sec)
     return out
 
 

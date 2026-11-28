@@ -107,6 +107,7 @@ RULES: dict[str, tuple[str, int]] = {
     "R-87": ("release.stranger_test", 1),
     "R-86": ("model.records", 1),
     "R-88": ("tidy.stale", 1),
+    "R-89": ("delegation.installed", 1),
 }
 
 AREAS: dict[str, tuple[str, ...]] = {
@@ -133,7 +134,7 @@ AREAS: dict[str, tuple[str, ...]] = {
     "repro": ("R-52",),
     "session": ("R-55",),
     "files": ("R-61",),
-    "agents": ("R-62",),
+    "agents": ("R-62", "R-89"),
     "stages": ("R-68",),
     "frozen": ("R-63",),
     "dependencies": ("R-66",),
@@ -505,9 +506,10 @@ def r07(ctx: Ctx) -> list[Result]:
         if pv.exempt(rel, lists, []) or any(glob_match(rel, p) for p in pv.BINARY_GLOBS if priv is None or priv.binary_excludes):
             continue
         own = [t for s in readable if s.applies(rel) for t in s.terms]
-        lp = local_paths and any(glob_match(rel, p) for p in scope_inc) and not any(glob_match(rel, p) for p in scope_exc) \
+        in_scope = any(glob_match(rel, p) for p in scope_inc) and not any(glob_match(rel, p) for p in scope_exc) \
             and not any(glob_match(rel, p) for p in allow)
-        if not own and not lp:
+        lp = local_paths and in_scope
+        if not own and not in_scope:
             continue
         try:
             raw = ctx.read(rel)
@@ -521,7 +523,7 @@ def r07(ctx: Ctx) -> list[Result]:
                 ctx.not_evaluated.append({"path": rel, "reason": "pdf text extraction unavailable (install poppler or the [paper] extra)"})
                 continue
             for page_no, page in enumerate(pages, start=1):
-                found, n = pv.scan_text(page, own, lp)
+                found, n = pv.scan_text(page, own, lp, controlled_access=in_scope)
                 allowed += n
                 hits += [{**h, "path": rel, "page": page_no} for h in found]
             continue
@@ -533,7 +535,7 @@ def r07(ctx: Ctx) -> list[Result]:
         except UnicodeDecodeError:
             ctx.not_evaluated.append({"path": rel, "reason": "not UTF-8"})
             continue
-        found, n = pv.scan_text(text, own, lp, rel=rel, sha=hashlib.sha256(raw).hexdigest())
+        found, n = pv.scan_text(text, own, lp, rel=rel, sha=hashlib.sha256(raw).hexdigest(), controlled_access=in_scope)
         allowed += n
         for h in found:
             h["path"] = rel
@@ -544,6 +546,8 @@ def r07(ctx: Ctx) -> list[Result]:
                                        {"line": h["line"], **({"column": h["column"]} if "column" in h else {})})}
         if h["kind"] == "local_path":
             out_hits.append({"code": "R-07.local_path", **where, "message": "an absolute home path with a user name"})
+        elif h["kind"] == "controlled_access":
+            out_hits.append({"code": "R-07.controlled_access", **where, "message": pv.CONTROLLED_ACCESS_MESSAGE})
         elif h["term"].public:
             out_hits.append({"code": "R-07.policy_hit", **where, "term": h["term"].label, "value": h["term"].text})
         else:  # never the term itself: the report must not leak what it protects
@@ -551,7 +555,8 @@ def r07(ctx: Ctx) -> list[Result]:
     if allowed:
         details.append({"code": "R-07.allowed_lines", "value": allowed, "message": f"lines marked '{pv.MARKER}'"})
     if out_hits:
-        return [result("R-07", ".", Status.FAIL, f"{len(out_hits)} term or local-path occurrence(s) found", out_hits + details)]
+        kind = "privacy" if any(h["kind"] == "controlled_access" for h in hits) else "term or local-path"
+        return [result("R-07", ".", Status.FAIL, f"{len(out_hits)} {kind} occurrence(s) found", out_hits + details)]
     if unextractable:
         causes.append(Status.UNKNOWN)
         details += [{"code": "R-07.pdf_unreadable", "path": p} for p in unextractable]
@@ -3417,6 +3422,24 @@ def r86(ctx: Ctx) -> list[Result]:
     return check_models(ctx)
 
 
+def r89(ctx: Ctx) -> list[Result]:
+    """Advisory (0.23.0, STW-061 D01): each agent [delegation] names is installed (on PATH or in its known folder).
+    Nothing is run; whether an agent is signed in or limited is `steward agents status`'s, from its ledger."""
+    from .delegation import missing_configured
+
+    cfg = ctx.config
+    if cfg is None or cfg.delegation is None:
+        return [result("R-89", ".", Status.NOT_APPLICABLE, "[delegation] is not configured")]
+    gone = missing_configured(cfg)
+    if not gone:
+        return [result("R-89", ".", Status.PASS, "every agent [delegation] names is installed")]
+    details = [{"code": "R-89.missing", "value": name,
+                "message": f"the {role} {name} is not installed (looked on PATH and in its install folder)"}
+               for name, role in gone]
+    return [result("R-89", ".", Status.INCOMPLETE,
+                   "not installed: " + ", ".join(f"{n} ({r})" for n, r in gone) + " (steward agents setup)", details)]
+
+
 RULE_FUNCS: dict[str, Callable[[Ctx], list[Result]]] = {
     "R-83": r83,
     "R-01": r01, "R-02": r02, "R-03": r03, "R-04": r04, "R-05": r05, "R-06": r06, "R-07": r07,
@@ -3440,5 +3463,6 @@ RULE_FUNCS: dict[str, Callable[[Ctx], list[Result]]] = {
     "R-87": lambda c: __import__("steward.stranger", fromlist=["r87"]).r87(c),
     "R-88": lambda c: __import__("steward.cockpit", fromlist=["r88"]).r88(c),
     "R-86": r86,
+    "R-89": r89,
     "R-66": lambda c: _process("r66", c), "R-64": lambda c: _process("r64", c), "R-65": lambda c: _process("r65", c), "R-67": lambda c: _process("r67", c),
 }

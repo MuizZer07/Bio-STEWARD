@@ -2,6 +2,7 @@
 // file's text unchanged (AC-S4). Read from the `[session] handoff` file; no CLI call, nothing written.
 import * as vscode from 'vscode';
 import type { Project } from '../project';
+import { openFile } from './preview';
 
 export const RESUME_COMMAND = 'bioSteward.resume';
 export const RESUME_SCHEME = 'bio-steward-handoff';
@@ -22,7 +23,7 @@ export class ResumeView implements vscode.TextDocumentContentProvider, vscode.Di
     return this.#texts.get(uri.toString()) ?? '';
   }
 
-  async show(project: Project | undefined): Promise<void> {
+  async show(project: Project | undefined, asText = false): Promise<vscode.Uri | undefined> {
     if (!project) {
       void vscode.window.showInformationMessage('Bio-STEWARD: Open a project folder to resume.');
       return;
@@ -48,8 +49,8 @@ export class ResumeView implements vscode.TextDocumentContentProvider, vscode.Di
     this.#texts.set(key, handoff.text);
     if (changed) this.#changed.fire(uri);
     const document = await vscode.workspace.openTextDocument(uri);
-    this.#last = await vscode.languages.setTextDocumentLanguage(document, 'markdown');
-    await vscode.window.showTextDocument(this.#last, { preview: true });
+    this.#last = document;
+    return openFile(uri, asText);
   }
 
   dispose(): void {

@@ -1,5 +1,5 @@
 // Host suite, T08: Copy for agent (S5), scoped re-check (S8) and Agent Skills (S7, AC-5.1 – AC-5.3 read for
-// CLI 0.20.6), on the toy workspace from the pinned release. T12 (T11-06): no test here depends on another test or
+// CLI 0.20.6 and later), on the toy workspace from the pinned release. T12 (T11-06): no test here depends on another test or
 // on file order. Each suite makes the state it needs (its own full run; the Agent Skills sequence is one test that
 // restores the workspace after it), tree reads wait for the exact view update, and copies are asserted on what the
 // extension copied, not on the shared system clipboard.
@@ -28,6 +28,7 @@ describe('Copy for agent, scoped re-check, Agent Skills (T08)', function () {
   let api: TestApi;
   let root: string;
   let cli: string;
+  let tested = '';
 
   before(async function () {
     if (example !== 'toy') this.skip();
@@ -38,8 +39,10 @@ describe('Copy for agent, scoped re-check, Agent Skills (T08)', function () {
     cli = vscode.workspace.getConfiguration('bioSteward').get<string>('cliPath') ?? '';
     await until(() => api.project.state.cli.kind === 'ready', 'CLI detection');
     const { cli: state } = api.project.state;
-    assert.equal(state.kind === 'ready' && state.version, '0.20.6');
-    console.log('    T08 host tests use steward 0.20.6');
+    // The CLI the tests run on: the manifest's testedWithCli (rule G2).
+    tested = extension.packageJSON.bioSteward.testedWithCli;
+    assert.equal(state.kind === 'ready' && state.version, tested);
+    console.log(`    T08 host tests use steward ${tested}`);
   });
 
   it('registers the T08 commands', async () => {
@@ -64,7 +67,7 @@ describe('Copy for agent, scoped re-check, Agent Skills (T08)', function () {
         assert.equal(api.clipboard.text, text);
         const recheck = `steward check${rule ? ` --rule ${rule}` : ''} --summary`;
         assert.equal(text, `${expected.stdout}\nRe-check: ${recheck}\n` +
-          `(the text above is \`${recheck}\` from steward 0.20.6, unchanged: ${Buffer.byteLength(expected.stdout)} bytes)\n`);
+          `(the text above is \`${recheck}\` from steward ${tested}, unchanged: ${Buffer.byteLength(expected.stdout)} bytes)\n`);
         console.log(`    ${recheck}: ${Buffer.byteLength(expected.stdout)} bytes`);
       });
     }

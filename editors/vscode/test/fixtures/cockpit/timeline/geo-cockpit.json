@@ -56,10 +56,10 @@
       "title": "Preprint"
     },
     {
-      "days_left": 26484.0,
-      "due": "2099-06-01T00:00:00+00:00",
+      "days_left": 26514.0,
+      "due": "2099-07-01T00:00:00+00:00",
       "id": "review",
-      "internal": "2099-05-18T00:00:00+00:00",
+      "internal": "2099-06-17T00:00:00+00:00",
       "kind": "review",
       "open_work": 4,
       "progress": {

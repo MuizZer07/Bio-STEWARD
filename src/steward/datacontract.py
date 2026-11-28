@@ -6,13 +6,14 @@ import hashlib
 import io
 import os
 import re
-from collections.abc import Iterator
+import tomllib
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 from typing import BinaryIO
 
 from .models import DataContract, SampleSheet
-from .records import RecordRefused, open_rel
+from .records import RecordRefused, Study, open_rel, read_rel
 from .rules import Ctx, result
 from .status import Result, Status, combine
 
@@ -30,6 +31,16 @@ _EXCEL_DATE = re.compile(
 )
 _BEGIN = ["!series_matrix_table_begin"]
 _END = ["!series_matrix_table_end"]
+_MOUSE_SYMBOL = re.compile(r"[A-Z][a-z0-9]*(?:-[A-Za-z0-9]+)*")
+_SPECIES = {"9606": "human", "homo sapiens": "human", "human": "human",
+            "10090": "mouse", "mus musculus": "mouse", "mouse": "mouse"}
+
+
+@dataclass
+class _Identifiers:
+    species: str | None = None
+    previous: set[str] = field(default_factory=set)
+    retired: set[str] = field(default_factory=set)
 
 
 class _DigestReader(io.RawIOBase):
@@ -162,7 +173,8 @@ def _unique_id(scan: _Scan, ids: dict[str, tuple[int, int]], value: str, row: in
         ids[value] = (row, column)
 
 
-def _table(scan: _Scan, rows: Iterator[tuple[int, list[str]]], spec: DataContract, missing: set[str]) -> None:
+def _table(scan: _Scan, rows: Iterator[tuple[int, list[str]]], spec: DataContract, missing: set[str],
+           identifiers: _Identifiers) -> None:
     counts = set(spec.raw_counts)
     p_columns = {spec.p_value, spec.adjusted_p_value} - {None}
     numeric = counts | p_columns | {spec.log_fold_change}
@@ -179,9 +191,14 @@ def _table(scan: _Scan, rows: Iterator[tuple[int, list[str]]], spec: DataContrac
             scan.add("R-83.no_samples", header_row, None, "The matrix has no sample columns.")
     ids: dict[str, tuple[int, int]] = {}
     first_na: str | None = None
+    ensembl_versions: dict[str, bool] = {}
+    mixed_versions: set[str] = set()
     zeros: dict[str, tuple[int, int, int]] = {}  # 0.20.2: column -> (first row, column, count) of p = 0
-    pairs = differ = 0                            # rows with both p-values; rows where they differ
+    row_count = pairs = 0
+    differ = False
+    symbol_pattern = {"human": _IDENTIFIERS["hgnc"], "mouse": _MOUSE_SYMBOL}.get(identifiers.species)
     for row, cells in _body(scan, rows, len(header)):
+        row_count += 1
         p_values: dict[str, Decimal] = {}
         for column, (name, value) in enumerate(zip(header, cells), 1):
             if "\x00" in value:
@@ -200,6 +217,20 @@ def _table(scan: _Scan, rows: Iterator[tuple[int, list[str]]], spec: DataContrac
             number = _number(value) if name in numeric or kind in ("number", "integer") else None
             if kind is not None:
                 _check_type(scan, row, column, value, kind, number)
+            if kind == "ensembl" and _IDENTIFIERS["ensembl"].fullmatch(value):
+                versioned = "." in value
+                if ensembl_versions.setdefault(name, versioned) != versioned and name not in mixed_versions:
+                    mixed_versions.add(name)
+                    scan.add("R-83.mixed_ensembl_versions", row, column,
+                             "Use consistent Ensembl version suffixes within this column.")
+            if kind == "gene_symbol" and symbol_pattern is not None and not symbol_pattern.fullmatch(value):
+                scan.add("R-83.symbol_case", row, column,
+                         f"Check the symbol spelling and casing for {identifiers.species}.")
+            if kind == "hgnc":
+                if value in identifiers.retired:
+                    scan.add("R-83.retired_hgnc_symbol", row, column, "Resolve this withdrawn HGNC symbol.")
+                elif value in identifiers.previous:
+                    scan.add("R-83.previous_hgnc_symbol", row, column, "Resolve this previous HGNC symbol.")
             if name in counts and (number is None or number < 0 or not _integral(number)):
                 scan.add("R-83.raw_count", row, column, "Expected a nonnegative integer count.")
             if name in p_columns:
@@ -221,11 +252,11 @@ def _table(scan: _Scan, rows: Iterator[tuple[int, list[str]]], spec: DataContrac
             scan.add("R-83.p_order", row, positions[adjusted], "The adjusted p-value is below the raw p-value.")
         if raw in p_values and adjusted in p_values:
             pairs += 1
-            differ += p_values[raw] != p_values[adjusted]
-    for name, (r0, c0, n0) in zeros.items():  # 0.20.2 (STW-040): an underflow reported as zero
+            differ = differ or p_values[raw] != p_values[adjusted]
+    for name, (r0, c0, n0) in zeros.items():  # 0.20.2: a possible underflow reported as zero
         scan.add("R-83.p_zero", r0, c0, f"{n0} p-value(s) of exactly 0 in {name!r}: an underflow; report them as below "
                  "the smallest value the method can give", Status.INCOMPLETE)
-    if pairs >= 3 and not differ:
+    if pairs == row_count and pairs and not differ and not any(d["code"] == "R-83.row_width" for d in scan.details):
         scan.add("R-83.adjusted_equals_raw", None, positions.get(spec.adjusted_p_value),
                  f"the adjusted p-value equals the raw one on all {pairs} rows: was the raw column reported as adjusted?")
 
@@ -255,21 +286,18 @@ def _alignment(table: _Scan, sheet: _Scan) -> None:
                 break
 
 
-def _scan(ctx: Ctx, spec: DataContract | SampleSheet, missing: set[str]) -> _Scan:
-    scan = _Scan(spec.path)
+def _scan(ctx: Ctx, path: str, format_: str, consume: Callable[[_Scan, Iterator[tuple[int, list[str]]]], None]) -> _Scan:
+    scan = _Scan(path)
     try:
-        with open_rel(ctx.root, spec.path) as source:
+        with open_rel(ctx.root, path) as source:
             before = os.fstat(source.fileno())
             if before.st_nlink != 1:
                 raise RecordRefused(0, "multiple hard links", "link")
             raw = _DigestReader(source)
             with io.BufferedReader(raw) as binary, io.TextIOWrapper(binary, encoding="utf-8-sig", newline="") as text:
-                rows = _rows(text, spec.format)
+                rows = _rows(text, format_)
                 try:
-                    if isinstance(spec, DataContract):
-                        _table(scan, rows, spec, missing)
-                    else:
-                        _sheet(scan, rows, spec, missing)
+                    consume(scan, rows)
                     # Check format markers even if the header was rejected.
                     for _ in rows:
                         pass
@@ -283,10 +311,10 @@ def _scan(ctx: Ctx, spec: DataContract | SampleSheet, missing: set[str]) -> _Sca
         digest = raw.digest.hexdigest()
         if ((before.st_size, before.st_mtime_ns, before.st_ctime_ns)
                 != (after.st_size, after.st_mtime_ns, after.st_ctime_ns)
-                or ctx.inputs.get(spec.path, digest) != digest):
+                or ctx.inputs.get(path, digest) != digest):
             raise RecordRefused(0, "changed while checking", "changed")
-        ctx.inputs[spec.path] = digest
-        scan.evidence = ctx.evidence(spec.path)
+        ctx.inputs[path] = digest
+        scan.evidence = ctx.evidence(path)
     except RecordRefused as exc:
         if exc.reason == "missing":
             scan.add("R-83.missing_file", None, None, "Supply the declared file.", Status.INCOMPLETE)
@@ -300,6 +328,63 @@ def _scan(ctx: Ctx, spec: DataContract | SampleSheet, missing: set[str]) -> _Sca
     return scan
 
 
+def _hgnc(scan: _Scan, rows: Iterator[tuple[int, list[str]]], identifiers: _Identifiers) -> None:
+    record = _header(scan, rows, {"symbol", "prev_symbol", "status"})
+    if record is None:
+        return
+    header_row, header = record
+    symbol, prev, status = (header.index(name) for name in ("symbol", "prev_symbol", "status"))
+    current: set[str] = set()
+    for row, cells in _body(scan, rows, len(header)):
+        name = cells[symbol].strip()
+        state = cells[status].strip().casefold()
+        if name and state == "approved":
+            current.add(name)
+            identifiers.previous.update(s.strip() for s in cells[prev].split("|") if s.strip())
+        elif name and state in {"entry withdrawn", "symbol withdrawn", "withdrawn"}:
+            identifiers.retired.add(name.removesuffix("~withdrawn"))
+        else:
+            scan.add("R-83.hgnc_reference", row, status + 1, "Supply a symbol and a recognized HGNC status.")
+    if not current and not identifiers.retired:
+        scan.add("R-83.hgnc_reference", header_row, None, "Supply an HGNC table containing approved or withdrawn symbols.")
+    identifiers.retired.difference_update(current)
+    identifiers.previous.difference_update(current)
+
+
+def _study_species(ctx: Ctx, path: str, spec: DataContract, identifiers: _Identifiers) -> _Scan:
+    scan = _Scan(path)
+    try:
+        data = read_rel(ctx.root, path)
+        digest = hashlib.sha256(data).hexdigest()
+        if ctx.inputs.get(path, digest) != digest:
+            scan.add("R-83.study_reference", None, None, "The study changed during this check.", Status.UNKNOWN)
+            return scan
+        ctx.inputs[path] = digest
+        scan.evidence = ctx.evidence(path)
+        study = Study.model_validate(tomllib.loads(data.decode("utf-8")))
+    except RecordRefused as exc:
+        status = {"missing": Status.INCOMPLETE, "changed": Status.UNKNOWN}.get(exc.reason, Status.FAIL)
+        scan.add("R-83.study_reference", None, None, "Supply the declared study as a regular repository file.", status)
+        return scan
+    except OSError:
+        scan.add("R-83.study_reference", None, None, "Read the declared study record.", Status.UNKNOWN)
+        return scan
+    except (ValueError, RecursionError):
+        scan.add("R-83.study_reference", None, None, "Read and validate the declared study record.")
+        return scan
+    ref = study.references
+    organism = _SPECIES.get((ref.organism or "").strip().casefold())
+    taxon = _SPECIES.get(str(ref.taxon))
+    if study.id != spec.study or (organism and ref.taxon is not None and organism != taxon):
+        scan.add("R-83.study_reference", None, None, "Check the study ID and agreement between organism and taxon.")
+    elif (species := taxon or organism) is None:
+        scan.add("R-83.study_reference", None, None, "Declare a human or mouse organism or taxon for symbol checks.",
+                 Status.INCOMPLETE)
+    else:
+        identifiers.species = species
+    return scan
+
+
 def check_contracts(ctx: Ctx) -> list[Result]:
     if ctx.config is None or ctx.config.data is None or not ctx.config.data.contract:
         return [result("R-83", ".", Status.NOT_APPLICABLE, "no data contracts declared")]
@@ -307,10 +392,28 @@ def check_contracts(ctx: Ctx) -> list[Result]:
     results = []
     for spec in ctx.config.data.contract:
         missing = set(spec.na_values)
-        table = _scan(ctx, spec, missing)
-        scans = [table]
+        identifiers = _Identifiers()
+        scans = []
+        if spec.study is not None:
+            if ctx.config.studies is None:
+                study = _Scan(spec.path)
+                study.add("R-83.study_reference", None, None, "Configure [studies] to resolve the declared study.",
+                          Status.INCOMPLETE)
+            else:
+                path = f"{ctx.config.studies.dir}/{spec.study}.toml"
+                study = _study_species(ctx, path, spec, identifiers)
+            scans.append(study)
+        if spec.hgnc_table is not None:
+            reference = _scan(ctx, spec.hgnc_table, "tsv", lambda scan, rows: _hgnc(scan, rows, identifiers))
+            scans.append(reference)
+            if reference.status != Status.PASS:
+                identifiers.previous.clear()
+                identifiers.retired.clear()
+        table = _scan(ctx, spec.path, spec.format, lambda scan, rows: _table(scan, rows, spec, missing, identifiers))
+        scans.append(table)
         if spec.sample_sheet is not None:
-            sheet = _scan(ctx, spec.sample_sheet, missing)
+            sample = spec.sample_sheet
+            sheet = _scan(ctx, sample.path, sample.format, lambda scan, rows: _sheet(scan, rows, sample, missing))
             scans.append(sheet)
             if table.samples and sheet.status == Status.PASS and table.evidence:
                 _alignment(table, sheet)

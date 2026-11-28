@@ -145,7 +145,7 @@ def test_T_CLI_05_report_rejects_invalid_and_is_byte_stable(cli, example, tmp_pa
     code, md1, _ = cli("report", rep)
     _, md2, _ = cli("report", rep)
     assert code == 0 and md1 == md2
-    assert "PASS 28 · FAIL 0 · INCOMPLETE 0 · UNKNOWN 0 · NOT_APPLICABLE 55" in md1
+    assert "PASS 28 · FAIL 0 · INCOMPLETE 0 · UNKNOWN 0 · NOT_APPLICABLE 56" in md1
     assert "Scientific validity, and the correctness or acceptance of a manuscript, are not assessed by this tool." in md1
     assert md1.startswith("# Steward report: toy-expression-benchmark")
     _, txt, _ = cli("report", rep, "--format", "text")

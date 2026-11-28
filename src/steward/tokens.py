@@ -26,7 +26,9 @@ from .token_logs import AGENTS, Event, Log, identifier, timestamp
 WINDOW_LEDGER = ".steward/task-tokens.jsonl"
 BUDGET_LINE = re.compile(r"^[ \t]*(?:[-*][ \t]+)?(?:\*\*)?tokens_budget\s*[:=](?:\*\*)?[ \t]*(.*)$", re.M)
 AGENT_NAMES = {"claude": "claude", "claude code": "claude", "codex": "codex", "openai codex": "codex",
-               "gemini": "gemini", "gemini cli": "gemini"}
+               "gemini": "gemini", "gemini cli": "gemini",
+               # D02: the [delegation] names, as the sprint supervisor records its attempts
+               "claude-code": "claude", "antigravity": "gemini"}
 
 
 class TokenError(ValueError):
@@ -47,6 +49,8 @@ class Window:
     model: str | None = None
     source: str = "task-tokens"  # X05: task-tokens (by hand), agents, sprint, run, or all activity
     ledger: str | None = None    # X05: the record the window was read from
+    # D02: a sprint supervisor's attempt (agents ledger): (attempt, agent, model, outcome, reason)
+    attempt: tuple[int, str, str | None, str | None, str | None] | None = None
 
     @property
     def tier(self) -> int:
@@ -118,8 +122,12 @@ def _windows(root: Path, cfg: StewardConfig) -> tuple[list[Window], set[str]]:
         start, end = timestamp(row.get("started")), timestamp(row.get("ended"))
         model = identifier(row.get("model"))
         if task and agent and start and (row.get("ended") is None or (end and end >= start)):
+            n = row.get("attempt")
+            attempt = ((n, label, None if model == "unknown" else model, identifier(row.get("status")),
+                        identifier(row.get("reason")))
+                       if isinstance(row.get("sprint"), str) and isinstance(n, int) else None)
             windows.append(Window(task, start, end, agent=agent, model=None if model == "unknown" else model,
-                                  source="agents", ledger=(cfg.agents or AgentsSection()).ledger))
+                                  source="agents", ledger=(cfg.agents or AgentsSection()).ledger, attempt=attempt))
         else:
             issues.add("agents ledger has attempts without a supported agent or usable dates")
     return windows, issues
@@ -154,7 +162,8 @@ def _sprint_windows(root: Path, rel: str, repo_id: str) -> tuple[list[Window], s
         if not task or not when:
             continue
         state = e.get("state") if e.get("kind") == "state" else None
-        ends = state in ("done", "failed") or (e.get("kind") == "order" and e.get("order") == "skip")
+        ends = state in ("done", "failed", "redelegated", "review") or (  # D02: an attempt also ends in these
+            e.get("kind") == "order" and e.get("order") == "skip")
         if (state == "running" or ends) and task in open_:
             index = open_.pop(task)
             windows[index] = replace(windows[index], end=max(when, windows[index].start))
@@ -201,7 +210,9 @@ def _record_windows(root: Path, cfg: StewardConfig, recorded: set[str]) -> tuple
             issues.add(f"sprint ledger {rel} is unavailable")
             continue
         sprint_runs |= runs
-        windows += [w for w in found if w.task.rsplit(" ", 1)[-1] not in recorded]
+        # a task the agents ledger names by its id, or (D02, the supervisor's attempts) as <sprint>/<task>
+        windows += [w for w in found if w.task.rsplit(" ", 1)[-1] not in recorded
+                    and "/".join(w.task.split(" ")[1:3]) not in recorded]
     rel = (cfg.run or RunSection()).ledger
     try:
         entries = _entries(root, rel, "runs", repo_id)
@@ -348,6 +359,7 @@ def _priced(cfg: StewardConfig, model: str | None, events: list[Event]) -> dict:
 
 def _report(cfg: StewardConfig, windows: list[Window], selected: set[str], logs, since: datetime | None, current: datetime):
     by_task = defaultdict(list)
+    by_attempt = defaultdict(list)
     gaps = defaultdict(set)
     for agent, (events, unknown_scope) in logs.items():
         applicable = [w for w in windows if w.agent in (None, agent)]
@@ -368,6 +380,9 @@ def _report(cfg: StewardConfig, windows: list[Window], selected: set[str], logs,
             if tasks:
                 task = next(iter(tasks))
                 by_task[task].append((agent, path, event))
+                for w in hits:  # D02: the supervisor's attempt the usage falls in
+                    if w.attempt is not None and w.task == task and w.tier == tier and event.usage is not None:
+                        by_attempt[task, w.attempt].append(event)
                 if event.missing_usage:
                     gaps[task].add("usage records missing or incomplete")
     rows = []
@@ -398,6 +413,14 @@ def _report(cfg: StewardConfig, windows: list[Window], selected: set[str], logs,
                      "files_read": [{"path": path, "reads": n}
                                     for path, n in sorted(files.items(), key=lambda x: (-x[1], x[0]))[:10]],
                      "tool_outputs": sorted(tools, key=lambda t: (-t["bytes"], t["agent"], t["session"] or ""))[:10]})
+        tried = sorted({w.attempt for w in windows if w.task == task and w.attempt is not None},
+                       key=lambda a: a[0], reverse=True)
+        if tried:  # D02: each worker's attempt, newest first, re-delegated ones included; only for such tasks
+            rows[-1]["attempts"] = [
+                {"attempt": n, "agent": who, "model": model, "outcome": outcome, "reason": reason,
+                 "tokens": sum(e.usage.input + e.usage.output for e in by_attempt[task, (n, who, model, outcome, reason)])
+                 if by_attempt[task, (n, who, model, outcome, reason)] else None}
+                for n, who, model, outcome, reason in tried]
     return rows
 
 
@@ -446,6 +469,10 @@ def _plain_report(rows: list[dict], sources: dict, issues: set[str], currency: s
             print(f"  {issue}")
         for agent in row["agents"]:
             print(f"  {agent['agent']}  {agent['tokens']:,} tokens")
+        for a in row.get("attempts", []):  # D02: each worker's attempt, newest first
+            used = "no usage matched" if a["tokens"] is None else f"{a['tokens']:,} tokens"
+            print(f"  attempt {a['attempt']}  {a['agent']} / {a['model'] or 'unknown model'}  {a['outcome'] or 'running'}"
+                  + (f" ({a['reason']})" if a["reason"] else "") + f"  {used}")
         for model in row["models"]:
             read, write = (model[field] if model[field] is not None else "unavailable"
                            for field in ("cache_read", "cache_write"))
@@ -528,7 +555,7 @@ def _redact(root: Path, rows: list[dict], sources: dict) -> tuple[list[dict], di
             t["session"] = sess(t.get("session"))
             t["log_path"] = logs.get(t.get("log_path"), "log")
             t["paths"] = sorted({where(x) for x in t.get("paths", [])})
-        for m in row.get("models", []):
+        for m in row.get("models", []) + row.get("attempts", []):
             if m.get("model"):
                 m["model"] = safe(m["model"])
     return rows, sources

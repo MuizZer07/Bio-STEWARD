@@ -1430,6 +1430,17 @@
       "rule_version": 1,
       "status": "NOT_APPLICABLE",
       "subject": "."
+    },
+    {
+      "area": "agents",
+      "details": [],
+      "evidence": [],
+      "name": "delegation.installed",
+      "reason": "[delegation] is not configured",
+      "rule": "R-89",
+      "rule_version": 1,
+      "status": "NOT_APPLICABLE",
+      "subject": "."
     }
   ],
   "scope": {
@@ -1441,7 +1452,7 @@
     "counts": {
       "FAIL": 2,
       "INCOMPLETE": 2,
-      "NOT_APPLICABLE": 56,
+      "NOT_APPLICABLE": 57,
       "PASS": 22,
       "UNKNOWN": 1
     },

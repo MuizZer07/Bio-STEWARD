@@ -48,6 +48,7 @@ nav:
       - See the verdict in VS Code: guides/vscode.md
       - Publish stable releases, keep development private: guides/publish.md
       - Run a stranger test before a release: guides/stranger-test.md
+      - Delegate to other agents: guides/delegation.md
       - Dispatch a task to another agent: guides/dispatch.md
       - Where you are, what is next, what is stale: guides/next-and-tidy.md
       - Read decisions and open questions: guides/decisions.md

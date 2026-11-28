@@ -1,0 +1,34 @@
+Agent endings: where each fixture's message comes from (0.23.0, D01)
+
+Every fixture is the end of a task log or a dispatch output. Private details are removed: session and message IDs,
+working folders, user names, and the time zone (the real messages named the owner's zone; it is replaced by UTC, and
+the printed clock time by the same instant in UTC, so the reset time stated as a number still agrees with the text).
+
+From real logs (the agents' local session records, 2026-11):
+  claude-limit-5h.jsonl       Claude Code's API error message for a 5-hour limit: the text, the error code, the
+                              HTTP status and the quota record with its reset time (resetsAt), trimmed to those
+                              fields. The result event after it is the shape of `claude -p --output-format
+                              stream-json` (documented), carrying the same text.
+  claude-limit-weekly.txt     Claude Code's weekly-limit text, with a date in its reset time.
+  codex-not-limited.jsonl     Codex's rate-limit status record (93% of the weekly window used, no limit reached),
+                              which must not count as a limit; IDs and the credit balance removed.
+
+From the agents' documented messages (no real one was found in the logs):
+  claude-signed-out.txt       Claude Code headless output when not signed in.
+  codex-limit-at.jsonl        Codex's usage-limit error, `codex exec --json`, with a clock time.
+  codex-limit-in.jsonl        The same, as a failed turn, with a duration.
+  codex-signed-out.jsonl      Codex's message when its sign-in cannot be refreshed.
+  codex-sandbox.txt           The macOS sandbox refusing to start inside another sandbox.
+  antigravity-limit.txt       A Gemini-based agent's quota message, with a duration.
+  antigravity-exhausted.json  A Google API quota error document (RESOURCE_EXHAUSTED).
+  antigravity-signed-out.txt  A Gemini-based agent's message when not signed in.
+  antigravity-sandbox.txt     Linux bubblewrap refusing to create its namespace.
+
+From steward's own output (real):
+  codex-missing.txt           `steward task dispatch --to codex` with no codex installed.
+  antigravity-missing.txt     `steward task dispatch --to antigravity` with no agy installed.
+
+Task failures, which are not "cannot run" endings:
+  claude-task-failure.jsonl   A run that ended with an error result that is not a limit, after a tool read a file
+                              quoting a limit message.
+  codex-tool-output.jsonl     A run whose command output quotes a limit message, then a failed test.

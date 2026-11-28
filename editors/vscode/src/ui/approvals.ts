@@ -1,8 +1,8 @@
-// P5 Approvals, reduced form, as cards (design v0.8, which overrides v0.3 §2.2 and RELEASE_vscode_0.2.0_SPEC §3 P5).
+// P5 Approvals, as cards (design v0.8, which overrides v0.3 §2.2 and RELEASE_vscode_0.2.0_SPEC §3 P5).
 //
-// The panel is a webview with `default-src 'none'`, no scripts, no local resources, and exactly two command URIs
-// enabled: **View exactly what you are approving** and **✍ Sign**. Each link carries only the card's full nonce, the
-// project index and the generation of the page it is on (U09). Neither handler trusts them:
+// The webview uses `default-src 'none'` and enables only the approval details, payload and sign command URIs.
+// Details reads the queue line on the current page. The View and Sign links carry the full nonce, project index
+// and page generation. Both handlers revalidate them:
 //   - the link must name a card of the page now shown (same generation, same project root, same nonce);
 //   - the payload file is read, `authorize pending` is read again (that very read must finish: a superseded or failed
 //     read refuses), and the file is read once more; both reads and the card must have the same SHA-256;
@@ -19,16 +19,17 @@
 import { realpath } from 'node:fs/promises';
 import * as vscode from 'vscode';
 import {
-  approvalsHtml, bindCard, CARD_COMMANDS, isNonce, needsTypedName, SIGN_BUTTON, SIGN_COMMAND, signDialog, typedNamePrompt,
+  APPROVAL_DETAILS_COMMAND, approvalsHtml, bindCard, CARD_COMMANDS, isNonce, needsTypedName, SIGN_BUTTON, SIGN_COMMAND, signDialog, typedNamePrompt,
   VIEW_PAYLOAD_COMMAND, type ApprovalsBlock, type ApprovalsPage, type ApprovalsState, type Binding, type PayloadRead,
   type SignDetails,
 } from '../model/approvals';
 import { orderProjects } from '../model/today';
 import type { Project } from '../project';
 import { payloadRead, readPendingPayload, readQueueCode, type PayloadText } from '../pendingPayload';
+import type { DetailsView } from './preview';
 import { signingCommand, signingEnvironment } from '../cli/signing';
 
-export { SIGN_COMMAND, VIEW_PAYLOAD_COMMAND };
+export { APPROVAL_DETAILS_COMMAND, SIGN_COMMAND, VIEW_PAYLOAD_COMMAND };
 export const APPROVALS_VIEW = 'bioSteward.approvals';
 export const APPROVALS_REFRESH_COMMAND = 'bioSteward.approvals.refresh';
 export const PAYLOAD_SCHEME = 'bio-steward-payload';
@@ -64,6 +65,7 @@ export class ApprovalsView implements vscode.WebviewViewProvider, vscode.Disposa
   #updates = 0;
   // The page now shown: its generation (named in every link it holds) and its cards, by `index/nonce`.
   #generation = 0;
+  #page: ApprovalsPage = { kind: 'none' };
   #cards: ReadonlyMap<string, RenderedCard> = new Map();
   // What was read of each payload file, per approvals state (a new state is a new read).
   #reads = new WeakMap<ApprovalsState, ReadonlyMap<string, PayloadRead>>();
@@ -73,7 +75,6 @@ export class ApprovalsView implements vscode.WebviewViewProvider, vscode.Disposa
     this.#view = view;
     view.webview.options = ApprovalsView.options;
     view.webview.html = this.#html;
-    view.description = 'reduced';
     view.badge = this.#badge;
     view.onDidDispose(() => {
       if (this.#view === view) this.#view = undefined;
@@ -102,6 +103,22 @@ export class ApprovalsView implements vscode.WebviewViewProvider, vscode.Disposa
     return generation === this.#generation ? this.#cards.get(`${index}/${nonce}`) : undefined;
   }
 
+  showDetails(projects: readonly Project[], details: DetailsView, position: unknown, index: unknown,
+    generation: unknown): Promise<vscode.Uri> | undefined {
+    if (this.#page.kind !== 'ready' || this.#generation !== generation
+      || typeof position !== 'number' || !Number.isSafeInteger(position) || position < 0) return;
+    const block = this.#page.blocks.find((candidate) => candidate.index === index);
+    if (!block || projects[block.index]?.root !== block.root) return;
+    const line = block.approvals?.kind === 'ready' ? block.approvals.lines[position] : undefined;
+    if (line?.kind !== 'payload') return;
+    const read = line.nonce ? block.payloads.get(line.nonce) : undefined;
+    const next = read?.kind !== 'read' ? 'Open the project that owns the payload to review it.'
+      : line.state === 'waiting' && read.binding?.kind === 'bound' ? 'View exactly what you are approving, then use Sign on the card.'
+        : 'Review the payload from the card.';
+    return details.show(`${line.action ?? 'Approval'} · ${line.nonce ?? ''}`, 'steward authorize pending --all-projects',
+      [line.text, read?.kind === 'read' ? `Payload SHA-256: ${read.sha256}` : ''].filter(Boolean).join('\n'), next);
+  }
+
   // Every project, in the Today order (one block each, never mixed). The links carry each project's index in
   // `projects`, the order the session holds them in.
   async update(projects: readonly Project[], trusted: boolean): Promise<void> {
@@ -114,6 +131,7 @@ export class ApprovalsView implements vscode.WebviewViewProvider, vscode.Disposa
       const ordered = orderProjects(projects.filter((project) => project.state.trusted), (project) => project.state.audit);
       const blocks = await Promise.all(ordered.map(async (project): Promise<ApprovalsBlock> => ({
         root: project.root, name: project.name, index: projects.indexOf(project), approvals: project.state.approvals,
+        pending: project.state.pending?.kind === 'ready' ? project.state.pending.doc : undefined,
         payloads: await this.#payloads(project.root, project.state.approvals),
       })));
       page = { kind: 'ready', blocks };
@@ -126,6 +144,7 @@ export class ApprovalsView implements vscode.WebviewViewProvider, vscode.Disposa
       this.#html = approvalsHtml(page, generation);
       this.#generation = generation;
       this.#cards = renderedCards(page);
+      this.#page = page;
     }
     this.#badge = waiting ? { value: waiting, tooltip: `${waiting} waiting for your signature (steward authorize pending)` } : undefined;
     if (this.#view) {

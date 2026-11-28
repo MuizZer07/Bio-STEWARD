@@ -50,7 +50,9 @@
             "task_failed",
             "task_done",
             "task_running",
-            "task_ordered"
+            "task_ordered",
+            "task_review",
+            "task_limited"
           ],
           "title": "Kind",
           "type": "string"

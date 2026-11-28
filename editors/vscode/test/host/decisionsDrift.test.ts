@@ -1,4 +1,4 @@
-// Host suite for U05 (0.2.0 P6 Decisions and P7 Drift, both reduced) on the U01 cockpit workspaces: `cockpit`
+// Host suite for U05 (0.2.0 P6 Decisions and P7 Milestones and Drift) on the U01 cockpit workspaces: `cockpit`
 // (geo-cockpit) and `multi-cockpit` (geo, geo-cockpit-peer and geo-cockpit in one window). Decisions is compared
 // with the file on disk; Drift with what the pinned CLI prints in the same folder. Nothing here changes the folder.
 import { strict as assert } from 'node:assert';
@@ -8,8 +8,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
 import type { TestApi } from '../../src/extension';
-import { DEFAULT_DECISIONS } from '../../src/model/decisions';
-import { MILESTONES_FILE } from '../../src/model/drift';
+import { decisionsNewestFirst, DEFAULT_DECISIONS } from '../../src/model/decisions';
+import { parseDecisions, type DecisionsDocument } from '../../src/model/full';
+import { MILESTONES_FILE, milestonesLatestFirst } from '../../src/model/drift';
 import { daysText, parseTimeline, type TimelineDocument } from '../../src/model/timeline';
 import { orderProjects } from '../../src/model/today';
 import type { ViewNode } from '../../src/model/views';
@@ -31,6 +32,14 @@ function timeline(root: string): TimelineDocument {
     env: { ...process.env, STEWARD_NO_REGISTRY: '1' } });
   const parsed = parseTimeline(stdout);
   assert.ok(parsed, 'the CLI\'s timeline is readable');
+  return parsed;
+}
+// E04: the full form of Decisions reads `steward decisions --format json`.
+function decisions(root: string): DecisionsDocument {
+  const stdout = execFileSync(cli(), ['decisions', '--repo', root, '--format', 'json'], { encoding: 'utf8',
+    env: { ...process.env, STEWARD_NO_REGISTRY: '1' } });
+  const parsed = parseDecisions(stdout);
+  assert.ok(parsed, 'the CLI\'s decisions document is readable');
   return parsed;
 }
 const walk = (node: ViewNode): ViewNode[] => [node, ...(node.children ?? []).flatMap(walk)];
@@ -57,65 +66,74 @@ describe('Decisions and Drift (U05)', () => {
     });
     const root = () => vscode.workspace.workspaceFolders![0].uri.fsPath;
 
-    it('Decisions names the default log of steward.toml, labelled reduced, and lists none of its entries', () => {
+    it('Decisions names the default log of steward.toml, then the open questions and entries of steward decisions (E04)', () => {
       assert.ok(api);
       const nodes = api.decisions.view.tree.nodes;
+      const doc = decisions(root());
       assert.deepEqual(nodes.map((n) => [n.kind, n.label, n.description]), [
-        ['decisions-note', 'Reduced form', 'Open DECISIONS.md only'],
+        ['decisions-note', 'Decisions log', 'named by steward.toml · steward decisions'],
         ['decisions-log', DEFAULT_DECISIONS, 'the CLI\'s default development/DECISIONS.md'],
+        ['decisions-group', `Open decisions (${doc.open_decisions.length})`, 'steward decisions'],
+        ['decisions-group', `Decisions (${doc.entries.length})`, 'newest first'],
       ]);
+      assert.deepEqual(nodes[2].children?.map((n) => n.label), doc.open_decisions.map((d) => d.question));
+      assert.deepEqual(nodes[3].children?.map((n) => n.label), decisionsNewestFirst(doc.entries).map((e) => `${e.date}: ${e.title}`));
       assert.equal(nodes[1].path, join(root(), DEFAULT_DECISIONS));
       console.log(`    decisions: ${nodes.map((n) => `${n.label} [${n.description ?? ''}]`).join(' | ')}`);
     });
 
-    it('Open DECISIONS.md opens the log in an editor as it is, and writes nothing', async function () {
+    it('Open DECISIONS.md previews the log and Open as Text opens its source', async function () {
       this.timeout(30000);
       assert.ok(api);
       const file = join(root(), DEFAULT_DECISIONS);
       const before = sha(file);
-      await vscode.commands.executeCommand('bioSteward.decisions.open');
+      const opened = await vscode.commands.executeCommand<vscode.Uri>('bioSteward.decisions.open');
+      assert.equal(opened.fsPath, file);
+      const row = api.decisions.view.tree.nodes[1];
+      const item = api.decisions.view.tree.getTreeItem(row);
+      assert.equal(item.command?.command, 'bioSteward.row.open');
+      const clicked = await vscode.commands.executeCommand<vscode.Uri>(item.command.command, ...(item.command.arguments ?? []));
+      assert.equal(clicked.fsPath, file);
+      await vscode.commands.executeCommand('bioSteward.row.openText', row);
       const editor = vscode.window.activeTextEditor;
       assert.equal(editor?.document.uri.fsPath, file);
       assert.equal(editor?.document.isDirty, false);
-      assert.equal(editor?.document.getText(), readFileSync(file, 'utf8'), 'the log, unchanged');
-      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-      // The row's own click opens the same file.
-      const row = api.decisions.view.tree.nodes[1];
-      const item = api.decisions.view.tree.getTreeItem(row);
-      // The row's command checks the log again when it is clicked (U09).
-      assert.equal(item.command?.command, 'bioSteward.decisions.open');
-      await vscode.commands.executeCommand(item.command.command, ...(item.command.arguments ?? []));
-      assert.equal(vscode.window.activeTextEditor?.document.uri.fsPath, file);
-      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      assert.equal(editor?.document.getText(), readFileSync(file, 'utf8'));
+      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
       assert.equal(sha(file), before, 'the decisions log is not changed');
     });
 
-    it('Drift shows each milestone of steward timeline --json with the CLI\'s state, in its order (parity)', () => {
+    it('Drift shows each milestone of steward timeline --json with the CLI\'s state, the latest due first (parity, E01)', () => {
       assert.ok(api);
       const expected = timeline(root()).milestones;
       const nodes = api.drift.tree.nodes;
-      assert.deepEqual([nodes[0].label, nodes[0].description], ['Reduced form', 'timeline states only']);
-      const rows = nodes.slice(1);
-      assert.deepEqual(rows.map((n) => n.label), expected.map((m) => `${m.id}: ${m.title}`));
+      assert.deepEqual([nodes[0].label, nodes[0].description], ['Milestones and drift', 'steward timeline · latest due first']);
+      const rows = nodes.filter((n) => n.kind === 'drift-milestone');
+      // E04: the drift fields follow the milestones, one group each.
+      assert.deepEqual(nodes.filter((n) => n.kind === 'drift-group').map((n) => n.label.replace(/ \(\d+\)$/, '')),
+        ['Moved dates', 'Scope', 'Order', 'Changes without a decision']);
+      const latest = [...expected].sort((a, b) => Date.parse(b.due) - Date.parse(a.due));
+      assert.deepEqual(rows.map((n) => n.label), latest.map((m) => `${m.id}: ${m.title}`));
       // days_left moves with the clock; the state words and the days the extension shows come from the same output.
       const shown = api.projects[0].state.timeline;
       assert.equal(shown?.kind, 'ready');
       assert.deepEqual(shown?.kind === 'ready' && shown.rows.map((m) => m.state), expected.map((m) => m.state));
       if (shown?.kind === 'ready') {
-        rows.forEach((n, index) => assert.equal(n.description, `${shown.rows[index].state} · ${daysText(shown.rows[index].days_left)}`));
+        const ordered = milestonesLatestFirst(shown.rows);
+        rows.forEach((n, index) => assert.equal(n.description, `${ordered[index].state} · ${daysText(ordered[index].days_left)}`));
       }
       for (const row of rows) assert.equal(row.path, join(root(), MILESTONES_FILE));
       console.log(`    drift: ${rows.map((n) => `${n.label} [${n.description ?? ''}]`).join(' | ')}`);
     });
 
-    it('the panels run no command of their own: their refresh reads files or the timeline only', async function () {
+    it('the panels open no terminal: their refresh reads files, the timeline and steward decisions only', async function () {
       this.timeout(30000);
       assert.ok(api);
       const terminals = vscode.window.terminals.length;
       await vscode.commands.executeCommand('bioSteward.decisions.refresh');
       await vscode.commands.executeCommand('bioSteward.drift.refresh');
       assert.equal(vscode.window.terminals.length, terminals);
-      assert.equal(api.decisions.view.tree.nodes.length, 2);
+      assert.equal(api.decisions.view.tree.nodes.length, 4);
     });
   });
 
@@ -127,7 +145,7 @@ describe('Decisions and Drift (U05)', () => {
     it('Decisions and Drift show one block per project, in the Today order, never mixed (AC-multi)', async function () {
       this.timeout(60000);
       assert.ok(api);
-      const order = orderProjects(api.projects, (p) => p.state.audit);
+      const order = orderProjects(api.projects, (p) => p.state.audit, (p) => p.state.next);
       for (const tree of [api.decisions.view.tree, api.drift.tree]) {
         const blocks = tree.nodes.slice(1);
         assert.deepEqual(blocks.map((n) => n.label), order.map((p) => p.name));
@@ -143,7 +161,8 @@ describe('Decisions and Drift (U05)', () => {
         const block: ViewNode | undefined = api.drift.tree.nodes.find((n) => n.label === project.name);
         const expected = timeline(project.root).milestones;
         const rows: ViewNode[] = (block?.children ?? []).filter((n) => n.kind === 'drift-milestone');
-        assert.deepEqual(rows.map((n) => n.label), expected.map((m) => `${m.id}: ${m.title}`), project.name);
+        const latest = [...expected].sort((x, y) => Date.parse(y.due) - Date.parse(x.due));
+        assert.deepEqual(rows.map((n) => n.label), latest.map((m) => `${m.id}: ${m.title}`), project.name);
       }
       // Open DECISIONS.md with a project's root opens that project's log, not another's.
       const cockpit = order.find((p) => p.name === 'geo-cockpit');

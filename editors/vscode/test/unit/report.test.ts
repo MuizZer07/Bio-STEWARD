@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   reportValidator, STATUSES, type Counts, type Coverage, type Envelope, type EvidenceItem, type Gate, type GateRef,
-  type Report, type ResultItem, type Verdict,
+  type Report, type ResultItem, type Scope, type Verdict, type WaivedGateRef,
 } from '../../src/model/report';
 
 type RequiredKeys<T> = { [K in keyof T]-?: object extends Pick<T, K> ? never : K }[keyof T];
@@ -27,7 +27,8 @@ const shapes: Record<string, { keys: string[]; required: string[] }> = {
   Envelope: shape<Envelope>()(['tool', 'tool_version', 'created', 'platform', 'git'],
     ['tool', 'tool_version', 'created', 'platform', 'git']),
   Verdict: shape<Verdict>()(
-    ['repo_id', 'project', 'config_profile', 'inputs_digest', 'results', 'summary', 'gates', 'coverage'],
+    ['repo_id', 'project', 'config_profile', 'inputs_digest', 'inputs', 'tree_digest', 'scope', 'results', 'summary',
+      'gates', 'coverage'],
     ['repo_id', 'project', 'config_profile', 'inputs_digest', 'results', 'summary', 'gates', 'coverage']),
   Summary: shape<Summary>()(['counts', 'worst'], ['counts', 'worst']),
   Counts: shape<Counts>()(['PASS', 'FAIL', 'INCOMPLETE', 'UNKNOWN', 'NOT_APPLICABLE'],
@@ -37,8 +38,11 @@ const shapes: Record<string, { keys: string[]; required: string[] }> = {
       'not_applicable_count', 'blocking', 'waived'],
     ['name', 'evaluated', 'eligible', 'reason', 'required_count', 'evaluated_count', 'blocking', 'waived']),
   GateRef: shape<GateRef>()(['rule', 'subject', 'status'], ['rule', 'subject', 'status']),
+  WaivedGateRef: shape<WaivedGateRef>()(['rule', 'subject', 'status', 'authorization'],
+    ['rule', 'subject', 'status', 'authorization']),
+  Scope: shape<Scope>()(['full', 'areas', 'rule'], ['full', 'areas']),
   ResultItem: shape<ResultItem>()(
-    ['rule', 'name', 'rule_version', 'subject', 'status', 'reason', 'details', 'evidence'],
+    ['area', 'rule', 'name', 'rule_version', 'subject', 'status', 'reason', 'details', 'evidence'],
     ['rule', 'name', 'rule_version', 'subject', 'status', 'reason', 'details', 'evidence']),
   EvidenceItem: shape<EvidenceItem>()(['path', 'sha256'], ['path', 'sha256']),
   Coverage: shape<Coverage>()(['areas', 'not_evaluated', 'statement'], ['not_evaluated', 'statement']),

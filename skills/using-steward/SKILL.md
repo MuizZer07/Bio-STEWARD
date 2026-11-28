@@ -5,63 +5,65 @@ description: Run and read steward checks. Use in any repository with steward.tom
 
 # Using steward
 
-steward is a deterministic checker: it evaluates declared rules over the repository's files, one status per
-result. It never judges the science.
+steward evaluates declared rules deterministically, one status per result; it never judges the science.
 
 ## When to run it
-- At a session start: `steward session start`; read nothing else until the next step needs it.
+- At session start: `steward session start`; read nothing else until needed.
 - Before reporting a task ready or done.
-- After editing `steward.toml`, a benchmark contract (`*.contract.toml`) or a prior-work record (`*.prior.toml`).
+- After editing `steward.toml`, `*.contract.toml` or `*.prior.toml`.
 - When asked whether the repository is ready.
 
 Start by saying in one line that you are using this skill and why.
 
 ## How to run it
 ```bash
-steward check --summary --output .steward/report.json   # every rule, compact; full evidence saved to the file
-steward check --rule R-03   # one rule, with every detail
-steward check contract prior-work   # only some areas while editing; gates are NOT evaluated
-steward report .steward/report.json --format md   # a full report for a human
+steward check --summary --output .steward/report.json   # compact; full evidence saved
+steward check --rule R-03   # one rule, full detail
+steward check contract prior-work   # partial; gates not evaluated
+steward report .steward/report.json --format md   # human report
 ```
-- `--summary` lists all non-PASS results, counts and gates. It preserves full-check statuses and exit codes.
-- **Read each FAIL with `--rule` before making changes.** Avoid guessing fixes.
-- Never emulate checks. Tell the human when steward is missing.
+- `--summary` lists non-PASS results, counts and gates, keeping statuses and exit codes.
+- **Read each FAIL with `--rule` before editing.** Never guess fixes.
+- Never emulate checks; tell the human when steward is missing.
 
 ## Read the whole result
-Every report ends with a summary line and a gate line, for example:
+Reports end with summary and gate lines:
 ```
 Summary: PASS 4 · FAIL 0 · INCOMPLETE 1 · UNKNOWN 1 · NOT_APPLICABLE 1
 Gate default: NOT ELIGIBLE (blocking results; 2 blocking)
 ```
-- **The gate decides; the summary describes.** A repository is ready for a gate only when the gate line says
-  ELIGIBLE. A partial check (`steward check contract`) never evaluates a gate.
-- **Read all five counts**, even when the gate is ELIGIBLE: results outside the gate still matter to the human.
+- **The gate decides; the summary describes.** Ready only when ELIGIBLE. Partial checks never evaluate a gate.
+- **Read all five counts**, even when ELIGIBLE: non-gating results still matter.
 
 | Status | Meaning | What you do |
 |---|---|---|
-| FAIL | A declared rule is violated, or a file is malformed | Fix it first. Read every detail line. |
-| INCOMPLETE | Something required is missing or marked `TBD` | Fill it in only if you know the true value; otherwise ask the human |
-| UNKNOWN | The rule could not be evaluated, or a field is marked `unknown` | Report it to the human verbatim. It is never a pass. |
-| NOT_APPLICABLE | The config says the rule does not apply | Nothing |
-| PASS | The rule held for the declared inputs | Nothing |
+| FAIL | Rule violated or file malformed | Fix first; read every detail |
+| INCOMPLETE | Required field missing or `TBD` | Fill if known; else ask the human |
+| UNKNOWN | Unchecked or `unknown` | Report verbatim; never a pass |
+| NOT_APPLICABLE | Config excludes rule | Nothing |
+| PASS | Declared inputs held | Nothing |
 
-Exit codes: 0 gate eligible; 1 a FAIL blocks; 2 an INCOMPLETE blocks; 3 an UNKNOWN blocks (or the gate had nothing to
-evaluate); 64 usage error; 65 invalid report file; 70 internal error.
+Exit codes: 0 eligible; 1 FAIL; 2 INCOMPLETE; 3 UNKNOWN or empty gate; 64 usage; 65 invalid report; 70 internal.
 
 ## Rules you must follow
-- Never describe a NOT ELIGIBLE gate as passed, nearly passed or "fine".
-- Never replace `TBD` or `unknown` with a made-up value to clear a result.
-- Never edit `steward.toml` to make a rule pass without telling the human what you changed and why.
-- Never mark a rule not applicable yourself; only the config does that.
-- Report the summary, gate and coverage lines exactly as printed.
+- Never call NOT ELIGIBLE passed, nearly passed or "fine".
+- Never replace `TBD` or `unknown` with invented values.
+- Never edit `steward.toml` to pass a rule without telling the human why.
+- Never mark rules not applicable; only config does.
+- Report summary, gate and coverage lines verbatim.
+- File toolkit defects with `steward issue`; keep project issues local.
 
-- You may use `steward issue` for toolkit defects. Keep project issues in the project's records.
+## Delegating subtasks
+With `[delegation]` in `steward.toml`, the project's **master** (named in `AGENTS.md`) delegates self-contained,
+specified subtasks that have their own checkable acceptance commands. Use `steward task dispatch TASK --to auto` for a
+brief, or `agent = "auto"` in a sprint; `steward agents status` shows who can run. The master always keeps review
+(`steward sprint accept` / `rework`), merging, and anything that needs a signature.
 
 ## Adopting, cleaning up, signing while away
 [adopting.md](adopting.md) (parity first, then removal); [away-and-cleanup.md](away-and-cleanup.md).
 
 ## What the rules cover
-The configuration schema is `steward.toml/0.2`. This catalogue is generated.
+Config schema: `steward.toml/0.2`. Generated catalogue:
 
 <!-- rules:begin -->
 - **config:** R-01 `config.valid`
@@ -87,7 +89,7 @@ The configuration schema is `steward.toml/0.2`. This catalogue is generated.
 - **repro:** R-52 `repro.current`
 - **session:** R-55 `session.handoff`
 - **files:** R-61 `files.conflict_markers`
-- **agents:** R-62 `agents.ledger`
+- **agents:** R-62 `agents.ledger` · R-89 `delegation.installed`
 - **stages:** R-68 `stages.records`
 - **frozen:** R-63 `frozen.sets`
 - **dependencies:** R-66 `dependencies.parity`

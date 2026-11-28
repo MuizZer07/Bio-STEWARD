@@ -1,4 +1,4 @@
-// Host suite for U02 (0.2.0 P1 Today and P2 "Where am I?", reduced forms) on the U01 cockpit workspaces:
+// Host suite for U02 (0.2.0 P1 Today and P2 "Where am I?") on the U01 cockpit workspaces:
 // `cockpit` (geo-cockpit with its peer beside it) and `multi-cockpit` (geo, geo-cockpit-peer and geo-cockpit as
 // three folders of one window). Each compares the panels with what the pinned CLI prints in the same folder.
 import { strict as assert } from 'node:assert';
@@ -7,7 +7,8 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
 import type { TestApi } from '../../src/extension';
-import { orderProjects, parseAuditProgress, type AuditProgress } from '../../src/model/today';
+import { parseNext, type NextDocument } from '../../src/model/full';
+import { entriesNewestFirst, orderProjects, parseAuditProgress, type AuditProgress } from '../../src/model/today';
 import type { ViewNode } from '../../src/model/views';
 import type { Project } from '../../src/project';
 
@@ -30,10 +31,18 @@ function audit(root: string): AuditProgress {
   assert.ok(parsed, 'the CLI\'s audit progress is readable');
   return parsed;
 }
+// E04: the full form reads `steward next --format json` (CLI 0.21 and later); the pinned CLI offers it.
+function next(root: string): NextDocument {
+  const stdout = execFileSync(cli(), ['next', '--repo', root, '--format', 'json'], { encoding: 'utf8',
+    env: { ...process.env, STEWARD_NO_REGISTRY: '1' } });
+  const parsed = parseNext(stdout);
+  assert.ok(parsed, 'the CLI\'s next document is readable');
+  return parsed;
+}
 const byId = (nodes: readonly ViewNode[], suffix: string) => nodes.find((n) => n.id.endsWith(suffix));
 const walk = (node: ViewNode): ViewNode[] => [node, ...(node.children ?? []).flatMap(walk)];
 
-describe('Today and Where am I? (U02, reduced)', () => {
+describe('Today and Where am I? (U02)', () => {
   let api: TestApi | undefined;
 
   before(async function () {
@@ -52,23 +61,23 @@ describe('Today and Where am I? (U02, reduced)', () => {
     });
     const root = () => vscode.workspace.workspaceFolders![0].uri.fsPath;
 
-    it('Today shows exactly the pending lists of `steward audit progress --json`, each labelled with its source', () => {
+    it('Today shows what `steward next` reports, newest first, each row with its next step (E04, full form)', () => {
       assert.ok(api);
-      const expected = audit(root()).pending;
+      const expected = next(root());
       const nodes = api.today.tree.nodes;
-      assert.equal(nodes[0].label, 'Reduced form');
-      const labels = (key: string) => {
-        const section = byId(nodes, `/${key}`);
-        assert.match(section?.description ?? '', /steward audit progress$/, key);
-        return (section?.children ?? []).map((c) => c.label);
-      };
-      assert.deepEqual(labels('signatures'), expected.signatures_waiting);
-      assert.deepEqual(labels('exchange'), expected.exchange_open ?? []);
-      assert.deepEqual(labels('own'), expected.own_open ?? []);
-      assert.deepEqual(labels('sprints'), expected.sprints.map((s) => s.sprint));
-      assert.deepEqual(labels('milestones'), expected.milestones.map((m) => m.id));
-      assert.match(byId(nodes, '/milestone')?.description ?? '', / · steward timeline$/);
-      assert.match(byId(nodes, '/resume')?.description ?? '', /the session handoff$/);
+      assert.equal(nodes[0].label, 'Sources');
+      assert.equal(nodes[0].description, 'steward next');
+      const section = (key: string) => (byId(nodes, `/${key}`)?.children ?? []);
+      assert.deepEqual(section('human').map((c) => c.label), entriesNewestFirst(expected.waiting_on_human).map((e) => e.title));
+      assert.deepEqual(section('agents').map((c) => c.label), entriesNewestFirst(expected.waiting_on_agents).map((e) => e.title));
+      for (const [i, entry] of entriesNewestFirst(expected.waiting_on_human).entries()) {
+        assert.ok(section('human')[i].tooltip?.includes(`Next step: ${entry.command}`), entry.id);
+      }
+      assert.equal(byId(nodes, '/tidy')?.label, `Needs tidying (${expected.tidy.total})`);
+      assert.match(byId(nodes, '/milestone')?.description ?? '', new RegExp(`^${expected.milestone?.id ?? 'none'}`));
+      assert.equal(byId(nodes, '/resume')?.command, 'resume');
+      // audit progress is still read: it orders projects whose CLI has no steward next.
+      assert.ok(audit(root()).pending);
       console.log(`    today: ${nodes.slice(1).map((n) => `${n.label}${n.description ? ` [${n.description}]` : ''}`).join(' | ')}`);
     });
 
@@ -76,7 +85,8 @@ describe('Today and Where am I? (U02, reduced)', () => {
       this.timeout(60000);
       assert.ok(api);
       const handoff = join(root(), 'development', 'HANDOFF.md');
-      assert.equal(existsSync(handoff), false);
+      // The fixture workspace has a handoff of its own (E04: steward next resumes from it); it is put back after.
+      const original = existsSync(handoff) ? readFileSync(handoff, 'utf8') : undefined;
       const text = '# Session handoff\n\nNext: run the model comparison `$(bug)` <b>not HTML</b>\n';
       try {
         writeFileSync(handoff, text);
@@ -86,10 +96,10 @@ describe('Today and Where am I? (U02, reduced)', () => {
         assert.equal(document.uri.scheme, 'bio-steward-where');
         assert.equal(document.languageId, 'markdown');
         const page = document.getText();
-        assert.ok(page.startsWith('# Where am I? · geo-cockpit\n\nReduced form (CLI 0.20.6)'));
+        assert.ok(page.startsWith('# Where am I? · geo-cockpit\n\nFrom steward next'));
         assert.ok(page.includes('\n## You left off · from the session handoff (development/HANDOFF.md)\n\n> # Session handoff\n>\n' +
           '> Next: run the model comparison `$(bug)` <b>not HTML</b>\n'));
-        for (const item of audit(root()).pending.signatures_waiting) assert.ok(page.includes(`  - ${item}\n`), item);
+        for (const entry of next(root()).waiting_on_human) assert.ok(page.includes(`\`${entry.command}\``), entry.id);
         assert.ok(page.includes('\n## Next target · from steward timeline\n'));
         assert.equal(readFileSync(handoff, 'utf8'), text, 'nothing written');
 
@@ -97,9 +107,10 @@ describe('Today and Where am I? (U02, reduced)', () => {
         const brief = api.clipboard.text ?? '';
         assert.ok(brief.startsWith('# Bio-STEWARD agent brief · geo-cockpit\n'));
         assert.ok(brief.includes('> Next: run the model comparison'));
-        assert.ok(brief.includes('## Waiting on you · from steward audit progress'));
+        assert.ok(brief.includes('## Waiting on you · from steward next'));
       } finally {
-        rmSync(handoff, { force: true });
+        if (original === undefined) rmSync(handoff, { force: true });
+        else writeFileSync(handoff, original);
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
       }
     });
@@ -139,12 +150,14 @@ describe('Today and Where am I? (U02, reduced)', () => {
     it('Resume acts on the project a Today row names', async () => {
       assert.ok(api);
       const handoff = join(root(), 'development', 'HANDOFF.md');
+      const original = existsSync(handoff) ? readFileSync(handoff, 'utf8') : undefined;
       try {
         writeFileSync(handoff, 'resume me\n');
         await vscode.commands.executeCommand('bioSteward.resume', root());
         assert.equal(api.resume.document?.getText(), 'resume me\n');
       } finally {
-        rmSync(handoff, { force: true });
+        if (original === undefined) rmSync(handoff, { force: true });
+        else writeFileSync(handoff, original);
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
       }
     });
@@ -155,21 +168,21 @@ describe('Today and Where am I? (U02, reduced)', () => {
       if (example !== 'multi-cockpit') this.skip();
     });
 
-    it('one block per project, ordered by the audit counts the CLI reports, with no row of one inside another', () => {
+    it('one block per project, ordered by what steward next reports waiting, with no row of one inside another', () => {
       assert.ok(api);
       assert.deepEqual(api.projects.map((p) => p.name), ['geo', 'geo-cockpit-peer', 'geo-cockpit']);
-      const audits = new Map(api.projects.map((p) => [p.root, audit(p.root)]));
-      const expected = orderProjects(api.projects, (p) => ({ kind: 'ready', audit: audits.get(p.root)! })).map((p) => p.name);
+      const nexts = new Map(api.projects.map((p) => [p.root, next(p.root)]));
+      const expected = orderProjects(api.projects, () => undefined, (p) => ({ kind: 'ready', doc: nexts.get(p.root)! })).map((p) => p.name);
       const nodes = api.today.tree.nodes;
-      assert.deepEqual(nodes.map((n) => n.label), ['Reduced form', ...expected]);
+      assert.deepEqual(nodes.map((n) => n.label), ['Sources', ...expected]);
       assert.equal(expected.at(-1), 'geo', 'nothing pending comes last');
       assert.notDeepEqual(expected, api.projects.map((p) => p.name), 'the order is not the workspace order');
       for (const block of nodes.slice(1)) {
         const project: Project | undefined = api.projects.find((p) => p.name === block.label);
         assert.ok(project);
         for (const node of walk(block)) assert.ok(node.id.startsWith(block.id), node.id);
-        const signatures = byId(block.children ?? [], '/signatures')?.children?.map((c) => c.label);
-        assert.deepEqual(signatures, audits.get(project.root)!.pending.signatures_waiting, project.name);
+        const human = byId(block.children ?? [], '/human')?.children?.map((c) => c.label);
+        assert.deepEqual(human, entriesNewestFirst(nexts.get(project.root)!.waiting_on_human).map((e) => e.title), project.name);
       }
       console.log(`    order: ${expected.join(' > ')}`);
     });
@@ -180,7 +193,7 @@ describe('Today and Where am I? (U02, reduced)', () => {
       const peer = api.projects[1];
       await vscode.commands.executeCommand('bioSteward.whereAmI', peer.root);
       assert.ok(api.whereAmI.document?.getText().startsWith('# Where am I? · geo-cockpit-peer\n'));
-      for (const item of audit(peer.root).pending.own_open ?? []) assert.ok(api.whereAmI.document?.getText().includes(`  - ${item}\n`));
+      for (const entry of next(peer.root).waiting_on_human) assert.ok(api.whereAmI.document?.getText().includes(`\`${entry.command}\``), entry.id);
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     });
   });

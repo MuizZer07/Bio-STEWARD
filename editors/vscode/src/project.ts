@@ -18,9 +18,15 @@ import { downgrade, freshnessOfRun, isWatchedInput, withInputChanged } from './m
 import { handoffSetting } from './model/handoff';
 import { reportValidator, type Report } from './model/report';
 import { parseTimeline, type TimelineState } from './model/timeline';
+import {
+  parseBoard, parseDecisions, parseDrift, parseNext, parsePending, parseSprintStatus, type FullRead, type SprintStatusDocument,
+} from './model/full';
+import { NO_CAPABILITIES, type Capabilities } from './cli/features';
 import { parseAuditProgress, type AuditState } from './model/today';
 import { NO_LOGS, parseTokensReport, type LogSelection, type TokensState } from './model/tokens';
 import { parsePendingText, type ApprovalsState } from './model/approvals';
+import { NOTIFICATIONS_MIN_CLI, parseNotifications, type NotificationsState } from './model/notifications';
+import { parseUpgradeCheck, UPGRADE_MIN_CLI, type UpgradeState } from './model/upgrade';
 import { listTaskFiles } from './taskFiles';
 import { findDecisionLogs } from './decisionsFiles';
 import type { DecisionsState } from './model/decisions';
@@ -72,6 +78,14 @@ export class Project implements vscode.Disposable {
   #tokensGeneration = 0;
   #approvalsRunner: CliRunner | undefined;
   #approvalsGeneration = 0;
+  // E04: one runner (flight) and one generation per full-form document, so a read never supersedes another panel's.
+  readonly #fullRunners = new Map<string, CliRunner>();
+  readonly #fullGenerations = new Map<string, number>();
+  #cliPath: string | undefined;
+  #notificationsRunner: CliRunner | undefined;
+  #notificationsGeneration = 0;
+  #upgradeRunner: CliRunner | undefined;
+  #upgradeGeneration = 0;
   #tasksGeneration = 0;
   #tasksTimer: ReturnType<typeof setTimeout> | undefined;
   #decisionsGeneration = 0;
@@ -81,6 +95,7 @@ export class Project implements vscode.Disposable {
   #generation = 0;
   #timelineGeneration = 0;
   #cliVersion: string | undefined;
+  #nextBrief = false;
   readonly #watcher: vscode.FileSystemWatcher | undefined;
   #canonicalRoot: string | undefined;
   #running = 0;
@@ -91,6 +106,9 @@ export class Project implements vscode.Disposable {
   // Every watcher event (bounded) and whether it was a project input: the tests await the event of a file they
   // wrote instead of sleeping (T11-07).
   readonly #watchEvents: { path: string; input: boolean }[] = [];
+  // Every CLI invocation this project's runners queued (bounded): its arguments and when. The refresh tests read it
+  // to see that a panel's refresh ran that panel's commands (E01).
+  readonly #runs: { args: string; at: number }[] = [];
   #lastLocation: ReportLocation | undefined;
   readonly #fullOrder = new PublishOrder();
   readonly #scopedOrder = new PublishOrder();
@@ -131,6 +149,10 @@ export class Project implements vscode.Disposable {
 
   get recentWatchEvents(): readonly { readonly path: string; readonly input: boolean }[] {
     return this.#watchEvents;
+  }
+
+  get recentRuns(): readonly { readonly args: string; readonly at: number }[] {
+    return this.#runs;
   }
 
   get state(): ProjectState {
@@ -204,6 +226,7 @@ export class Project implements vscode.Disposable {
     this.#timelineTimer = setTimeout(() => {
       void this.refreshTimeline();
       void this.refreshAudit();
+      void this.refreshNext();
     }, 1000);
   }
 
@@ -221,6 +244,10 @@ export class Project implements vscode.Disposable {
       logStderr: (stderr) => {
         if (!this.#lifetime.signal.aborted) this.options.log.warn(stderr);
       },
+      onRun: (args) => {
+        this.#runs.push({ args: args.join(' '), at: Date.now() });
+        if (this.#runs.length > 200) this.#runs.splice(0, this.#runs.length - 200);
+      },
     });
   }
 
@@ -229,11 +256,16 @@ export class Project implements vscode.Disposable {
     const generation = ++this.#generation;
     const current = () => generation === this.#generation && this.#trusted();
     this.#runner = undefined;
+    this.#nextBrief = false;
     this.#timelineRunner = undefined;
     this.#summaryRunner = undefined;
     this.#auditRunner = undefined;
     this.#tokensRunner = undefined;
     this.#approvalsRunner = undefined;
+    this.#fullRunners.clear();
+    this.#cliPath = undefined;
+    this.#notificationsRunner = undefined;
+    this.#upgradeRunner = undefined;
     this.#paths = undefined;
     if (!this.#trusted()) {
       this.#set({ ...this.#state, trusted: false });
@@ -278,11 +310,15 @@ export class Project implements vscode.Disposable {
       const newer = detected.newerThanTested ? ' · CLI newer than tested' : '';
       log.info(`[${this.name}] steward ${detected.version} · ${detected.mode}${newer} · ${detected.path}`);
       this.#runner = runner;
+      this.#nextBrief = detected.capabilities.nextBrief;
       this.#timelineRunner = this.#runnerFor(location.path, 'timeline');
       this.#summaryRunner = this.#runnerFor(location.path, 'summary');
       this.#auditRunner = this.#runnerFor(location.path, 'audit');
       this.#tokensRunner = this.#runnerFor(location.path, 'tokens');
       this.#approvalsRunner = this.#runnerFor(location.path, 'approvals');
+      this.#cliPath = location.path;
+      this.#notificationsRunner = this.#runnerFor(location.path, 'notifications');
+      this.#upgradeRunner = this.#runnerFor(location.path, 'upgrade');
       this.#paths = paths;
       // A report made by another CLI version is stale (design v0.1 §5.3: a tool-version change).
       const changedCli = this.#cliVersion !== undefined && this.#cliVersion !== detected.version;
@@ -290,7 +326,8 @@ export class Project implements vscode.Disposable {
       const state = changedCli ? downgrade(this.#state, 'stale') : this.#state;
       this.#set({
         ...state,
-        cli: { kind: 'ready', version: detected.version, mode: detected.mode, newerThanTested: detected.newerThanTested },
+        cli: { kind: 'ready', version: detected.version, mode: detected.mode, newerThanTested: detected.newerThanTested,
+          capabilities: detected.capabilities },
       });
       if (!this.#state.full && !this.#state.partial && this.#state.run === 'none') await this.#loadSavedReport(generation);
       void this.refreshTimeline();
@@ -298,6 +335,9 @@ export class Project implements vscode.Disposable {
       void this.refreshTasks();
       void this.refreshApprovals();
       void this.refreshDecisions();
+      void this.refreshNext();
+      void this.refreshNotifications();
+      void this.refreshUpgrade();
     } catch (error) {
       if (!current()) return;
       log.warn(`CLI detection failed · ${String(error)}`);
@@ -474,6 +514,8 @@ export class Project implements vscode.Disposable {
     if (!scope) {
       void this.refreshTimeline();
       void this.refreshAudit();
+      void this.refreshNext();
+      void this.refreshNotifications();
     }
     return 'completed';
   }
@@ -492,6 +534,17 @@ export class Project implements vscode.Disposable {
     return runner === this.#summaryRunner && this.#trusted() ? result : undefined;
   }
 
+  get supportsNextBrief(): boolean {
+    return this.#state.cli.kind === 'ready' && this.#nextBrief;
+  }
+
+  async rowRead(invocation: Invocation): Promise<RunResult | undefined> {
+    const runner = this.#runner;
+    if (!runner || this.#state.cli.kind !== 'ready' || !this.#trusted()) return undefined;
+    const result = await this.#runnerFor(runner.cliPath, 'row-read').run(invocation, { signal: this.#lifetime.signal });
+    return runner === this.#runner && this.#trusted() ? result : undefined;
+  }
+
   // The CLI version the project's runner uses, when it is ready.
   get cliVersion(): string | undefined {
     return this.#state.cli.kind === 'ready' ? this.#state.cli.version : undefined;
@@ -508,24 +561,88 @@ export class Project implements vscode.Disposable {
     return true;
   }
 
-  // S3: `steward timeline --json`, on its own flight so it never supersedes a queued check.
+  // What the CLI's interface offers (E04); nothing beyond CLI 0.20.6 until it is ready.
+  get capabilities(): Capabilities {
+    return this.#state.cli.kind === 'ready' ? this.#state.cli.capabilities ?? NO_CAPABILITIES : NO_CAPABILITIES;
+  }
+
+  // E04: one read of a full-form document on its own flight. Undefined when the read was superseded by a later one,
+  // cancelled, or the workspace is not trusted (the state is then left as it is).
+  async #readDocument<T>(flight: string, invocation: Invocation, parse: (stdout: string) => T | undefined):
+    Promise<FullRead<T> | undefined> {
+    const cli = this.#cliPath;
+    if (!cli || this.#state.cli.kind !== 'ready' || !this.#trusted()) return undefined;
+    let runner = this.#fullRunners.get(flight);
+    if (!runner) {
+      runner = this.#runnerFor(cli, flight);
+      this.#fullRunners.set(flight, runner);
+    }
+    const generation = (this.#fullGenerations.get(flight) ?? 0) + 1;
+    this.#fullGenerations.set(flight, generation);
+    const result = await runner.run(invocation, { signal: this.#lifetime.signal });
+    if (generation !== this.#fullGenerations.get(flight) || runner !== this.#fullRunners.get(flight)) return undefined;
+    if (result.kind === 'cancelled' || result.kind === 'superseded' || result.kind === 'untrusted') return undefined;
+    let read: FullRead<T>;
+    if (result.kind === 'unreadable') read = { kind: 'unreadable' };
+    else if (result.kind !== 'completed') read = { kind: 'failed' };
+    // 78: not configured (CLI 0.21 and later); 64: a usage error, which is how 0.20.6 says it.
+    else if (result.exitCode === 78 || result.exitCode === 64) read = { kind: 'not-configured' };
+    else if (result.exitCode !== 0) read = { kind: 'failed' };
+    else {
+      const doc = parse(result.stdout);
+      read = doc === undefined ? { kind: 'unreadable' } : { kind: 'ready', doc };
+    }
+    if (read.kind !== 'ready' && read.kind !== 'not-configured') {
+      this.options.log.warn(`[${this.name}] steward ${invocation.args.join(' ')}: ${read.kind}` +
+        `${result.kind === 'completed' ? ` (exit ${result.exitCode})` : ''}`);
+    }
+    return read;
+  }
+
+  // P1 Today, full form (E04): `steward next --format json`, when the CLI offers it. Read-only.
+  async refreshNext(): Promise<ProjectState['next']> {
+    if (!this.capabilities.next) return this.#state.next;
+    if (!this.#state.next || this.#state.next.kind === 'none') this.#set({ ...this.#state, next: { kind: 'loading' } });
+    const next = await this.#readDocument('next', commands.next(), parseNext);
+    if (next) this.#set({ ...this.#state, next });
+    return this.#state.next;
+  }
+
+  // The live sprint view, full form (E04): `steward sprint status ID --format json`, when the CLI offers it.
+  async sprintStatus(id: string): Promise<SprintStatusDocument | undefined> {
+    if (!this.capabilities.sprintStatusJson) return undefined;
+    let invocation: Invocation;
+    try {
+      invocation = commands.sprintStatus(id);
+    } catch {
+      return undefined;
+    }
+    const read = await this.#readDocument(`sprint-status:${id}`, invocation, parseSprintStatus);
+    return read?.kind === 'ready' && read.doc.id === id ? read.doc : undefined;
+  }
+
+  // S3: `steward timeline --json`, on its own flight so it never supersedes a queued check. With CLI 0.21 and later,
+  // `timeline --format json`, whose drift fields the Milestones and Drift panel shows (E04).
   async refreshTimeline(): Promise<TimelineState | undefined> {
     const runner = this.#timelineRunner;
     if (!runner || this.#state.cli.kind !== 'ready' || !this.#trusted()) return this.#state.timeline;
     const generation = ++this.#timelineGeneration;
     if (!this.#state.timeline || this.#state.timeline.kind === 'none') this.#set({ ...this.#state, timeline: { kind: 'loading' } });
-    const result = await runner.run(commands.timeline(), { signal: this.#lifetime.signal });
+    const versioned = this.capabilities.timelineJson;
+    const result = await runner.run(versioned ? commands.timelineFull() : commands.timeline(), { signal: this.#lifetime.signal });
     if (generation !== this.#timelineGeneration || runner !== this.#timelineRunner) return this.#state.timeline;
     let timeline: TimelineState;
     if (result.kind === 'cancelled' || result.kind === 'superseded' || result.kind === 'untrusted') return this.#state.timeline;
     if (result.kind === 'unreadable') timeline = { kind: 'unreadable' };
     else if (result.kind !== 'completed') timeline = { kind: 'failed' };
-    else if (result.exitCode === 64) timeline = { kind: 'not-configured' };
+    else if (result.exitCode === 64 || result.exitCode === 78) timeline = { kind: 'not-configured' };
     else if (result.exitCode === 65) timeline = { kind: 'invalid' };
     else if (result.exitCode !== 0) timeline = { kind: 'failed' };
     else {
       const parsed = parseTimeline(result.stdout);
-      timeline = !parsed ? { kind: 'unreadable' } : parsed.milestones.length ? { kind: 'ready', rows: parsed.milestones } : { kind: 'none' };
+      const drift = versioned ? parseDrift(result.stdout) : undefined;
+      if (!parsed || (versioned && !drift)) timeline = { kind: 'unreadable' };
+      else timeline = parsed.milestones.length ? { kind: 'ready', rows: parsed.milestones, ...(drift ? { drift } : {}) } : { kind: 'none' };
     }
     if (timeline.kind !== 'ready' && timeline.kind !== 'none' && timeline.kind !== 'not-configured') {
       this.options.log.warn(`[${this.name}] steward timeline: ${timeline.kind}${result.kind === 'completed' ? ` (exit ${result.exitCode})` : ''}`);
@@ -534,7 +651,7 @@ export class Project implements vscode.Disposable {
     return timeline;
   }
 
-  // P1, P2 (0.2.0, reduced): `steward audit progress --json`, on its own flight so it never supersedes a check or
+  // P1, P2 (0.2.0): `steward audit progress --json`, on its own flight so it never supersedes a check or
   // the timeline. Read-only. Run after detection, after a full check, when the milestones file changes, and when
   // Today or "Where am I?" is refreshed; never on other file changes.
   async refreshAudit(): Promise<AuditState | undefined> {
@@ -561,9 +678,11 @@ export class Project implements vscode.Disposable {
     return audit;
   }
 
-  // P3 (reduced): the task files and their Status lines, read from the files. No CLI call; trusted workspaces only.
+  // P3: the task files and their Status lines, read from the files. No CLI call; trusted workspaces only.
   async refreshTasks(): Promise<ProjectState['tasks']> {
     if (!this.#trusted()) return this.#state.tasks;
+    // A direct read supersedes one a file change scheduled.
+    clearTimeout(this.#tasksTimer);
     const generation = ++this.#tasksGeneration;
     if (this.#state.tasks === undefined) this.#set({ ...this.#state, tasks: { kind: 'loading' } });
     let tasks: NonNullable<ProjectState['tasks']>;
@@ -574,12 +693,23 @@ export class Project implements vscode.Disposable {
     }
     if (generation !== this.#tasksGeneration || !this.#trusted()) return this.#state.tasks;
     this.#set({ ...this.#state, tasks });
+    await this.refreshBoard();
     return tasks;
   }
 
-  // P6 (reduced): the decisions logs steward.toml names, found on disk. No CLI call; the logs are not read.
+  // P3 Tasks, full form (E04): `steward task board --format json`, when the CLI offers it. Read-only.
+  async refreshBoard(): Promise<ProjectState['board']> {
+    if (!this.capabilities.taskBoard) return this.#state.board;
+    if (!this.#state.board || this.#state.board.kind === 'none') this.#set({ ...this.#state, board: { kind: 'loading' } });
+    const board = await this.#readDocument('task-board', commands.taskBoard(), parseBoard);
+    if (board) this.#set({ ...this.#state, board });
+    return this.#state.board;
+  }
+
+  // P6: the decisions logs steward.toml names, found on disk. No CLI call; the logs are not read.
   async refreshDecisions(): Promise<DecisionsState | undefined> {
     if (!this.#trusted()) return this.#state.decisions;
+    clearTimeout(this.#decisionsTimer);
     const generation = ++this.#decisionsGeneration;
     if (this.#state.decisions === undefined) this.#set({ ...this.#state, decisions: { kind: 'loading' } });
     let decisions: DecisionsState;
@@ -590,7 +720,13 @@ export class Project implements vscode.Disposable {
     }
     if (generation !== this.#decisionsGeneration || !this.#trusted()) return this.#state.decisions;
     this.#set({ ...this.#state, decisions });
-    return decisions;
+    // P6 full form (E04): the entries and open questions of `steward decisions --format json`, when offered.
+    if (this.capabilities.decisionsJson) {
+      if (!this.#state.decisionsDoc || this.#state.decisionsDoc.kind === 'none') this.#set({ ...this.#state, decisionsDoc: { kind: 'loading' } });
+      const doc = await this.#readDocument('decisions', commands.decisions(), parseDecisions);
+      if (doc) this.#set({ ...this.#state, decisionsDoc: doc });
+    }
+    return this.#state.decisions;
   }
 
   // P4: `steward tokens report --json` with the agent logs of the settings, on its own flight. Read-only.
@@ -599,8 +735,8 @@ export class Project implements vscode.Disposable {
     if (!runner || this.#state.cli.kind !== 'ready' || !this.#trusted()) return this.#state.tokens;
     const generation = ++this.#tokensGeneration;
     if (!this.#state.tokens || this.#state.tokens.kind === 'none') this.#set({ ...this.#state, tokens: { kind: 'loading' } });
-    const invocation = commands.tokensReport({ ...logs.files, boundaries: logs.boundaries });
-    this.options.log.info(`[${this.name}] steward tokens report --json (${invocation.paths.length} agent log${invocation.paths.length === 1 ? '' : 's'})`);
+    const invocation = commands.tokensReport({ ...logs.files, boundaries: logs.boundaries }, this.capabilities.tokensJson);
+    this.options.log.info(`[${this.name}] steward ${invocation.args.slice(0, 4).join(' ')} (${invocation.paths.length} agent log${invocation.paths.length === 1 ? '' : 's'})`);
     const result = await runner.run(invocation, { signal: this.#lifetime.signal });
     if (generation !== this.#tokensGeneration || runner !== this.#tokensRunner) return this.#state.tokens;
     if (result.kind === 'cancelled' || result.kind === 'superseded' || result.kind === 'untrusted') return this.#state.tokens;
@@ -608,7 +744,7 @@ export class Project implements vscode.Disposable {
     if (result.kind === 'unreadable') tokens = { kind: 'unreadable' };
     else if (result.kind === 'process-error') tokens = { kind: 'refused', message: result.message };
     else if (result.kind !== 'completed') tokens = { kind: 'failed' };
-    else if (result.exitCode === 64) tokens = { kind: 'not-configured' };
+    else if (result.exitCode === 64 || result.exitCode === 78) tokens = { kind: 'not-configured' };
     else if (result.exitCode !== 0) tokens = { kind: 'failed' };
     else {
       const report = parseTokensReport(result.stdout);
@@ -621,7 +757,7 @@ export class Project implements vscode.Disposable {
     return tokens;
   }
 
-  // P5 (reduced): `steward authorize pending --all-projects`, its text kept as printed, on its own flight. Read-only.
+  // P5: `steward authorize pending --all-projects`, its text kept as printed, on its own flight. Read-only.
   // Run after detection, on Refresh Approvals, and when a signing terminal the extension opened is closed.
   async refreshApprovals(): Promise<ApprovalsState | undefined> {
     return (await this.#readApprovals()).state;
@@ -653,7 +789,85 @@ export class Project implements vscode.Disposable {
       this.options.log.warn(`[${this.name}] steward authorize pending: ${approvals.kind}${result.kind === 'completed' ? ` (exit ${result.exitCode})` : ''}`);
     }
     this.#set({ ...this.#state, approvals });
+    // P5 full form (E04): each payload's scope, budget, object, requester and hashes from `authorize pending
+    // --format json`, shown on its card. Signing still binds to the text line and the payload file (bindCard).
+    if (this.capabilities.pendingJson) {
+      const pending = await this.#readDocument('approvals-json', commands.authorizePendingJson(), parsePending);
+      if (pending) this.#set({ ...this.#state, pending });
+    }
     return { state: approvals, fresh: this.#trusted() };
+  }
+
+  // E03: `steward notifications --format json`, on its own flight. Read-only.
+  async refreshNotifications(): Promise<NotificationsState | undefined> {
+    const runner = this.#notificationsRunner;
+    if (!runner || this.#state.cli.kind !== 'ready' || !this.#trusted()) return this.#state.notifications;
+    const generation = ++this.#notificationsGeneration;
+    if (this.#state.cli.capabilities && !this.#state.cli.capabilities.notifications) {
+      const unsupported: NotificationsState = { kind: 'unsupported', minimum: NOTIFICATIONS_MIN_CLI };
+      this.#set({ ...this.#state, notifications: unsupported });
+      return unsupported;
+    }
+    if (!this.#state.notifications || this.#state.notifications.kind === 'none') {
+      this.#set({ ...this.#state, notifications: { kind: 'loading' } });
+    }
+    const result = await runner.run(commands.notifications(), { signal: this.#lifetime.signal });
+    if (generation !== this.#notificationsGeneration || runner !== this.#notificationsRunner) return this.#state.notifications;
+    if (result.kind === 'cancelled' || result.kind === 'superseded' || result.kind === 'untrusted') return this.#state.notifications;
+    let notifications: NotificationsState;
+    if (result.kind === 'unreadable') notifications = { kind: 'unreadable' };
+    else if (result.kind !== 'completed') notifications = { kind: 'failed' };
+    else if (result.exitCode === 78) notifications = { kind: 'not-configured' };
+    else if (result.exitCode === 64) {
+      notifications = this.#state.cli.capabilities?.notifications
+        ? { kind: 'not-configured' }
+        : { kind: 'unsupported', minimum: NOTIFICATIONS_MIN_CLI };
+    } else if (result.exitCode !== 0) notifications = { kind: 'failed' };
+    else {
+      const parsed = parseNotifications(result.stdout);
+      notifications = parsed ? { kind: 'ready', document: parsed } : { kind: 'unreadable' };
+    }
+    if (notifications.kind !== 'ready' && notifications.kind !== 'not-configured' && notifications.kind !== 'unsupported') {
+      this.options.log.warn(`[${this.name}] steward notifications: ${notifications.kind}${result.kind === 'completed' ? ` (exit ${result.exitCode})` : ''}`);
+    }
+    this.#set({ ...this.#state, notifications });
+    return notifications;
+  }
+
+  // E03: `steward upgrade --check --format json` (local only, never --online), on its own flight. Read-only.
+  async refreshUpgrade(): Promise<UpgradeState | undefined> {
+    const runner = this.#upgradeRunner;
+    if (!runner || this.#state.cli.kind !== 'ready' || !this.#trusted()) return this.#state.upgrade;
+    const generation = ++this.#upgradeGeneration;
+    if (this.#state.cli.capabilities && !this.#state.cli.capabilities.upgradeCheck) {
+      const unsupported: UpgradeState = { kind: 'unsupported', minimum: UPGRADE_MIN_CLI };
+      this.#set({ ...this.#state, upgrade: unsupported });
+      return unsupported;
+    }
+    if (!this.#state.upgrade || this.#state.upgrade.kind === 'none') {
+      this.#set({ ...this.#state, upgrade: { kind: 'loading' } });
+    }
+    const result = await runner.run(commands.upgradeCheck(), { signal: this.#lifetime.signal });
+    if (generation !== this.#upgradeGeneration || runner !== this.#upgradeRunner) return this.#state.upgrade;
+    if (result.kind === 'cancelled' || result.kind === 'superseded' || result.kind === 'untrusted') return this.#state.upgrade;
+    let upgrade: UpgradeState;
+    if (result.kind === 'unreadable') upgrade = { kind: 'unreadable' };
+    else if (result.kind !== 'completed') upgrade = { kind: 'failed' };
+    else if (result.exitCode === 78) upgrade = { kind: 'not-configured' };
+    else if (result.exitCode === 64) {
+      upgrade = this.#state.cli.capabilities?.upgradeCheck
+        ? { kind: 'not-configured' }
+        : { kind: 'unsupported', minimum: UPGRADE_MIN_CLI };
+    } else if (result.exitCode !== 0) upgrade = { kind: 'failed' };
+    else {
+      const parsed = parseUpgradeCheck(result.stdout);
+      upgrade = parsed ? { kind: 'ready', check: parsed } : { kind: 'unreadable' };
+    }
+    if (upgrade.kind !== 'ready' && upgrade.kind !== 'not-configured' && upgrade.kind !== 'unsupported') {
+      this.options.log.warn(`[${this.name}] steward upgrade --check: ${upgrade.kind}${result.kind === 'completed' ? ` (exit ${result.exitCode})` : ''}`);
+    }
+    this.#set({ ...this.#state, upgrade });
+    return upgrade;
   }
 
   // The steward program the extension found (an absolute path), once the CLI is ready; for the signing line.

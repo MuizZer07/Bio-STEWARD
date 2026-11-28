@@ -10,7 +10,7 @@
       "python": "fixture"
     },
     "tool": "steward",
-    "tool_version": "0.20.6"
+    "tool_version": "0.22.0"
   },
   "schema": "steward.report/0.1",
   "verdict": {
@@ -57,7 +57,8 @@
           "research",
           "licence",
           "compare",
-          "models"
+          "models",
+          "tidy"
         ],
         "nothing_recorded": []
       },
@@ -78,11 +79,26 @@
         "waived": []
       }
     ],
+    "inputs": [
+      {
+        "path": "results/de.tsv",
+        "sha256": "d889fb59aa5436c604cde636e43f80821de0c61de70c76aa457e9a10ef87428a"
+      },
+      {
+        "path": "results/top_genes.tsv",
+        "sha256": "4d8580943aaec3ea4e442257c19c183f3a78d5d71a948db84205c2ad05228046"
+      },
+      {
+        "path": "steward.toml",
+        "sha256": "f96a1bceb8c7f1285488b19102678fb451d1417a1c9f4dabcf287b2bffc4cce7"
+      }
+    ],
     "inputs_digest": "sha256:1ef479d867a36818f90faccd2063a9ddd0a37c7c6cf3494fcd1770c45b492a66",
     "project": "biology-geo",
     "repo_id": "00000000-0000-4000-8000-000000000000",
     "results": [
       {
+        "area": "config",
         "details": [],
         "evidence": [
           {
@@ -98,6 +114,7 @@
         "subject": "steward.toml"
       },
       {
+        "area": "data",
         "details": [],
         "evidence": [
           {
@@ -113,6 +130,7 @@
         "subject": "results/de.tsv"
       },
       {
+        "area": "data",
         "details": [
           {
             "code": "R-83.excel_date",
@@ -136,6 +154,13 @@
         "subject": "results/top_genes.tsv"
       }
     ],
+    "scope": {
+      "areas": [
+        "data"
+      ],
+      "full": false,
+      "rule": "R-83"
+    },
     "summary": {
       "counts": {
         "FAIL": 1,
@@ -145,6 +170,7 @@
         "UNKNOWN": 0
       },
       "worst": "FAIL"
-    }
+    },
+    "tree_digest": "sha256:dd7044149fc50f99bd18de32ca9c742799d3ec02495e5c0b8744ab86c3f9df9b"
   }
 }

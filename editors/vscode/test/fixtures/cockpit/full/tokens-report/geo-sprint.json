@@ -1,0 +1,247 @@
+{
+  "currency": "USD",
+  "issues": [],
+  "schema": "steward.tokens_report/0.1",
+  "sources": {
+    "claude": {
+      "files": [
+        {
+          "issues": [],
+          "path": "claude log 1",
+          "status": "available"
+        }
+      ],
+      "status": "available"
+    },
+    "codex": {
+      "files": [],
+      "status": "unavailable"
+    },
+    "gemini": {
+      "files": [],
+      "status": "unavailable"
+    }
+  },
+  "tasks": [
+    {
+      "agents": [
+        {
+          "agent": "claude",
+          "tokens": 13850
+        }
+      ],
+      "cost": 0.017550000000000003,
+      "files_read": [],
+      "issues": [],
+      "models": [
+        {
+          "agent": "claude",
+          "cache_read": 11000,
+          "cache_write": 400,
+          "cost": 0.017550000000000003,
+          "input": 13400,
+          "model": "claude-fixture",
+          "output": 450,
+          "tokens": 13850
+        }
+      ],
+      "status": "available",
+      "task": "sprint 2026-11-27-vscode-0.1 T01",
+      "tokens": 13850,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T20:20:47+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T20:15:00+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [
+        {
+          "agent": "claude",
+          "tokens": 13960
+        }
+      ],
+      "cost": null,
+      "files_read": [],
+      "issues": [],
+      "models": [
+        {
+          "agent": "claude",
+          "cache_read": 10000,
+          "cache_write": 1000,
+          "cost": 0.02025,
+          "input": 13000,
+          "model": "claude-fixture",
+          "output": 500,
+          "tokens": 13500
+        },
+        {
+          "agent": "claude",
+          "cache_read": 0,
+          "cache_write": 0,
+          "cost": null,
+          "input": 400,
+          "model": "claude-fixture-small",
+          "output": 60,
+          "tokens": 460
+        }
+      ],
+      "status": "available",
+      "task": "sprint 2026-11-27-vscode-0.1 T02",
+      "tokens": 13960,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T20:41:40+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T20:33:48+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T03",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T20:56:44+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T20:47:48+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [
+        {
+          "agent": "claude",
+          "tokens": 25700
+        }
+      ],
+      "cost": 0.033,
+      "files_read": [],
+      "issues": [],
+      "models": [
+        {
+          "agent": "claude",
+          "cache_read": 20000,
+          "cache_write": 2000,
+          "cost": 0.033,
+          "input": 25000,
+          "model": "claude-fixture",
+          "output": 700,
+          "tokens": 25700
+        }
+      ],
+      "status": "available",
+      "task": "sprint 2026-11-27-vscode-0.1 T04",
+      "tokens": 25700,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T21:13:18+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T20:58:14+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T05",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T21:24:42+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T21:15:49+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T06",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T21:45:33+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T21:27:31+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T07",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T21:59:03+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T21:48:09+00:00"
+        }
+      ]
+    },
+    {
+      "agents": [],
+      "cost": null,
+      "files_read": [],
+      "issues": [
+        "no usable counts matched the task window"
+      ],
+      "models": [],
+      "status": "unavailable",
+      "task": "sprint 2026-11-27-vscode-0.1 T08",
+      "tokens": null,
+      "tool_outputs": [],
+      "windows": [
+        {
+          "end": "2026-11-26T22:19:36+00:00",
+          "ledger": "development/sprints/2026-11-27-vscode-0.1.jsonl",
+          "source": "sprint",
+          "start": "2026-11-26T22:00:53+00:00"
+        }
+      ]
+    }
+  ]
+}

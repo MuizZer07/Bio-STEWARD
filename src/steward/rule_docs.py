@@ -7,6 +7,8 @@ Each entry: `checks` (what is evaluated), `why` (what goes wrong without it, oft
 
 from __future__ import annotations
 
+from .code_docs import CODE_DOCS  # noqa: F401 - re-exported for callers and tests
+
 D = dict
 
 RULE_DOCS: dict[str, dict[str, str]] = {
@@ -27,8 +29,8 @@ RULE_DOCS: dict[str, dict[str, str]] = {
               **{"not": "The search for prior work was complete."}, scope="project"),
     "R-06": D(checks="A confirmatory profile has a prior-work record.", why="A claim of novelty needs its comparison.",
               **{"not": "The work is new."}, scope="project"),
-    "R-07": D(checks="Committed files hold no term from the private or public term lists and no home path with a "
-              "user name.", why="Agents copy names, paths and notes into code and documents; this keeps them out.",
+    "R-07": D(checks="Files in the privacy scan's scope contain no controlled-access accessions, listed terms or "
+              "absolute home paths with user names.", why="Private identifiers, names and paths can appear in code and documents.",
               **{"not": "No private information exists in other forms (images, binaries, paraphrases)."}, scope="project"),
     "R-08": D(checks="The paper's spec file passes its schema.", why="PaperKit's other checks read it.",
               **{"not": "The paper's argument holds."}, scope="project"),
@@ -187,9 +189,12 @@ RULE_DOCS: dict[str, dict[str, str]] = {
     "R-74": D(checks="Deprecated pins still used by the project's code (by import or by a declared reference), and pins whose retirement conditions all hold "
               "(advisory).", why="Pins accumulate; deprecation first shows who still depends on one before it goes.",
               **{"not": "Retiring is safe for code outside the repository."}, scope="project"),
-    "R-75": D(checks="Every study record's inputs, results and plan are present and match their recorded sha256; studies "
+    "R-75": D(checks="When a study declares chromosome sizes, VCF and SAM header contigs and BED intervals are "
+                     "checked against the declared genome. Every study record's inputs, results and plan are "
+                     "present and match their recorded sha256; studies "
                      "that depend on a changed one, and the papers citing them, are stale; the same input in two studies is "
-                     "listed; declared references (genome, annotation, identifier namespace, databases) agree across studies.",
+                     "listed; declared references agree across studies. Sample sheets are checked for complete confounding "
+                     "and strong imbalance. A recorded Bioconductor version has major.minor release form.",
               why="A reanalysis or a reviewer needs to know exactly which data, references and tools produced a result, "
                   "and which papers go stale when they change.",
               **{"not": "That the data or references are the right ones for the question."}, scope="project"),
@@ -223,10 +228,11 @@ RULE_DOCS: dict[str, dict[str, str]] = {
                      "files whose SPDX-License-Identifier or Derived-from header names another licence, against the "
                      "policy.", why="A translation of copyleft code is a derivative work; no package manager sees it.",
               **{"not": "That undeclared copied code is absent (R-82 only hints)."}, scope="project"),
-    "R-83": D(checks="Declared data tables for column types, identifier shapes, missing values, counts, "
-              "p-values, fold changes and sample alignment.",
+    "R-83": D(checks="Declared data tables for Ensembl suffix consistency, species symbol casing and obsolete HGNC "
+              "symbols, as well as column types, identifier shapes, missing values, counts, p-values, fold changes "
+              "and sample alignment. The contract validates a declared log base.",
               why="Table exports can silently change identifiers, values or sample labels.",
-              **{"not": "That a database lists the identifiers or that any scientific conclusion follows."},
+              **{"not": "That every identifier is current or that any scientific conclusion follows."},
               scope="project"),
     "R-82": D(checks="Advisory: code comments such as 'ported from', 'translated from' or 'adapted from' in files "
                      "with no declaration.", why="Undeclared ports are found by reading; the hint points the reader.",
@@ -259,6 +265,12 @@ RULE_DOCS: dict[str, dict[str, str]] = {
                   "owner archive, delete or keep each one.",
               **{"not": "That a listed item should go: nothing is archived or deleted unless the owner asks. Memory "
                         "folders and the peers' checkouts are outside the repository: steward tidy lists them."}, scope="project"),
+    "R-89": D(checks="Advisory: with [delegation] declared, each agent it names (the master and every worker) is "
+                     "installed: its CLI is on PATH or in its known install folder. Nothing is run.",
+              why="A delegated task given to an agent that is not installed fails before it starts, and the master "
+                  "learns it only then.",
+              **{"not": "That the agent is signed in or within its usage limits: steward agents status shows what "
+                        "the availability ledger recorded."}, scope="multi-project"),
 }
 
 

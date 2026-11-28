@@ -1392,8 +1392,11 @@ def r75(ctx: Ctx) -> list[Result]:
     assert ctx.config is not None
     if ctx.config.studies is None:
         return [result("R-75", ".", Status.NOT_APPLICABLE, "[studies] is not configured")]
-    def observe(rel: str, sha: str) -> None:  # AE14: every file R-75 relied on is an input of the verdict
+    references: dict[str, list[dict[str, str]]] = {}
+    def observe(rel: str, sha: str, *, subject: str | None = None) -> None:
         ctx.inputs[rel] = sha
+        if subject is not None:
+            references[subject] = [{"path": rel, "sha256": sha}]
     def safe(rel: str) -> bytes:  # AE1, AE5: records read without links; their bytes are verdict inputs
         if rel not in ctx.snapshot:
             ctx.snapshot[rel] = rc.read_rel(ctx.root, rel)
@@ -1403,7 +1406,7 @@ def r75(ctx: Ctx) -> list[Result]:
     if not rows:
         return [result("R-75", ctx.config.studies.dir, Status.INCOMPLETE, "no study records yet (steward study new ID)",
                         [{"code": "R-75.none"}])]
-    return [result("R-75", subj, Status[st], why, d) for subj, st, why, d in rows]
+    return [result("R-75", subj, Status[st], why, d, references.get(subj)) for subj, st, why, d in rows]
 
 
 def r85(ctx: Ctx) -> list[Result]:

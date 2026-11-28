@@ -2,7 +2,7 @@
   "name": "bio-steward",
   "displayName": "Bio-STEWARD",
   "description": "See the Bio-STEWARD check verdict, results and rule explanations of a computational-biology repository inside VS Code. Uses the steward CLI you installed.",
-  "version": "0.0.5",
+  "version": "0.3.0",
   "publisher": "MuizZer07",
   "license": "MIT",
   "icon": "icon.png",
@@ -31,7 +31,7 @@
   ],
   "bioSteward": {
     "minimumCli": "0.20.6",
-    "testedWithCli": "0.20.6"
+    "testedWithCli": "0.22.0"
   },
   "extensionKind": [
     "workspace"
@@ -63,6 +63,20 @@
         "title": "Run Check",
         "category": "Bio-STEWARD",
         "icon": "$(play)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.overview.refresh",
+        "title": "Refresh Overview (steward check)",
+        "category": "Bio-STEWARD",
+        "icon": "$(refresh)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.results.refresh",
+        "title": "Refresh Results (steward check)",
+        "category": "Bio-STEWARD",
+        "icon": "$(refresh)",
         "enablement": "isWorkspaceTrusted"
       },
       {
@@ -167,7 +181,7 @@
       },
       {
         "command": "bioSteward.refreshSkills",
-        "title": "Refresh Skill Folders",
+        "title": "Refresh Agent Skills",
         "category": "Bio-STEWARD",
         "icon": "$(refresh)",
         "enablement": "isWorkspaceTrusted"
@@ -277,6 +291,13 @@
         "enablement": "isWorkspaceTrusted"
       },
       {
+        "command": "bioSteward.tokens.useFolder",
+        "title": "Use This Folder (writes the agent log setting)",
+        "category": "Bio-STEWARD",
+        "icon": "$(folder-opened)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
         "command": "bioSteward.help.tasks",
         "title": "What does the Tasks panel show?",
         "category": "Bio-STEWARD",
@@ -330,22 +351,237 @@
       },
       {
         "command": "bioSteward.drift.refresh",
-        "title": "Refresh Drift",
+        "title": "Refresh Milestones and Drift",
         "category": "Bio-STEWARD",
         "icon": "$(refresh)",
         "enablement": "isWorkspaceTrusted"
       },
       {
         "command": "bioSteward.help.drift",
-        "title": "What does the Drift panel show?",
+        "title": "What does the Milestones and Drift panel show?",
         "category": "Bio-STEWARD",
         "icon": "$(question)"
       },
       {
         "command": "bioSteward.help.approvals",
-        "title":"What does the Approvals panel show?",
+        "title": "What does the Approvals panel show?",
         "category": "Bio-STEWARD",
         "icon": "$(question)"
+      },
+      {
+        "command": "bioSteward.notifications.openBell",
+        "title": "Notifications",
+        "category": "Bio-STEWARD",
+        "icon": "$(bell)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.notifications.markRead",
+        "title": "Mark Read",
+        "category": "Bio-STEWARD",
+        "icon": "$(check)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.notifications.markUnread",
+        "title": "Mark Unread",
+        "category": "Bio-STEWARD",
+        "icon": "$(circle-outline)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.notifications.markAllRead",
+        "title": "Mark All Read",
+        "category": "Bio-STEWARD",
+        "icon": "$(check-all)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.notifications.openDetails",
+        "title": "Open Notification Details",
+        "category": "Bio-STEWARD",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.upgradeCli",
+        "title": "Upgrade CLI…",
+        "category": "Bio-STEWARD",
+        "icon": "$(arrow-circle-up)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.openText",
+        "title": "Open as Text",
+        "category": "Bio-STEWARD",
+        "icon": "$(file-code)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.copyPath",
+        "title": "Copy Path",
+        "category": "Bio-STEWARD",
+        "icon": "$(copy)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.reveal",
+        "title": "Reveal in Explorer",
+        "category": "Bio-STEWARD",
+        "icon": "$(folder-opened)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.openFinding",
+        "title": "Open the Finding File",
+        "category": "Bio-STEWARD",
+        "icon": "$(go-to-file)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.handToAgent",
+        "title": "Hand to Agent",
+        "category": "Bio-STEWARD",
+        "icon": "$(copy)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.dispatch",
+        "title": "Dispatch with Codex…",
+        "category": "Bio-STEWARD",
+        "icon": "$(terminal)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.tokenTask",
+        "title": "Open the Task",
+        "category": "Bio-STEWARD",
+        "icon": "$(go-to-file)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.models",
+        "title": "Show the Per-Model Split",
+        "category": "Bio-STEWARD",
+        "icon": "$(graph)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.milestone",
+        "title": "Open the Milestones File",
+        "category": "Bio-STEWARD",
+        "icon": "$(go-to-file)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.blockers",
+        "title": "Show What Blocks This Milestone",
+        "category": "Bio-STEWARD",
+        "icon": "$(list-tree)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.milestoneBrief",
+        "title": "Hand Blockers to Agent",
+        "category": "Bio-STEWARD",
+        "icon": "$(copy)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.openDecision",
+        "title": "Open Decision Log",
+        "category": "Bio-STEWARD",
+        "icon": "$(book)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.recordDecision",
+        "title": "Record Decision…",
+        "category": "Bio-STEWARD",
+        "icon": "$(edit)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.todayApproval",
+        "title": "Open Approvals to Sign",
+        "category": "Bio-STEWARD",
+        "icon": "$(edit)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.todaySprint",
+        "title": "Open Sprint or Copy the Order",
+        "category": "Bio-STEWARD",
+        "icon": "$(rocket)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.exchangeOpen",
+        "title": "Open Exchange Item",
+        "category": "Bio-STEWARD",
+        "icon": "$(go-to-file)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.exchangePull",
+        "title": "Copy Pull Command",
+        "category": "Bio-STEWARD",
+        "icon": "$(cloud-download)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.exchangeRead",
+        "title": "Mark Read",
+        "category": "Bio-STEWARD",
+        "icon": "$(check)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.exchangeRespond",
+        "title": "Respond…",
+        "category": "Bio-STEWARD",
+        "icon": "$(reply)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.sprintLog",
+        "title": "Show Run Log",
+        "category": "Bio-STEWARD",
+        "icon": "$(output)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.sprintHold",
+        "title": "Copy Hold Command",
+        "category": "Bio-STEWARD",
+        "icon": "$(debug-pause)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.sprintDiff",
+        "title": "Show Diff Range",
+        "category": "Bio-STEWARD",
+        "icon": "$(diff)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.next",
+        "title": "Take the Next Step",
+        "category": "Bio-STEWARD",
+        "icon": "$(arrow-right)",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.approvals.details",
+        "title": "Open Approval Details",
+        "category": "Bio-STEWARD",
+        "enablement": "isWorkspaceTrusted"
+      },
+      {
+        "command": "bioSteward.row.resume",
+        "title": "Resume",
+        "category": "Bio-STEWARD",
+        "icon": "$(history)",
+        "enablement": "isWorkspaceTrusted"
       }
     ],
     "viewsContainers": {
@@ -361,53 +597,53 @@
       "bioSteward": [
         {
           "id": "bioSteward.today",
-          "name": "Today",
+          "name": "Now · Today",
           "contextualTitle": "Bio-STEWARD"
         },
         {
           "id": "bioSteward.approvals",
           "type": "webview",
-          "name": "Approvals",
+          "name": "Now · Approvals",
           "contextualTitle": "Bio-STEWARD"
         },
         {
           "id": "bioSteward.overview",
-          "name": "Overview",
+          "name": "Quality · Overview",
           "contextualTitle": "Bio-STEWARD"
         },
         {
           "id": "bioSteward.results",
-          "name": "Results",
-          "contextualTitle": "Bio-STEWARD"
-        },
-        {
-          "id": "bioSteward.skills",
-          "name": "Agent Skills",
-          "contextualTitle": "Bio-STEWARD"
-        },
-        {
-          "id": "bioSteward.sprint",
-          "name": "Sprint",
+          "name": "Quality · Results",
           "contextualTitle": "Bio-STEWARD"
         },
         {
           "id": "bioSteward.tasks",
-          "name": "Tasks",
+          "name": "Work · Tasks",
+          "contextualTitle": "Bio-STEWARD"
+        },
+        {
+          "id": "bioSteward.sprint",
+          "name": "Work · Sprint",
           "contextualTitle": "Bio-STEWARD"
         },
         {
           "id": "bioSteward.tokens",
-          "name": "Tokens",
-          "contextualTitle": "Bio-STEWARD"
-        },
-        {
-          "id": "bioSteward.decisions",
-          "name": "Decisions",
+          "name": "Work · Tokens",
           "contextualTitle": "Bio-STEWARD"
         },
         {
           "id": "bioSteward.drift",
-          "name": "Drift",
+          "name": "Direction · Milestones and Drift",
+          "contextualTitle": "Bio-STEWARD"
+        },
+        {
+          "id": "bioSteward.decisions",
+          "name": "Direction · Decisions",
+          "contextualTitle": "Bio-STEWARD"
+        },
+        {
+          "id": "bioSteward.skills",
+          "name": "Agents · Agent Skills",
           "contextualTitle": "Bio-STEWARD"
         }
       ]
@@ -415,221 +651,207 @@
     "viewsWelcome": [
       {
         "view": "bioSteward.overview",
-        "contents": "Open a folder that holds a steward.toml to see its Bio-STEWARD verdict.",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nOpen a folder that holds a steward.toml to see its Bio-STEWARD verdict.",
         "when": "bioSteward.empty == 'no-folder'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "Open a folder that holds a steward.toml to see its Bio-STEWARD verdict.",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nOpen a folder that holds a steward.toml to see its Bio-STEWARD verdict.",
         "when": "bioSteward.empty == 'no-folder'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "This workspace is not trusted, so Bio-STEWARD runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nThis workspace is not trusted, so Bio-STEWARD runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
         "when": "bioSteward.empty == 'untrusted'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "This workspace is not trusted, so Bio-STEWARD runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nThis workspace is not trusted, so Bio-STEWARD runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
         "when": "bioSteward.empty == 'untrusted'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "Looking for the steward CLI…",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nLooking for the steward CLI…",
         "when": "bioSteward.empty == 'detecting'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "Looking for the steward CLI…",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nLooking for the steward CLI…",
         "when": "bioSteward.empty == 'detecting'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "No steward CLI was found on PATH or in the pipx and uv tool folders. Install the bio-steward package, or set bioSteward.cliPath in your user settings.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nNo steward CLI was found on PATH or in the pipx and uv tool folders. Install the bio-steward package, or set bioSteward.cliPath in your user settings.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
         "when": "bioSteward.empty == 'no-cli'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "No steward CLI was found on PATH or in the pipx and uv tool folders. Install the bio-steward package, or set bioSteward.cliPath in your user settings.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nNo steward CLI was found on PATH or in the pipx and uv tool folders. Install the bio-steward package, or set bioSteward.cliPath in your user settings.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
         "when": "bioSteward.empty == 'no-cli'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "bioSteward.cliPath does not name a program.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nbioSteward.cliPath does not name a program.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
         "when": "bioSteward.empty == 'cli-invalid'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "bioSteward.cliPath does not name a program.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nbioSteward.cliPath does not name a program.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
         "when": "bioSteward.empty == 'cli-invalid'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "The steward CLI found is older than this extension supports. Upgrade the bio-steward package.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nThe steward CLI found is older than this extension supports. Upgrade the bio-steward package.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
         "when": "bioSteward.empty == 'cli-too-old'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "The steward CLI found is older than this extension supports. Upgrade the bio-steward package.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nThe steward CLI found is older than this extension supports. Upgrade the bio-steward package.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
         "when": "bioSteward.empty == 'cli-too-old'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "The steward CLI did not answer as expected.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nThe steward CLI did not answer as expected.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
         "when": "bioSteward.empty == 'cli-failed'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "The steward CLI did not answer as expected.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nThe steward CLI did not answer as expected.\n[Re-detect CLI](command:bioSteward.redetect)\n[Show Log](command:bioSteward.showLog)",
         "when": "bioSteward.empty == 'cli-failed'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "No report yet.\n[Run Check](command:bioSteward.runCheck)",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nNo report yet.\n[Run Check](command:bioSteward.runCheck)",
         "when": "bioSteward.empty == 'no-report'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "No report yet.\n[Run Check](command:bioSteward.runCheck)",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nNo report yet.\n[Run Check](command:bioSteward.runCheck)",
         "when": "bioSteward.empty == 'no-report'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "Running steward check…",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nRunning steward check…",
         "when": "bioSteward.empty == 'running'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "Running steward check…",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nRunning steward check…",
         "when": "bioSteward.empty == 'running'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "The output of the last run was unreadable, so nothing is shown.\n[Show Log](command:bioSteward.showLog)\n[Run Check](command:bioSteward.runCheck)",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nThe output of the last run was unreadable, so nothing is shown.\n[Show Log](command:bioSteward.showLog)\n[Run Check](command:bioSteward.runCheck)",
         "when": "bioSteward.empty == 'unreadable'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "The output of the last run was unreadable, so nothing is shown.\n[Show Log](command:bioSteward.showLog)\n[Run Check](command:bioSteward.runCheck)",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nThe output of the last run was unreadable, so nothing is shown.\n[Show Log](command:bioSteward.showLog)\n[Run Check](command:bioSteward.runCheck)",
         "when": "bioSteward.empty == 'unreadable'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "The CLI found no steward.toml it accepts here: not set up.\n[Show Log](command:bioSteward.showLog)",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nThe CLI found no steward.toml it accepts here: not set up.\n[Show Log](command:bioSteward.showLog)",
         "when": "bioSteward.empty == 'not-configured'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "The CLI found no steward.toml it accepts here: not set up.\n[Show Log](command:bioSteward.showLog)",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nThe CLI found no steward.toml it accepts here: not set up.\n[Show Log](command:bioSteward.showLog)",
         "when": "bioSteward.empty == 'not-configured'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "The last run did not finish.\n[Show Log](command:bioSteward.showLog)\n[Run Check](command:bioSteward.runCheck)",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nThe last run did not finish.\n[Show Log](command:bioSteward.showLog)\n[Run Check](command:bioSteward.runCheck)",
         "when": "bioSteward.empty == 'run-failed'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "The last run did not finish.\n[Show Log](command:bioSteward.showLog)\n[Run Check](command:bioSteward.runCheck)",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nThe last run did not finish.\n[Show Log](command:bioSteward.showLog)\n[Run Check](command:bioSteward.runCheck)",
         "when": "bioSteward.empty == 'run-failed'"
       },
       {
         "view": "bioSteward.overview",
-        "contents": "This folder has no steward.toml.\n[Initialize](command:bioSteward.openInitWalkthrough)",
+        "contents": "Overview shows whether your agents' work passes this project's checks and may move on.\nThis folder has no steward.toml.\n[Initialize](command:bioSteward.openInitWalkthrough)",
         "when": "bioSteward.empty == 'uninitialized'"
       },
       {
         "view": "bioSteward.results",
-        "contents": "This folder has no steward.toml.\n[Initialize](command:bioSteward.openInitWalkthrough)",
+        "contents": "Results lists every check result, so you can hand one problem at a time to an agent.\nThis folder has no steward.toml.\n[Initialize](command:bioSteward.openInitWalkthrough)",
         "when": "bioSteward.empty == 'uninitialized'"
       },
       {
         "view": "bioSteward.skills",
-        "contents": "Open a folder that holds a steward.toml to see its Agent Skills.",
+        "contents": "Agent Skills shows whether every agent in this project reads the same working rules.\nOpen a folder that holds a steward.toml to see its Agent Skills.",
         "when": "bioSteward.empty == 'no-folder'"
       },
       {
         "view": "bioSteward.skills",
-        "contents": "This workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
+        "contents": "Agent Skills shows whether every agent in this project reads the same working rules.\nThis workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
         "when": "bioSteward.empty == 'untrusted'"
       },
       {
         "view": "bioSteward.sprint",
-        "contents": "No sprint is running in this project. A sprint started with `steward sprint start` shows here, read from its sprint file, its ledger and git.",
+        "contents": "Sprint shows what each agent of a running sprint is doing and which of its checks passed.\nNo sprint is running in this project. A sprint started with `steward sprint start` shows here, read from its sprint file, its ledger and git.",
         "when": "bioSteward.sprintEmpty == 'none'"
       },
       {
         "view": "bioSteward.sprint",
-        "contents": "This workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
+        "contents": "Sprint shows what each agent of a running sprint is doing and which of its checks passed.\nThis workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
         "when": "bioSteward.sprintEmpty == 'untrusted'"
       },
       {
         "view": "bioSteward.today",
-        "contents": "Open a folder that holds a steward.toml to see what is waiting today.",
+        "contents": "Today shows what waits for you and what your agents are on, so each session starts where the work is.\nOpen a folder that holds a steward.toml to see what is waiting today.",
         "when": "bioSteward.todayEmpty == 'none'"
       },
       {
         "view": "bioSteward.today",
-        "contents": "This workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
+        "contents": "Today shows what waits for you and what your agents are on, so each session starts where the work is.\nThis workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
         "when": "bioSteward.todayEmpty == 'untrusted'"
       },
       {
         "view": "bioSteward.tasks",
-        "contents": "Open a folder that holds a steward.toml to see its task files.",
+        "contents": "Tasks lists every task your agents work on, the latest change first.\nOpen a folder that holds a steward.toml to see its task files.",
         "when": "bioSteward.tasksEmpty == 'none'"
       },
       {
         "view": "bioSteward.tasks",
-        "contents": "This workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
+        "contents": "Tasks lists every task your agents work on, the latest change first.\nThis workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
         "when": "bioSteward.tasksEmpty == 'untrusted'"
       },
       {
         "view": "bioSteward.decisions",
-        "contents": "Open a folder that holds a steward.toml to open its decisions log.",
+        "contents": "Decisions keeps the owner's decisions one click away, so you and your agents work from the same record.\nOpen a folder that holds a steward.toml to open its decisions log.",
         "when": "bioSteward.decisionsEmpty == 'none'"
       },
       {
         "view": "bioSteward.decisions",
-        "contents": "This workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
+        "contents": "Decisions keeps the owner's decisions one click away, so you and your agents work from the same record.\nThis workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
         "when": "bioSteward.decisionsEmpty == 'untrusted'"
       },
       {
         "view": "bioSteward.drift",
-        "contents": "Open a folder that holds a steward.toml to see the state of its milestones.",
+        "contents": "Milestones and Drift shows whether the work your agents do keeps to the plan, the latest target first.\nOpen a folder that holds a steward.toml to see the state of its milestones.",
         "when": "bioSteward.driftEmpty == 'none'"
       },
       {
         "view": "bioSteward.drift",
-        "contents": "This workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
+        "contents": "Milestones and Drift shows whether the work your agents do keeps to the plan, the latest target first.\nThis workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
         "when": "bioSteward.driftEmpty == 'untrusted'"
       },
       {
         "view": "bioSteward.tokens",
-        "contents": "Open a folder that holds a steward.toml to see token use per task window.",
+        "contents": "Tokens shows what each agent task cost, counted from the agents' own logs on this machine.\nOpen a folder that holds a steward.toml to see token use per task window.",
         "when": "bioSteward.tokensEmpty == 'none'"
       },
       {
         "view": "bioSteward.tokens",
-        "contents": "This workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
+        "contents": "Tokens shows what each agent task cost, counted from the agents' own logs on this machine.\nThis workspace is not trusted, so Bio-STEWARD reads and runs nothing (Restricted Mode).\n[Manage Workspace Trust](command:workbench.trust.manage)",
         "when": "bioSteward.tokensEmpty == 'untrusted'"
       }
     ],
     "menus": {
       "view/item/context": [
-        {
-          "command": "bioSteward.explainRule",
-          "when": "(view == bioSteward.results || view == bioSteward.overview || view == bioSteward.skills) && (viewItem == result || viewItem == detail || viewItem == ref || viewItem == skills-detail) && isWorkspaceTrusted"
-        },
-        {
-          "command": "bioSteward.copyForAgent",
-          "when": "(view == bioSteward.results || view == bioSteward.overview || view == bioSteward.skills) && (viewItem == result || viewItem == detail || viewItem == ref) && isWorkspaceTrusted",
-          "group": "agent@1"
-        },
-        {
-          "command": "bioSteward.runCheckForRule",
-          "when": "(view == bioSteward.results || view == bioSteward.overview || view == bioSteward.skills) && (viewItem == result || viewItem == detail || viewItem == ref) && isWorkspaceTrusted",
-          "group": "agent@2"
-        },
         {
           "command": "bioSteward.sprint.copyOrderCommand",
           "when": "view == bioSteward.sprint && viewItem == sprint-task-waiting && isWorkspaceTrusted",
@@ -642,11 +864,6 @@
         },
         {
           "command": "bioSteward.tokens.startWindow",
-          "when": "view == bioSteward.tasks && viewItem == task-file && isWorkspaceTrusted",
-          "group": "window@1"
-        },
-        {
-          "command": "bioSteward.tokens.startWindow",
           "when": "view == bioSteward.tokens && viewItem == tokens-task && isWorkspaceTrusted",
           "group": "inline@1"
         },
@@ -656,9 +873,189 @@
           "group": "inline@2"
         },
         {
+          "command": "bioSteward.tokens.useFolder",
+          "when": "view == bioSteward.tokens && viewItem == tokens-use-folder && isWorkspaceTrusted",
+          "group": "inline@1"
+        },
+        {
           "command": "bioSteward.decisions.open",
           "when": "view == bioSteward.decisions && viewItem == decisions-project && isWorkspaceTrusted",
           "group": "inline"
+        },
+        {
+          "command": "bioSteward.notifications.markRead",
+          "when": "view == bioSteward.today && viewItem == notification-unread && isWorkspaceTrusted",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.notifications.markRead",
+          "when": "view == bioSteward.today && viewItem == notification-unread && isWorkspaceTrusted",
+          "group": "notifications@1"
+        },
+        {
+          "command": "bioSteward.notifications.markUnread",
+          "when": "view == bioSteward.today && viewItem == notification-read && isWorkspaceTrusted",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.notifications.markUnread",
+          "when": "view == bioSteward.today && viewItem == notification-read && isWorkspaceTrusted",
+          "group": "notifications@1"
+        },
+        {
+          "command": "bioSteward.notifications.markAllRead",
+          "when": "view == bioSteward.today && viewItem == today-notifications && isWorkspaceTrusted",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.notifications.markAllRead",
+          "when": "view == bioSteward.today && viewItem == today-notifications && isWorkspaceTrusted",
+          "group": "notifications@1"
+        },
+        {
+          "command": "bioSteward.upgradeCli",
+          "when": "view == bioSteward.overview && viewItem == upgrade && isWorkspaceTrusted",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.explainRule",
+          "when": "(view == bioSteward.results || view == bioSteward.overview || view == bioSteward.skills) && (viewItem == result || viewItem == detail || viewItem == ref || viewItem == skills-detail) && isWorkspaceTrusted",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.runCheckForRule",
+          "when": "(view == bioSteward.results || view == bioSteward.overview || view == bioSteward.skills) && (viewItem == result || viewItem == detail || viewItem == ref) && isWorkspaceTrusted",
+          "group": "inline@4"
+        },
+        {
+          "command": "bioSteward.tokens.startWindow",
+          "when": "view == bioSteward.tasks && viewItem =~ /^task-file(?: |$)/ && isWorkspaceTrusted",
+          "group": "window@1"
+        },
+        {
+          "command": "bioSteward.row.openText",
+          "when": "isWorkspaceTrusted && (viewItem =~ / markdown-file$/)",
+          "group": "inline@5"
+        },
+        {
+          "command": "bioSteward.row.copyPath",
+          "when": "isWorkspaceTrusted && (viewItem =~ / markdown-file$/)",
+          "group": "inline@6"
+        },
+        {
+          "command": "bioSteward.row.reveal",
+          "when": "isWorkspaceTrusted && (viewItem =~ / editor-file$/)",
+          "group": "inline@5"
+        },
+        {
+          "command": "bioSteward.row.openFinding",
+          "when": "isWorkspaceTrusted && (viewItem == result || viewItem == ref || viewItem == detail || viewItem == skills-detail)",
+          "group": "inline@2"
+        },
+        {
+          "command": "bioSteward.row.handToAgent",
+          "when": "isWorkspaceTrusted && (viewItem == result || viewItem == ref || viewItem == detail || viewItem == skills-detail || viewItem =~ /^task-file(?: |$)/ || viewItem == gate)",
+          "group": "inline@3"
+        },
+        {
+          "command": "bioSteward.row.dispatch",
+          "when": "isWorkspaceTrusted && (viewItem =~ /^task-file(?: |$)/)",
+          "group": "task@3"
+        },
+        {
+          "command": "bioSteward.row.tokenTask",
+          "when": "isWorkspaceTrusted && (viewItem == tokens-task)",
+          "group": "inline@3"
+        },
+        {
+          "command": "bioSteward.row.models",
+          "when": "isWorkspaceTrusted && (viewItem == tokens-task)",
+          "group": "inline@4"
+        },
+        {
+          "command": "bioSteward.row.milestone",
+          "when": "isWorkspaceTrusted && (viewItem == drift-milestone || viewItem == today-milestone || viewItem =~ /^today-item milestones$/)",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.row.blockers",
+          "when": "isWorkspaceTrusted && (viewItem == drift-milestone || viewItem == today-milestone || viewItem =~ /^today-item milestones$/)",
+          "group": "inline@2"
+        },
+        {
+          "command": "bioSteward.row.milestoneBrief",
+          "when": "isWorkspaceTrusted && (viewItem == drift-milestone || viewItem == today-milestone || viewItem =~ /^today-item milestones$/)",
+          "group": "inline@3"
+        },
+        {
+          "command": "bioSteward.row.openDecision",
+          "when": "isWorkspaceTrusted && (viewItem =~ /^decisions-log(?: |$)/)",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.row.recordDecision",
+          "when": "isWorkspaceTrusted && (viewItem =~ /^decisions-log(?: |$)/)",
+          "group": "inline@2"
+        },
+        {
+          "command": "bioSteward.row.todayApproval",
+          "when": "isWorkspaceTrusted && (viewItem =~ /^today-item signatures$/)",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.row.todaySprint",
+          "when": "isWorkspaceTrusted && (viewItem =~ /^today-item sprints$/)",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.row.exchangeOpen",
+          "when": "isWorkspaceTrusted && (viewItem =~ /^today-item (exchange|own)$/)",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.row.exchangePull",
+          "when": "isWorkspaceTrusted && (viewItem =~ /^today-item exchange$/)",
+          "group": "exchange@1"
+        },
+        {
+          "command": "bioSteward.row.exchangeRead",
+          "when": "isWorkspaceTrusted && (viewItem =~ /^today-item exchange$/)",
+          "group": "inline@2"
+        },
+        {
+          "command": "bioSteward.row.exchangeRespond",
+          "when": "isWorkspaceTrusted && (viewItem =~ /^today-item exchange$/)",
+          "group": "exchange@2"
+        },
+        {
+          "command": "bioSteward.row.sprintLog",
+          "when": "isWorkspaceTrusted && (viewItem == sprint-task || viewItem == sprint-task-waiting)",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.row.sprintHold",
+          "when": "isWorkspaceTrusted && (viewItem == sprint-task || viewItem == sprint-task-waiting)",
+          "group": "sprint@1"
+        },
+        {
+          "command": "bioSteward.row.sprintDiff",
+          "when": "isWorkspaceTrusted && (viewItem == sprint-task || viewItem == sprint-task-waiting)",
+          "group": "sprint@2"
+        },
+        {
+          "command": "bioSteward.row.next",
+          "when": "isWorkspaceTrusted && (viewItem =~ / next-action$/)",
+          "group": "inline@1"
+        },
+        {
+          "command": "bioSteward.tokens.doneWindow",
+          "when": "view == bioSteward.tasks && viewItem =~ /^task-file(?: |$)/ && isWorkspaceTrusted",
+          "group": "window@2"
+        },
+        {
+          "command": "bioSteward.row.resume",
+          "when": "viewItem =~ /^today-resume(?: |$)/ && isWorkspaceTrusted",
+          "group": "inline@1"
         }
       ],
       "view/title": [
@@ -705,7 +1102,7 @@
         {
           "command": "bioSteward.refreshSkills",
           "when": "view == bioSteward.skills && isWorkspaceTrusted",
-          "group": "navigation@3"
+          "group": "navigation@90"
         },
         {
           "command": "bioSteward.selectProject",
@@ -715,7 +1112,7 @@
         {
           "command": "bioSteward.sprint.refresh",
           "when": "view == bioSteward.sprint && isWorkspaceTrusted",
-          "group": "navigation@1"
+          "group": "navigation@90"
         },
         {
           "command": "bioSteward.selectProject",
@@ -755,7 +1152,7 @@
         {
           "command": "bioSteward.today.refresh",
           "when": "view == bioSteward.today && isWorkspaceTrusted",
-          "group": "navigation@3"
+          "group": "navigation@90"
         },
         {
           "command": "bioSteward.help.today",
@@ -765,7 +1162,7 @@
         {
           "command": "bioSteward.tasks.refresh",
           "when": "view == bioSteward.tasks && isWorkspaceTrusted",
-          "group": "navigation@1"
+          "group": "navigation@90"
         },
         {
           "command": "bioSteward.help.tasks",
@@ -785,7 +1182,7 @@
         {
           "command": "bioSteward.tokens.refresh",
           "when": "view == bioSteward.tokens && isWorkspaceTrusted",
-          "group": "navigation@3"
+          "group": "navigation@90"
         },
         {
           "command": "bioSteward.help.tokens",
@@ -795,7 +1192,7 @@
         {
           "command": "bioSteward.approvals.refresh",
           "when": "view == bioSteward.approvals && isWorkspaceTrusted",
-          "group": "navigation@2"
+          "group": "navigation@90"
         },
         {
           "command": "bioSteward.help.approvals",
@@ -810,7 +1207,7 @@
         {
           "command": "bioSteward.decisions.refresh",
           "when": "view == bioSteward.decisions && isWorkspaceTrusted",
-          "group": "navigation@2"
+          "group": "navigation@90"
         },
         {
           "command": "bioSteward.help.decisions",
@@ -820,12 +1217,37 @@
         {
           "command": "bioSteward.drift.refresh",
           "when": "view == bioSteward.drift && isWorkspaceTrusted",
-          "group": "navigation@1"
+          "group": "navigation@90"
         },
         {
           "command": "bioSteward.help.drift",
           "when": "view == bioSteward.drift",
           "group": "navigation@99"
+        },
+        {
+          "command": "bioSteward.overview.refresh",
+          "when": "view == bioSteward.overview && isWorkspaceTrusted",
+          "group": "navigation@90"
+        },
+        {
+          "command": "bioSteward.results.refresh",
+          "when": "view == bioSteward.results && isWorkspaceTrusted",
+          "group": "navigation@90"
+        },
+        {
+          "command": "bioSteward.whereAmI.copyBrief",
+          "when": "view == bioSteward.skills && isWorkspaceTrusted",
+          "group": "navigation@4"
+        },
+        {
+          "command": "bioSteward.upgradeCli",
+          "when": "view == bioSteward.overview && bioSteward.upgradeAvailable && isWorkspaceTrusted",
+          "group": "navigation@2"
+        },
+        {
+          "command": "bioSteward.notifications.markAllRead",
+          "when": "view == bioSteward.today && isWorkspaceTrusted",
+          "group": "navigation@3"
         }
       ],
       "commandPalette": [
@@ -843,6 +1265,122 @@
         },
         {
           "command": "bioSteward.approvals.sign",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.tokens.useFolder",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.notifications.markRead",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.notifications.markUnread",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.notifications.openDetails",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.openText",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.copyPath",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.reveal",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.openFinding",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.handToAgent",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.dispatch",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.tokenTask",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.models",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.milestone",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.blockers",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.milestoneBrief",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.openDecision",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.recordDecision",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.todayApproval",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.todaySprint",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.exchangeOpen",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.exchangePull",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.exchangeRead",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.exchangeRespond",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.sprintLog",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.sprintHold",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.sprintDiff",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.next",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.approvals.details",
+          "when": "false"
+        },
+        {
+          "command": "bioSteward.row.resume",
           "when": "false"
         }
       ],
@@ -966,6 +1504,12 @@
           "default": [],
           "scope": "machine",
           "markdownDescription": "Gemini CLI session logs that `steward tokens report` reads for the **Tokens** panel: absolute paths of log files or folders (a folder gives its newest `.jsonl` and `.json` files, at most 50). Usually `~/.gemini/tmp/<this project's hash>`. A workspace cannot set this. The CLI prints counts only; nothing leaves this machine."
+        },
+        "bioSteward.notifications.toasts": {
+          "type": "boolean",
+          "default": true,
+          "scope": "machine",
+          "markdownDescription": "Show a VS Code notification toast for the three urgent notification kinds from `steward notifications`: a gate turned not eligible, an approval waits, or a sprint task failed. Turn off to see them only in the status-bar bell and Today. A workspace cannot set this."
         }
       }
     },

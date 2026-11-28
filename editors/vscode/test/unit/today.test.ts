@@ -3,13 +3,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseTimeline, type TimelineState } from '../../src/model/timeline';
 import {
-  BRIEF_HANDOFF_LINES, orderProjects, parseAuditProgress, pendingSummary, REDUCED_NOTE, reopenDue, todayNodes,
+  BRIEF_HANDOFF_LINES, orderProjects, parseAuditProgress, pendingSummary, reopenDue, SOURCES_NOTE, todayNodes,
   whereAmIText, type AuditProgress, type AuditState, type TodayInput, type WhereAmIInput,
 } from '../../src/model/today';
 import type { Report } from '../../src/model/report';
 import type { ViewNode } from '../../src/model/views';
 
-// P1 Today and P2 "Where am I?" (reduced, task U02): parity against the U01 corpus of test/fixtures/cockpit/, the
+// P1 Today and P2 "Where am I?" (task U02): parity against the U01 corpus of test/fixtures/cockpit/, the
 // 0.20.6 outputs these panels read. Every pending item must appear exactly as the CLI wrote it, under a part that
 // names its source.
 
@@ -38,7 +38,7 @@ const input = (name: string, root = `/w/${name}`): TodayInput => ({
 });
 const byId = (nodes: readonly ViewNode[], suffix: string) => nodes.find((n) => n.id.endsWith(suffix));
 
-describe('Today and Where am I? (U02, reduced forms)', () => {
+describe('Today and Where am I? (U02)', () => {
   describe('steward audit progress --json', () => {
     it('reads both U01 fixtures and refuses other documents', () => {
       assert.equal(auditOf('geo').pending.signatures_waiting.length, 0);
@@ -59,8 +59,8 @@ describe('Today and Where am I? (U02, reduced forms)', () => {
     it('shows every pending item of geo-cockpit as written, each part labelled with its source (parity)', () => {
       const nodes = todayNodes([input('geo-cockpit')]);
       const fixture = raw('geo-cockpit').pending;
-      assert.equal(nodes[0].label, 'Reduced form');
-      assert.equal(nodes[0].tooltip, REDUCED_NOTE);
+      assert.equal(nodes[0].label, 'Sources');
+      assert.equal(nodes[0].tooltip, SOURCES_NOTE);
       const section = (key: string) => {
         const node = byId(nodes, `/${key}`);
         assert.ok(node, key);
@@ -72,9 +72,12 @@ describe('Today and Where am I? (U02, reduced forms)', () => {
       assert.deepEqual(labels('exchange'), fixture.exchange_open);
       assert.deepEqual(labels('own'), fixture.own_open);
       assert.deepEqual(labels('sprints'), fixture.sprints.map((s) => s.sprint));
-      assert.deepEqual(section('sprints').children?.map((c) => c.description), fixture.sprints.map((s) => (s.open ?? []).join(', ')));
-      assert.deepEqual(labels('milestones'), fixture.milestones.map((m) => m.id));
-      assert.deepEqual(section('milestones').children?.map((c) => c.description?.split(' · ')[0]), fixture.milestones.map((m) => m.state));
+      // E01, newest first: a sprint's open tasks highest ID first; milestones the latest due (most days left) first.
+      assert.deepEqual(section('sprints').children?.map((c) => c.description), ['T5, T4, T3, T2, T1']);
+      const latest = [...fixture.milestones].sort((a, b) => b.days_left - a.days_left);
+      assert.deepEqual(labels('milestones'), latest.map((m) => m.id));
+      assert.deepEqual(labels('milestones'), ['release', 'review', 'preprint', 'abstract', 'kickoff']);
+      assert.deepEqual(section('milestones').children?.map((c) => c.description?.split(' · ')[0]), latest.map((m) => m.state));
       assert.equal(section('signatures').label, `Signatures waiting (${fixture.signatures_waiting.length})`);
       assert.equal(section('milestones').label, `Milestones (${fixture.milestones.length})`);
     });
@@ -105,17 +108,17 @@ describe('Today and Where am I? (U02, reduced forms)', () => {
     it('says when audit progress is not set up, unreadable or did not finish, never inventing rows', () => {
       for (const kind of ['not-configured', 'unreadable', 'failed'] as const) {
         const nodes = todayNodes([{ ...input('geo'), audit: { kind } }]);
-        assert.deepEqual(nodes.map((n) => n.id.split('/').pop()), ['reduced', 'resume', 'milestone', 'audit'], kind);
+        assert.deepEqual(nodes.map((n) => n.id.split('/').pop()), ['source', 'resume', 'milestone', 'audit'], kind);
         assert.match(byId(nodes, '/audit')?.description ?? '', /steward audit progress/);
       }
       assert.deepEqual(todayNodes([{ ...input('geo'), trusted: false }]), []);
     });
 
-    it('with several projects: one block each, ordered by the audit counts, rows never mixed (AC-multi, reduced)', () => {
+    it('with several projects: one block each, ordered by the audit counts, rows never mixed (AC-multi)', () => {
       const geo = input('geo');
       const full = input('geo-cockpit');
       const nodes = todayNodes([geo, full]);
-      assert.deepEqual(nodes.map((n) => n.label), ['Reduced form', 'geo-cockpit', 'geo']);
+      assert.deepEqual(nodes.map((n) => n.label), ['Sources', 'geo-cockpit', 'geo']);
       assert.match(nodes[0].tooltip ?? '', /ordered by the counts steward audit progress reports/);
       assert.equal(nodes[1].description, '1 signature waiting · 1 exchange item open · 1 own request open · 1 sprint with open tasks');
       assert.equal(nodes[2].description, 'nothing pending');
@@ -151,18 +154,18 @@ describe('Today and Where am I? (U02, reduced forms)', () => {
     it('composes every part with its source, from the fixtures (parity)', () => {
       const text = page({ report: { report, freshness: 'fresh', partial: false } });
       const fixture = raw('geo-cockpit');
-      assert.ok(text.startsWith('# Where am I? · geo-cockpit\n\nReduced form (CLI 0.20.6)'));
+      assert.ok(text.startsWith('# Where am I? · geo-cockpit\n\nComposed from steward audit progress'));
       for (const heading of ['## Where it stands · from steward audit progress', '## Gate · from the last steward check report',
         '## You left off · from the session handoff', '## Next target · from steward timeline',
         '## Waiting on you · from steward audit progress', '## Waiting on others · from steward audit progress',
-        '## Sprints · from steward audit progress', '## Milestones · from steward audit progress', '## Not in the reduced form']) {
+        '## Sprints · from steward audit progress', '## Milestones · from steward audit progress', '## Not on this page yet']) {
         assert.ok(text.includes(`\n${heading}`), heading);
       }
       assert.ok(text.includes(`- branch ${fixture.where.branch} · project version none · latest tag none · toolkit ${fixture.where.toolkit_version}`));
       for (const item of [...fixture.pending.signatures_waiting, ...fixture.pending.exchange_open ?? [], ...fixture.pending.own_open ?? []]) {
         assert.ok(text.includes(`  - ${item}\n`), item);
       }
-      for (const s of fixture.pending.sprints) assert.ok(text.includes(`  - ${s.sprint}: ${(s.open ?? []).join(', ')}\n`));
+      for (const s of fixture.pending.sprints) assert.ok(text.includes(`  - ${s.sprint}: ${[...(s.open ?? [])].reverse().join(', ')}\n`));
       for (const m of fixture.pending.milestones) assert.ok(text.includes(`  - ${m.id}: ${m.state} · `), m.id);
       const gate = report.verdict.gates.find((g) => g.name === 'default');
       assert.ok(gate);

@@ -69,8 +69,8 @@ Hex64 = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 RULE_IDS = ("R-01", "R-02", "R-03", "R-04", "R-05", "R-06", "R-07", "R-08", "R-09", "R-10", "R-11", "R-12", "R-13", "R-14", "R-15",
             "R-21", "R-22", "R-23", "R-24", "R-25", "R-26", "R-27", "R-28", "R-29", "R-31", "R-32", "R-33", "R-34",
             "R-35", "R-36", "R-37", "R-38", "R-39", "R-40", "R-41", "R-42", "R-43", "R-44",
-            "R-45", "R-46", "R-47", "R-48", "R-49", "R-50", "R-51", "R-52", "R-53", "R-54", "R-55", "R-56", "R-57", "R-58", "R-59", "R-60", "R-61", "R-62", "R-63", "R-64", "R-65", "R-66", "R-67", "R-68", "R-69", "R-70", "R-71", "R-72", "R-73", "R-74", "R-75", "R-76", "R-77", "R-78", "R-79", "R-80", "R-81", "R-82", "R-83", "R-84", "R-85", "R-86", "R-87", "R-88")
-ADVISORY = ("R-55", "R-58", "R-70", "R-71", "R-72", "R-74", "R-76", "R-82", "R-84", "R-87", "R-88")  # rules the default gate does not require; a named gate may (0.9.0 B5)
+            "R-45", "R-46", "R-47", "R-48", "R-49", "R-50", "R-51", "R-52", "R-53", "R-54", "R-55", "R-56", "R-57", "R-58", "R-59", "R-60", "R-61", "R-62", "R-63", "R-64", "R-65", "R-66", "R-67", "R-68", "R-69", "R-70", "R-71", "R-72", "R-73", "R-74", "R-75", "R-76", "R-77", "R-78", "R-79", "R-80", "R-81", "R-82", "R-83", "R-84", "R-85", "R-86", "R-87", "R-88", "R-89")
+ADVISORY = ("R-55", "R-58", "R-70", "R-71", "R-72", "R-74", "R-76", "R-82", "R-84", "R-87", "R-88", "R-89")  # rules the default gate does not require; a named gate may (0.9.0 B5)
 CONFIG_SCHEMAS = ("steward.toml/0.1", "steward.toml/0.2")
 
 
@@ -362,7 +362,7 @@ class ReleaseSection(Strict):
     stopping_rule: Literal["none", "no-blocking-no-wrong-result"] = "none"  # AR-13
     known_issues: str | None = None  # AR-13: the release notes file that lists open limitations by ID
     manifest: str = "release-manifest.json"
-    review_required: bool = False  # independent red-team review gate (R-43); off: recommended in every report
+    review_required: bool = False  # independent red-team review gate (R-43); off: recommended for confirmatory projects
     findings: str = "development/assessment/findings.toml"
     fingerprint: list[str] = Field(default_factory=list)  # module globs for the runtime fingerprint (R-44)
     fingerprint_file: str = "development/fingerprint.json"
@@ -582,7 +582,7 @@ def _table_path(value: str) -> str:
 
 
 TablePath = Annotated[SafePath, AfterValidator(_table_path)]
-ColumnType = Literal["text", "integer", "number", "boolean", "ensembl", "entrez", "hgnc"]
+ColumnType = Literal["text", "integer", "number", "boolean", "ensembl", "entrez", "hgnc", "gene_symbol"]
 
 
 class SampleSheet(Strict):
@@ -603,9 +603,18 @@ class DataContract(Strict):
     na_values: list[str] = Field(default_factory=lambda: ["", "NA", "N/A", "NaN", "nan", "NULL", "null"])
     sample_sheet: SampleSheet | None = None
     metadata_columns: list[Text] = Field(default_factory=list)
+    study: Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9._-]{0,63}$")] | None = None
+    hgnc_table: TablePath | None = None
+    log_base: Literal["e"] | Annotated[float, Field(gt=0, allow_inf_nan=False)] | None = None
 
     @model_validator(mode="after")
     def _roles(self) -> "DataContract":
+        if self.log_base is not None and (self.log_fold_change is None or self.log_base == 1):
+            raise ValueError("log_base needs a log_fold_change column and a base other than 1")
+        if "gene_symbol" in self.columns.values() and self.study is None:
+            raise ValueError("gene_symbol needs a study with organism or taxon")
+        if self.hgnc_table is not None and ("hgnc" not in self.columns.values() or self.hgnc_table == self.path):
+            raise ValueError("hgnc_table needs an hgnc column and a separate file")
         if self.sample_sheet is not None:
             if self.id_column is None:
                 raise ValueError("sample_sheet needs the matrix id_column")
@@ -778,6 +787,29 @@ class AgentsSection(Strict):
     may_score: dict[str, list[str]] | None = None
 
 
+DELEGATION_AGENTS = ("claude-code", "codex", "antigravity")
+DelegationAgent = Literal["claude-code", "codex", "antigravity"]
+
+
+class DelegationSection(Strict):
+    """0.23.0 (STW-061 D01): who reviews and merges (the master) and who takes delegated tasks (the workers, in order).
+    `on_limit` says what happens when no worker can run: the next worker, then the master ("next"), the master
+    ("master"), or a wait until the earliest reset time ("wait")."""
+
+    master: DelegationAgent
+    workers: list[DelegationAgent] = Field(default_factory=list)
+    on_limit: Literal["next", "master", "wait"] = "next"
+    models: dict[DelegationAgent, Annotated[str, Field(min_length=1, max_length=128)]] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _distinct(self) -> "DelegationSection":
+        if len(set(self.workers)) != len(self.workers):
+            raise ValueError("[delegation] workers names an agent twice")
+        if self.master in self.workers:
+            raise ValueError("[delegation] master is also a worker; the master reviews the workers' tasks")
+        return self
+
+
 class StageDef(Strict):
     """One declared stage of a staged run (REQ-008)."""
 
@@ -891,6 +923,7 @@ class StewardConfig(Strict):
     repro: ReproSection | None = None
     session: SessionSection | None = None
     agents: AgentsSection | None = None
+    delegation: DelegationSection | None = None              # 0.23.0: the master and the workers (STW-061, R-89)
     stages: list[StageDef] = Field(default_factory=list)
     stages_ledger: str = "development/stages.jsonl"
     accrual: AccrualSection | None = None

@@ -1,6 +1,5 @@
-// P6 Decisions, reduced form (RELEASE_vscode_0.2.0_SPEC §3): **Open DECISIONS.md** only. The panel names each
-// open project's decisions log (as steward.toml or the CLI's default names it) and opens it in the editor as it is.
-// No CLI call, nothing written: the log's entries are not read, and the extension never writes a decision.
+// P6 Decisions (RELEASE_vscode_0.2.0_SPEC §3): **Open DECISIONS.md**. The panel names each
+// open project's decisions log for preview. The owner can open the source or start an entry in the editor.
 import * as vscode from 'vscode';
 import { unlinkedFile } from '../cli/paths';
 import { decisionsNodes, firstLog, primaryLog, type DecisionLog, type DecisionsState } from '../model/decisions';
@@ -8,6 +7,7 @@ import { orderProjects } from '../model/today';
 import type { ViewNode } from '../model/views';
 import type { Project } from '../project';
 import { NodeTree } from './tree';
+import { openFile } from './preview';
 
 export const DECISIONS_VIEW = 'bioSteward.decisions';
 export const DECISIONS_REFRESH_COMMAND = 'bioSteward.decisions.refresh';
@@ -19,7 +19,6 @@ export class DecisionsView implements vscode.Disposable {
 
   constructor() {
     this.#view = vscode.window.createTreeView(DECISIONS_VIEW, { treeDataProvider: this.tree, showCollapseAll: true });
-    this.#view.description = 'reduced';
   }
 
   // Every project, in the Today order (one block each, never mixed).
@@ -30,8 +29,11 @@ export class DecisionsView implements vscode.Disposable {
       this.tree.set([]);
       return;
     }
-    const ordered = orderProjects(projects.filter((project) => project.state.trusted), (project) => project.state.audit);
-    this.tree.set(decisionsNodes(ordered.map((project) => ({ root: project.root, name: project.name, decisions: project.state.decisions }))));
+    const ordered = orderProjects(projects.filter((project) => project.state.trusted), (project) => project.state.audit,
+      (project) => project.state.next);
+    this.tree.set(decisionsNodes(ordered.map((project) => ({
+      root: project.root, name: project.name, decisions: project.state.decisions, doc: project.state.decisionsDoc,
+    }))));
   }
 
   dispose(): void {
@@ -62,10 +64,10 @@ function rowLog(state: DecisionsState | undefined, root: string, input: unknown)
   return state.logs.find((log) => log.exists && `${root}/${log.path}` === path);
 }
 
-// Open DECISIONS.md: the project's first decisions log that exists (or the row's log), in an editor, as it is.
+// Open or draft an entry in the first existing decisions log, or the log selected by the row.
 // Returns the file opened, or undefined. A missing log is reported, never created. The file is checked again when
 // it is opened (U09): a regular file inside the project, reached without a link and not through `.git`.
-export async function openDecisions(projects: readonly Project[], input: unknown): Promise<vscode.Uri | undefined> {
+export async function openDecisions(projects: readonly Project[], input: unknown, asText = false, draft = false): Promise<vscode.Uri | undefined> {
   if (!vscode.workspace.isTrusted) return undefined;
   const project = await chooseProject(projects, input);
   if (!project || !project.state.trusted) return undefined;
@@ -90,7 +92,16 @@ export async function openDecisions(projects: readonly Project[], input: unknown
   // Checked under the canonical root; opened under the project's root as the session names it (the root itself is
   // taken as given, as the CLI takes `--repo`).
   const uri = vscode.Uri.file(`${project.root}/${log.path}`);
-  await vscode.window.showTextDocument(uri, { preview: false });
+  if (draft) {
+    const editor = await vscode.window.showTextDocument(uri, { preview: false });
+    const end = editor.document.positionAt(editor.document.getText().length);
+    const today = new Date();
+    const date = [today.getFullYear(), today.getMonth() + 1, today.getDate()]
+      .map((part) => String(part).padStart(2, '0')).join('-');
+    await editor.insertSnippet(new vscode.SnippetString(`\n\n## ${date}: \${1:short title}\n- **Quote:** "$2"\n- **Decision:** $3\n- **Consequences:** $0\n`), end);
+  } else {
+    await openFile(uri, asText);
+  }
   if (!row && state?.kind === 'ready' && log.path !== primaryLog(state.settings)) {
     vscode.window.setStatusBarMessage(`Bio-STEWARD: opened ${log.path}, the first decisions log that exists ` +
       `(the CLI's single-path commands use ${primaryLog(state.settings)})`, 10000);

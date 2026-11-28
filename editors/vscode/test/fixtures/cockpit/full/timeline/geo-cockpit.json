@@ -1,0 +1,171 @@
+{
+  "drift": {
+    "changes": [
+      {
+        "commit": "0000000000000000000000000000000000000000",
+        "decision": null,
+        "due": {
+          "after": "2099-07-01T00:00:00+00:00",
+          "before": "2099-06-01T00:00:00+00:00"
+        },
+        "fields": [
+          "due"
+        ],
+        "id": "review",
+        "kind": "milestone",
+        "path": "development/milestones.toml",
+        "time": "2000-01-01T00:00:00+00:00"
+      }
+    ],
+    "date": [
+      {
+        "current_due": "2099-07-01T00:00:00+00:00",
+        "days": 30.0,
+        "first_due": "2099-06-01T00:00:00+00:00",
+        "id": "review",
+        "moves": 1,
+        "recorded_move": false
+      }
+    ],
+    "history": "available",
+    "notes": [],
+    "order": [
+      {
+        "earlier": "preprint",
+        "later": "review",
+        "started_tasks": [
+          "GEO-004"
+        ]
+      },
+      {
+        "earlier": "preprint",
+        "later": "release",
+        "started_tasks": [
+          "GEO-002"
+        ]
+      },
+      {
+        "earlier": "review",
+        "later": "release",
+        "started_tasks": [
+          "GEO-002"
+        ]
+      }
+    ],
+    "scope": [
+      {
+        "id": "GEO-006",
+        "line": null,
+        "milestone": null,
+        "path": "development/tasks/GEO-006-notes.md",
+        "reason": "unassigned_task"
+      }
+    ]
+  },
+  "milestones": [
+    {
+      "days_left": -9767.0,
+      "due": "2000-03-01T00:00:00+00:00",
+      "id": "kickoff",
+      "internal": "2000-03-01T00:00:00+00:00",
+      "kind": "other",
+      "open_work": 0,
+      "outcome": {
+        "decision": "development/DECISIONS.md, 2000-03-01",
+        "on": "2000-03-01",
+        "state": "met"
+      },
+      "progress": {},
+      "state": "met",
+      "title": "Kick-off"
+    },
+    {
+      "days_left": -9675.0,
+      "due": "2000-06-01T00:00:00+00:00",
+      "id": "abstract",
+      "internal": "2000-06-01T00:00:00+00:00",
+      "kind": "submission",
+      "open_work": 0,
+      "progress": {
+        "tasks": {
+          "done": 1,
+          "open": [],
+          "total": 1,
+          "unknown": []
+        }
+      },
+      "state": "due (record its outcome)",
+      "title": "Conference abstract"
+    },
+    {
+      "days_left": -9461.0,
+      "due": "2001-01-01T00:00:00+00:00",
+      "id": "preprint",
+      "internal": "2001-01-01T00:00:00+00:00",
+      "kind": "preprint",
+      "open_work": 2,
+      "progress": {
+        "tasks": {
+          "done": 0,
+          "open": [
+            "GEO-001",
+            "GEO-003"
+          ],
+          "total": 2,
+          "unknown": []
+        }
+      },
+      "state": "late",
+      "title": "Preprint"
+    },
+    {
+      "days_left": 26514.0,
+      "due": "2099-07-01T00:00:00+00:00",
+      "id": "review",
+      "internal": "2099-06-17T00:00:00+00:00",
+      "kind": "review",
+      "open_work": 4,
+      "progress": {
+        "signatures": {
+          "needed": [
+            "spend"
+          ],
+          "waiting": [
+            "spend"
+          ]
+        },
+        "tasks": {
+          "done": 0,
+          "open": [
+            "GEO-001",
+            "GEO-004",
+            "GEO-005"
+          ],
+          "total": 3,
+          "unknown": []
+        }
+      },
+      "state": "on track",
+      "title": "Internal review"
+    },
+    {
+      "days_left": 26698.5,
+      "due": "2099-12-31T23:59:00-12:00",
+      "id": "release",
+      "internal": "2099-12-31T23:59:00-12:00",
+      "kind": "release",
+      "open_work": 0,
+      "progress": {
+        "tasks": {
+          "done": 1,
+          "open": [],
+          "total": 1,
+          "unknown": []
+        }
+      },
+      "state": "ready",
+      "title": "Data release"
+    }
+  ],
+  "schema": "steward.timeline/0.1"
+}

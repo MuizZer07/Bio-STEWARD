@@ -1,39 +1,69 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="672" viewBox="0 0 760 672" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
-<rect width="760" height="672" rx="10" fill="#1f1f1f"/>
-<rect width="760" height="622" rx="10" fill="#181818"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="1320" viewBox="0 0 760 1320" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13">
+<rect width="760" height="1320" rx="10" fill="#1f1f1f"/>
+<rect width="760" height="1238" rx="10" fill="#181818"/>
 <rect x="0" y="0" width="760" height="188" fill="#181818"/>
-<text x="8" y="17" fill="#bbbbbb" font-size="11" font-weight="700">⌄  TASKS</text>
-<text x="748" y="17" fill="#9d9d9d" font-size="12" text-anchor="end">↺  ?</text>
-<text x="23" y="41.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="41" fill="#cccccc">Reduced form<tspan dx="7" fill="#9d9d9d">Status lines read from the file</tspan></text>
-<text x="23" y="63.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="63" fill="#cccccc">GEO-001-load-series.md<tspan dx="7" fill="#9d9d9d">in progress · read from the file</tspan></text>
-<text x="23" y="85.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="85" fill="#cccccc">GEO-002-normalise.md<tspan dx="7" fill="#9d9d9d">done · read from the file</tspan></text>
-<text x="23" y="107.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="107" fill="#cccccc">GEO-003-annotate.md<tspan dx="7" fill="#9d9d9d">blocked — waiting on the annotation release · read from the file</tspan></text>
-<text x="23" y="129.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="129" fill="#cccccc">GEO-004-figures.md<tspan dx="7" fill="#9d9d9d">in review (left: CI) · read from the file</tspan></text>
-<text x="23" y="151.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="151" fill="#cccccc">GEO-005-methods.md<tspan dx="7" fill="#9d9d9d">GO recorded · read from the file</tspan></text>
-<text x="23" y="173.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="173" fill="#cccccc">GEO-006-notes.md</text>
-<rect x="0" y="194" width="760" height="166" fill="#181818"/>
-<text x="8" y="211" fill="#bbbbbb" font-size="11" font-weight="700">⌄  TOKENS</text>
-<text x="748" y="211" fill="#9d9d9d" font-size="12" text-anchor="end">▷  ■  ↺  ?</text>
-<text x="23" y="235.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="235" fill="#cccccc">Per task window<tspan dx="7" fill="#9d9d9d">steward tokens report</tspan></text>
-<text x="8" y="257" fill="#9d9d9d" font-size="12">›</text><text x="23" y="257.5" fill="#9d9d9d" font-weight="700" font-size="12.5">Σ</text><text x="40" y="257" fill="#cccccc">Total<tspan dx="7" fill="#9d9d9d">1,170 tokens · 1 task window</tspan></text>
-<text x="8" y="279" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="279.5" fill="#9d9d9d" font-weight="700" font-size="12.5">∿</text><text x="40" y="279" fill="#cccccc">all activity<tspan dx="7" fill="#9d9d9d">1,170 tokens · available · shared, not this project's alone</tspan></text>
-<text x="37" y="301.5" fill="#9d9d9d" font-weight="700" font-size="12.5">#</text><text x="54" y="301" fill="#cccccc">claude / claude-fixture<tspan dx="7" fill="#9d9d9d">1,170 tokens</tspan></text>
-<text x="22" y="323" fill="#9d9d9d" font-size="12">›</text><text x="36" y="323" fill="#cccccc">Most-read files (1)</text>
-<text x="8" y="345" fill="#9d9d9d" font-size="12">›</text><text x="23" y="345.5" fill="#9d9d9d" font-weight="700" font-size="12.5">▫</text><text x="40" y="345" fill="#cccccc">Sources<tspan dx="7" fill="#9d9d9d">claude available · codex unavailable · gemini unavailable</tspan></text>
-<rect x="0" y="366" width="760" height="78" fill="#181818"/>
-<text x="8" y="383" fill="#bbbbbb" font-size="11" font-weight="700">⌄  DECISIONS</text>
-<text x="748" y="383" fill="#9d9d9d" font-size="12" text-anchor="end">▤  ↺  ?</text>
-<text x="23" y="407.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="407" fill="#cccccc">Reduced form<tspan dx="7" fill="#9d9d9d">Open DECISIONS.md only</tspan></text>
-<text x="23" y="429.5" fill="#9d9d9d" font-weight="700" font-size="12.5">▤</text><text x="40" y="429" fill="#cccccc">development/DECISIONS.md<tspan dx="7" fill="#9d9d9d">the CLI's default development/DECISIONS.md</tspan></text>
-<rect x="0" y="450" width="760" height="166" fill="#181818"/>
-<text x="8" y="467" fill="#bbbbbb" font-size="11" font-weight="700">⌄  DRIFT</text>
-<text x="748" y="467" fill="#9d9d9d" font-size="12" text-anchor="end">↺  ?</text>
-<text x="23" y="491.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="491" fill="#cccccc">Reduced form<tspan dx="7" fill="#9d9d9d">timeline states only</tspan></text>
-<text x="23" y="513.5" fill="#89d185" font-weight="700" font-size="12.5">✓</text><text x="40" y="513" fill="#cccccc">kickoff: Kick-off<tspan dx="7" fill="#9d9d9d">met · 9767.0 days ago</tspan></text>
-<text x="23" y="535.5" fill="#cca700" font-weight="700" font-size="12.5">!</text><text x="40" y="535" fill="#cccccc">abstract: Conference abstract<tspan dx="7" fill="#9d9d9d">due (record its outcome) · 9675.0 days ago</tspan></text>
-<text x="23" y="557.5" fill="#f48771" font-weight="700" font-size="12.5">✗</text><text x="40" y="557" fill="#cccccc">preprint: Preprint<tspan dx="7" fill="#9d9d9d">late · 9461.0 days ago</tspan></text>
-<text x="23" y="579.5" fill="#75beff" font-weight="700" font-size="12.5">→</text><text x="40" y="579" fill="#cccccc">review: Internal review<tspan dx="7" fill="#9d9d9d">on track · 26484.0 days left</tspan></text>
-<text x="23" y="601.5" fill="#89d185" font-weight="700" font-size="12.5">✓</text><text x="40" y="601" fill="#cccccc">release: Data release<tspan dx="7" fill="#9d9d9d">ready · 26698.5 days left</tspan></text>
-<text x="16" y="644" font-size="11.5" fill="#8b949e">Drawing of the Tasks, Tokens, Decisions and Drift panels (reduced forms), rendered by their view models from the</text>
-<text x="16" y="660" font-size="11.5" fill="#8b949e">fixture task files and the fixture outputs of steward tokens report and steward timeline (not a screenshot).</text>
+<text x="8" y="17" fill="#bbbbbb" font-size="11" font-weight="700">⌄  WORK · TASKS</text>
+<text x="748" y="17" fill="#9d9d9d" font-size="12" text-anchor="end">⟳  ?</text>
+<text x="23" y="41.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="41" fill="#cccccc">Tasks<tspan dx="7" fill="#9d9d9d">steward task board · latest change first</tspan></text>
+<text x="23" y="63.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="63" fill="#cccccc">GEO-006 · GEO-006-notes.md<tspan dx="7" fill="#9d9d9d">(none)</tspan></text>
+<text x="23" y="85.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="85" fill="#cccccc">GEO-005 · GEO-005-methods.md<tspan dx="7" fill="#9d9d9d">GO recorded</tspan></text>
+<text x="23" y="107.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="107" fill="#cccccc">GEO-004 · GEO-004-figures.md<tspan dx="7" fill="#9d9d9d">in review</tspan></text>
+<text x="23" y="129.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="129" fill="#cccccc">GEO-003 · GEO-003-annotate.md<tspan dx="7" fill="#9d9d9d">blocked — waiting on the annotation release</tspan></text>
+<text x="23" y="151.5" fill="#9d9d9d" font-weight="700" font-size="12.5">☰</text><text x="40" y="151" fill="#cccccc">GEO-001 · GEO-001-load-series.md<tspan dx="7" fill="#9d9d9d">in progress</tspan></text>
+<text x="8" y="173" fill="#9d9d9d" font-size="12">›</text><text x="23" y="173.5" fill="#9d9d9d" font-weight="700" font-size="12.5">✓</text><text x="40" y="173" fill="#cccccc">Closed (1)<tspan dx="7" fill="#9d9d9d">steward task board</tspan></text>
+<rect x="0" y="194" width="760" height="430" fill="#181818"/>
+<text x="8" y="211" fill="#bbbbbb" font-size="11" font-weight="700">⌄  WORK · TOKENS</text>
+<text x="748" y="211" fill="#9d9d9d" font-size="12" text-anchor="end">▷  ■  ⟳  ?</text>
+<text x="23" y="235.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="235" fill="#cccccc">Per task<tspan dx="7" fill="#9d9d9d">steward tokens report</tspan></text>
+<text x="8" y="257" fill="#9d9d9d" font-size="12">›</text><text x="23" y="257.5" fill="#9d9d9d" font-weight="700" font-size="12.5">Σ</text><text x="40" y="257" fill="#cccccc">Total<tspan dx="7" fill="#9d9d9d">53,510 tokens · 8 tasks (5 without counts) · estimated cost 0.05055 USD (2 of 8 tasks priced)</tspan></text>
+<text x="8" y="279" fill="#9d9d9d" font-size="12">›</text><text x="23" y="279.5" fill="#cca700" font-weight="700" font-size="12.5">•</text><text x="40" y="279" fill="#cccccc">sprint 2026-11-27-vscode-0.1 T08<tspan dx="7" fill="#9d9d9d">no counts · unavailable</tspan></text>
+<text x="8" y="301" fill="#9d9d9d" font-size="12">›</text><text x="23" y="301.5" fill="#cca700" font-weight="700" font-size="12.5">•</text><text x="40" y="301" fill="#cccccc">sprint 2026-11-27-vscode-0.1 T07<tspan dx="7" fill="#9d9d9d">no counts · unavailable</tspan></text>
+<text x="8" y="323" fill="#9d9d9d" font-size="12">›</text><text x="23" y="323.5" fill="#cca700" font-weight="700" font-size="12.5">•</text><text x="40" y="323" fill="#cccccc">sprint 2026-11-27-vscode-0.1 T06<tspan dx="7" fill="#9d9d9d">no counts · unavailable</tspan></text>
+<text x="8" y="345" fill="#9d9d9d" font-size="12">›</text><text x="23" y="345.5" fill="#cca700" font-weight="700" font-size="12.5">•</text><text x="40" y="345" fill="#cccccc">sprint 2026-11-27-vscode-0.1 T05<tspan dx="7" fill="#9d9d9d">no counts · unavailable</tspan></text>
+<text x="8" y="367" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="367.5" fill="#9d9d9d" font-weight="700" font-size="12.5">∿</text><text x="40" y="367" fill="#cccccc">sprint 2026-11-27-vscode-0.1 T04<tspan dx="7" fill="#9d9d9d">25,700 tokens · estimated cost 0.033 USD · available</tspan></text>
+<text x="37" y="389.5" fill="#9d9d9d" font-weight="700" font-size="12.5">#</text><text x="54" y="389" fill="#cccccc">claude / claude-fixture<tspan dx="7" fill="#9d9d9d">25,700 tokens · input 25,000 · output 700 · cache read 20,000 · cache write…</tspan></text>
+<text x="22" y="411" fill="#9d9d9d" font-size="12">›</text><text x="37" y="411.5" fill="#9d9d9d" font-weight="700" font-size="12.5">◷</text><text x="54" y="411" fill="#cccccc">Windows (1)<tspan dx="7" fill="#9d9d9d">sprint ledger</tspan></text>
+<text x="8" y="433" fill="#9d9d9d" font-size="12">›</text><text x="23" y="433.5" fill="#cca700" font-weight="700" font-size="12.5">•</text><text x="40" y="433" fill="#cccccc">sprint 2026-11-27-vscode-0.1 T03<tspan dx="7" fill="#9d9d9d">no counts · unavailable</tspan></text>
+<text x="8" y="455" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="455.5" fill="#9d9d9d" font-weight="700" font-size="12.5">∿</text><text x="40" y="455" fill="#cccccc">sprint 2026-11-27-vscode-0.1 T02<tspan dx="7" fill="#9d9d9d">13,960 tokens · available</tspan></text>
+<text x="37" y="477.5" fill="#9d9d9d" font-weight="700" font-size="12.5">#</text><text x="54" y="477" fill="#cccccc">claude / claude-fixture<tspan dx="7" fill="#9d9d9d">13,500 tokens · input 13,000 · output 500 · cache read 10,000 · cache write…</tspan></text>
+<text x="37" y="499.5" fill="#9d9d9d" font-weight="700" font-size="12.5">#</text><text x="54" y="499" fill="#cccccc">claude / claude-fixture-small<tspan dx="7" fill="#9d9d9d">460 tokens · input 400 · output 60 · cache read 0 · cache write 0</tspan></text>
+<text x="22" y="521" fill="#9d9d9d" font-size="12">›</text><text x="37" y="521.5" fill="#9d9d9d" font-weight="700" font-size="12.5">◷</text><text x="54" y="521" fill="#cccccc">Windows (1)<tspan dx="7" fill="#9d9d9d">sprint ledger</tspan></text>
+<text x="8" y="543" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="543.5" fill="#9d9d9d" font-weight="700" font-size="12.5">∿</text><text x="40" y="543" fill="#cccccc">sprint 2026-11-27-vscode-0.1 T01<tspan dx="7" fill="#9d9d9d">13,850 tokens · estimated cost 0.01755 USD · available</tspan></text>
+<text x="37" y="565.5" fill="#9d9d9d" font-weight="700" font-size="12.5">#</text><text x="54" y="565" fill="#cccccc">claude / claude-fixture<tspan dx="7" fill="#9d9d9d">13,850 tokens · input 13,400 · output 450 · cache read 11,000 · cache write…</tspan></text>
+<text x="22" y="587" fill="#9d9d9d" font-size="12">›</text><text x="37" y="587.5" fill="#9d9d9d" font-weight="700" font-size="12.5">◷</text><text x="54" y="587" fill="#cccccc">Windows (1)<tspan dx="7" fill="#9d9d9d">sprint ledger</tspan></text>
+<text x="8" y="609" fill="#9d9d9d" font-size="12">›</text><text x="23" y="609.5" fill="#9d9d9d" font-weight="700" font-size="12.5">▫</text><text x="40" y="609" fill="#cccccc">Sources<tspan dx="7" fill="#9d9d9d">claude available · codex unavailable · gemini unavailable</tspan></text>
+<rect x="0" y="630" width="760" height="210" fill="#181818"/>
+<text x="8" y="647" fill="#bbbbbb" font-size="11" font-weight="700">⌄  DIRECTION · DECISIONS</text>
+<text x="748" y="647" fill="#9d9d9d" font-size="12" text-anchor="end">▤  ⟳  ?</text>
+<text x="23" y="671.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="671" fill="#cccccc">Decisions log<tspan dx="7" fill="#9d9d9d">named by steward.toml · steward decisions</tspan></text>
+<text x="23" y="693.5" fill="#9d9d9d" font-weight="700" font-size="12.5">▤</text><text x="40" y="693" fill="#cccccc">development/DECISIONS.md<tspan dx="7" fill="#9d9d9d">the CLI's default development/DECISIONS.md</tspan></text>
+<text x="8" y="715" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="715.5" fill="#cca700" font-weight="700" font-size="12.5">?</text><text x="40" y="715" fill="#cccccc">Open decisions (1)<tspan dx="7" fill="#9d9d9d">steward decisions</tspan></text>
+<text x="22" y="737" fill="#9d9d9d" font-size="12">›</text><text x="37" y="737.5" fill="#9d9d9d" font-weight="700" font-size="12.5">?</text><text x="54" y="737" fill="#cccccc">Which annotation release to pin?<tspan dx="7" fill="#9d9d9d">2 options</tspan></text>
+<text x="8" y="759" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="759.5" fill="#9d9d9d" font-weight="700" font-size="12.5">§</text><text x="40" y="759" fill="#cccccc">Decisions (3)<tspan dx="7" fill="#9d9d9d">newest first</tspan></text>
+<text x="37" y="781.5" fill="#9d9d9d" font-weight="700" font-size="12.5">§</text><text x="54" y="781" fill="#cccccc">2000-03-01: Report effect sizes<tspan dx="7" fill="#9d9d9d">every table reports effect sizes with intervals.</tspan></text>
+<text x="37" y="803.5" fill="#9d9d9d" font-weight="700" font-size="12.5">§</text><text x="54" y="803" fill="#cccccc">2000-03-01: Kick-off approved<tspan dx="7" fill="#9d9d9d">start the reanalysis.</tspan></text>
+<text x="37" y="825.5" fill="#9d9d9d" font-weight="700" font-size="12.5">§</text><text x="54" y="825" fill="#cccccc">2000-02-01: Use the series as published<tspan dx="7" fill="#9d9d9d">analyse GSE7621 as deposited, without re-normalising.</tspan></text>
+<rect x="0" y="846" width="760" height="386" fill="#181818"/>
+<text x="8" y="863" fill="#bbbbbb" font-size="11" font-weight="700">⌄  DIRECTION · MILESTONES AND DRIFT</text>
+<text x="748" y="863" fill="#9d9d9d" font-size="12" text-anchor="end">⟳  ?</text>
+<text x="23" y="887.5" fill="#75beff" font-weight="700" font-size="12.5">i</text><text x="40" y="887" fill="#cccccc">Milestones and drift<tspan dx="7" fill="#9d9d9d">steward timeline · latest due first</tspan></text>
+<text x="23" y="909.5" fill="#89d185" font-weight="700" font-size="12.5">✓</text><text x="40" y="909" fill="#cccccc">release: Data release<tspan dx="7" fill="#9d9d9d">ready · 26698.5 days left</tspan></text>
+<text x="23" y="931.5" fill="#75beff" font-weight="700" font-size="12.5">→</text><text x="40" y="931" fill="#cccccc">review: Internal review<tspan dx="7" fill="#9d9d9d">on track · 26514.0 days left</tspan></text>
+<text x="23" y="953.5" fill="#f48771" font-weight="700" font-size="12.5">✗</text><text x="40" y="953" fill="#cccccc">preprint: Preprint<tspan dx="7" fill="#9d9d9d">late · 9461.0 days ago</tspan></text>
+<text x="23" y="975.5" fill="#cca700" font-weight="700" font-size="12.5">!</text><text x="40" y="975" fill="#cccccc">abstract: Conference abstract<tspan dx="7" fill="#9d9d9d">due (record its outcome) · 9675.0 days ago</tspan></text>
+<text x="23" y="997.5" fill="#89d185" font-weight="700" font-size="12.5">✓</text><text x="40" y="997" fill="#cccccc">kickoff: Kick-off<tspan dx="7" fill="#9d9d9d">met · 9767.0 days ago</tspan></text>
+<text x="8" y="1019" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="1019.5" fill="#cca700" font-weight="700" font-size="12.5">◐</text><text x="40" y="1019" fill="#cccccc">Moved dates (1)<tspan dx="7" fill="#9d9d9d">steward timeline</tspan></text>
+<text x="37" y="1041.5" fill="#cca700" font-weight="700" font-size="12.5">▦</text><text x="54" y="1041" fill="#cccccc">review<tspan dx="7" fill="#9d9d9d">2099-06-01T00:00:00+00:00 → 2099-07-01T00:00:00+00:00 (+30 days) · no decision recorded</tspan></text>
+<text x="8" y="1063" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="1063.5" fill="#cca700" font-weight="700" font-size="12.5">◐</text><text x="40" y="1063" fill="#cccccc">Scope (1)<tspan dx="7" fill="#9d9d9d">steward timeline</tspan></text>
+<text x="37" y="1085.5" fill="#9d9d9d" font-weight="700" font-size="12.5">≔</text><text x="54" y="1085" fill="#cccccc">GEO-006<tspan dx="7" fill="#9d9d9d">no milestone names it</tspan></text>
+<text x="8" y="1107" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="1107.5" fill="#cca700" font-weight="700" font-size="12.5">◐</text><text x="40" y="1107" fill="#cccccc">Order (3)<tspan dx="7" fill="#9d9d9d">steward timeline</tspan></text>
+<text x="37" y="1129.5" fill="#9d9d9d" font-weight="700" font-size="12.5">⇄</text><text x="54" y="1129" fill="#cccccc">review before preprint<tspan dx="7" fill="#9d9d9d">started: GEO-004</tspan></text>
+<text x="37" y="1151.5" fill="#9d9d9d" font-weight="700" font-size="12.5">⇄</text><text x="54" y="1151" fill="#cccccc">release before preprint<tspan dx="7" fill="#9d9d9d">started: GEO-002</tspan></text>
+<text x="37" y="1173.5" fill="#9d9d9d" font-weight="700" font-size="12.5">⇄</text><text x="54" y="1173" fill="#cccccc">release before review<tspan dx="7" fill="#9d9d9d">started: GEO-002</tspan></text>
+<text x="8" y="1195" fill="#9d9d9d" font-size="12">⌄</text><text x="23" y="1195.5" fill="#cca700" font-weight="700" font-size="12.5">◐</text><text x="40" y="1195" fill="#cccccc">Changes without a decision (1)<tspan dx="7" fill="#9d9d9d">steward timeline</tspan></text>
+<text x="37" y="1217.5" fill="#cca700" font-weight="700" font-size="12.5">◉</text><text x="54" y="1217" fill="#cccccc">review: due changed<tspan dx="7" fill="#9d9d9d">2099-06-01T00:00:00+00:00 → 2099-07-01T00:00:00+00:00 · 2000-01-01 · 0000000000…</tspan></text>
+<text x="16" y="1260" font-size="11.5" fill="#8b949e">Drawing of the Tasks, Tokens, Decisions, and Milestones and Drift panels in their full forms on CLI 0.22, rendered by</text>
+<text x="16" y="1276" font-size="11.5" fill="#8b949e">their view models from the fixture outputs of steward task board, steward tokens report (a recorded sprint with</text>
+<text x="16" y="1292" font-size="11.5" fill="#8b949e">stand-in agent logs: the tasks with counts show their tokens by model, the others say why they have none), steward</text>
+<text x="16" y="1308" font-size="11.5" fill="#8b949e">decisions and steward timeline (not a screenshot).</text>
 </svg>

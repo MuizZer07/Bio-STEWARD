@@ -114,7 +114,8 @@
             "claude-code",
             "codex",
             "antigravity",
-            "shell"
+            "shell",
+            "auto"
           ],
           "title": "Agent",
           "type": "string"

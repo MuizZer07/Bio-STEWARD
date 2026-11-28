@@ -64,7 +64,7 @@ work, and when a dead end has no decision. New records start as `status = "draft
 
 ## Hand the work to another agent: briefs
 ```bash
-steward task template literature-review > development/tasks/LR-001.md   # or review, reverification, novelty-check, figure-check
+steward task template analysis-review > development/tasks/AR-001.md     # or review, reverification, literature-review, novelty-check, figure-check
 steward task brief development/tasks/LR-001.md --for codex > brief.md   # codex | gemini | claude | generic
 ```
 The brief is generated from the task file: the goal, scope, rules, acceptance criteria and the repository state, with

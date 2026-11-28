@@ -10,7 +10,10 @@ steward check --summary --all
 ```
 
 - `steward init` writes `steward.toml`, a decisions log, the task template and an AGENTS.md block. It never
-  overwrites anything.
+  overwrites anything. New projects start on the `exploratory` profile (rules report, few demand); switch to
+  `confirmatory` (or pass `--profile confirmatory`) when ready to require a benchmark contract and prior-work record
+  and receive the pre-release red-team review recommendation. See [Concepts](concepts.md#words-you-will-meet-early)
+  for other first-contact terms.
 - `steward check --summary` evaluates every rule. Most are NOT_APPLICABLE until you add their table; they are named on
   one folded line. The gate line says whether the repository is ready.
 - Expected gate: `Gate default: ELIGIBLE`. A fresh project has nothing that blocks; each kit you add brings its own

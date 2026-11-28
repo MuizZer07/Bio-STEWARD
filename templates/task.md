@@ -2,7 +2,7 @@
 
 - **ID:** … (unique, never reused; e.g. `ABC-042`)
 - **Status:** proposed | on hold | GO recorded | in progress | in review | done
-- **GO reference:** link to the DECISIONS.md entry (a task is not started before it)
+- **GO reference:** link to the `development/DECISIONS.md` entry giving the human go-ahead (a task is not started before it)
 - **Branch:** … (optional)
 - **Dependencies:** … (task IDs this waits on; optional)
 - **Owner:** … (the human who decides) · **Approver:** … (who accepts the result; optional)

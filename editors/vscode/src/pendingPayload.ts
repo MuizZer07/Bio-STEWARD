@@ -1,4 +1,4 @@
-// P5 Approvals (design v0.8 §4): the one payload read of the reduced form, `.steward/pending/<nonce>.txt`, matched
+// P5 Approvals (design v0.8 §4): the one payload read of the Approvals panel, `.steward/pending/<nonce>.txt`, matched
 // to the CLI's 12-character nonce prefix or named by its full nonce. No `vscode` import, so the unit tests run it on
 // real folders.
 //

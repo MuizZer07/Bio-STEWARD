@@ -13,6 +13,8 @@
 // a line that is not a valid ledger entry is shown as "unreadable", the fold stops there, and every surface marks
 // the states as incomplete. No model is called and nothing is written.
 import type { ViewNode } from './views';
+import type { SprintStatusDocument, SprintStatusTask } from './full';
+import { newestFirst } from './order';
 import { isFloat, parseToml, TomlDateTime, type TomlTable, type TomlValue } from './toml';
 
 export const SPRINT_DIR = 'development/sprints';
@@ -328,6 +330,8 @@ export interface TaskState {
   readonly endedAt: number | undefined;
   readonly runningTime: string | undefined;
   readonly endedTime: string | undefined;
+  // The time of the last ledger entry about this task (any kind), as `steward sprint status` takes it for its order.
+  readonly changedTime: string | undefined;
 }
 
 const text = (v: unknown) => (typeof v === 'string' ? v : undefined);
@@ -348,11 +352,12 @@ export function foldStates(plan: SprintPlan, entries: readonly LedgerEntry[]): M
   const out = new Map<string, Mutable>(plan.tasks.map((t) => [t.id, {
     id: t.id, state: 'planned', derived: true, go: false, hold: false, branch: undefined, worktree: undefined,
     checks: undefined, note: undefined, commit: undefined, agent: undefined, runningAt: undefined, endedAt: undefined,
-    runningTime: undefined, endedTime: undefined,
+    runningTime: undefined, endedTime: undefined, changedTime: undefined,
   }]));
   for (const e of entries) {
     const s = out.get(text(e.raw.task) ?? '');
     if (!s) continue;
+    if (e.time !== undefined) s.changedTime = e.time;
     if (e.kind === 'order') {
       const order = e.raw.order;
       if (order === 'go') {
@@ -464,6 +469,23 @@ export function snapshotOf(id: string, planText: string | undefined, ledgerText:
     id, file: `${SPRINT_DIR}/${id}.toml`, ledgerFile: `${SPRINT_DIR}/${id}.jsonl`, plan, planError, ledger,
     ledgerError: errors.ledger, states, stopped, incomplete,
   };
+}
+
+// Newest first (E01): the tasks by their latest ledger change, then by ID, highest first; tasks the ledger never
+// names come last. The order `steward sprint status` prints (CLI 0.22.0).
+export function tasksNewestFirst(s: SprintSnapshot): string[] {
+  if (!s.plan) return [];
+  return newestFirst(s.plan.order, (id) => s.states.get(id)?.changedTime, (id) => id);
+}
+
+// The sprints, newest first: by their ledger's last time, then by sprint ID, highest first.
+export function sprintsNewestFirst(snapshots: readonly SprintSnapshot[]): SprintSnapshot[] {
+  const last = (s: SprintSnapshot) => {
+    const entries = s.ledger?.entries ?? [];
+    for (let i = entries.length - 1; i >= 0; i--) if (entries[i].time !== undefined) return entries[i].time;
+    return undefined;
+  };
+  return newestFirst(snapshots, last, (s) => s.id);
 }
 
 const opened = (s: SprintSnapshot) => s.ledger?.entries.some((e) => e.kind === 'opened') ?? false;
@@ -604,6 +626,8 @@ export interface SprintViewOptions {
   readonly now: number;
   // Local clock time for an event line (the tooltip keeps the ledger's own time).
   readonly clock?: (epochMs: number) => string;
+  // E04: per sprint ID, `steward sprint status ID --format json`, when the CLI offers it.
+  readonly statuses?: ReadonlyMap<string, SprintStatusDocument>;
 }
 
 const defaultClock = (ms: number) => {
@@ -613,8 +637,37 @@ const defaultClock = (ms: number) => {
 
 const MID_TASK = 'Commits and changed files during a task are not shown: the view reads no git (they come later from the CLI).';
 
-export function sprintNodes(snapshots: readonly SprintSnapshot[], { now, clock = defaultClock }: SprintViewOptions): ViewNode[] {
-  return snapshots.filter((s) => isShown(s, now)).map((s): ViewNode => {
+// The full form (E04): what `steward sprint status ID --format json` adds to a task: its current step, its commits
+// (newest first), the files they change, what is still uncommitted, and the logs. The view itself still reads no git.
+export const STATUS_NOTE = 'Commits, changed files and the current step: from steward sprint status, which reads git.';
+
+function statusNodes(tp: string, row: SprintStatusTask): ViewNode[] {
+  const out: ViewNode[] = [];
+  if (row.last_step) {
+    out.push({ id: `${tp}/step`, kind: 'sprint-detail', label: `step: ${row.last_step.tool}`, description: oneLine(row.last_step.command, 200),
+      tooltip: `${row.last_step.tool}: ${row.last_step.command}\nThe last tool step in the task's log (steward sprint status).`,
+      icon: { codicon: 'debug-step-into' } });
+  }
+  const group = (key: string, label: string, items: readonly { label: string; description?: string; tooltip?: string }[],
+    icon: string): ViewNode => ({
+    id: `${tp}/${key}`, kind: 'sprint-detail', label: `${label} (${items.length})`, description: 'steward sprint status',
+    icon: { codicon: icon }, expanded: false,
+    children: items.map((item, i): ViewNode => ({ id: `${tp}/${key}/${i}`, kind: 'sprint-detail', ...item })),
+  });
+  if (row.commits.length) {
+    out.push(group('commits', 'Commits', [...row.commits].reverse().map((c) => ({
+      label: c.commit.slice(0, 12), description: oneLine(c.subject), tooltip: `${c.commit}\n${c.subject}` })), 'git-commit'));
+  }
+  if (row.changed_files.length) out.push(group('changed', 'Changed files', row.changed_files.map((path) => ({ label: path })), 'diff'));
+  if (row.uncommitted.length) out.push(group('uncommitted', 'Uncommitted', row.uncommitted.map((line) => ({ label: line })), 'warning'));
+  for (const [key, label, path] of [['log', 'task log', row.log], ['run-log', 'run log', row.run_log]] as const) {
+    if (path) out.push({ id: `${tp}/${key}`, kind: 'sprint-detail', label: `${label}: ${path}`, icon: { codicon: 'output' } });
+  }
+  return out;
+}
+
+export function sprintNodes(snapshots: readonly SprintSnapshot[], { now, clock = defaultClock, statuses }: SprintViewOptions): ViewNode[] {
+  return sprintsNewestFirst(snapshots.filter((s) => isShown(s, now))).map((s): ViewNode => {
     const prefix = `sprint/${s.id}`;
     const problems: ViewNode[] = [];
     if (s.ledger?.unreadableLine !== undefined) {
@@ -652,7 +705,7 @@ export function sprintNodes(snapshots: readonly SprintSnapshot[], { now, clock =
     const parallel = plan.maxParallel === 1 ? 'one at a time' : `up to ${plan.maxParallel} at once`;
     const stopped = s.stopped ? ' · stopped' : '';
     const incomplete = s.incomplete ? ' · ledger incomplete' : '';
-    const tasks = s.states.size ? order.map((id): ViewNode => {
+    const tasks = s.states.size ? tasksNewestFirst(s).map((id): ViewNode => {
       const t = s.states.get(id)!;
       const task = plan.byId.get(id)!;
       const tp = `${prefix}/task/${id}`;
@@ -668,6 +721,8 @@ export function sprintNodes(snapshots: readonly SprintSnapshot[], { now, clock =
       }
       if (t.checks && !live(t)) children.push(...checkNodes(tp, t.checks));
       if (t.note) children.push({ id: `${tp}/note`, kind: 'sprint-detail', label: `note: ${oneLine(t.note)}`, tooltip: t.note, icon: { codicon: 'note' } });
+      const full = statuses?.get(s.id)?.tasks.find((row) => row.id === id);
+      if (full) children.push(...statusNodes(tp, full));
       const agent = t.agent ?? task.agent;
       return {
         id: tp, kind: waitsForOrder(plan, t) ? 'sprint-task-waiting' : 'sprint-task',
@@ -675,7 +730,7 @@ export function sprintNodes(snapshots: readonly SprintSnapshot[], { now, clock =
         description: `${stateText(plan, t, now)}${live(t) ? ` · ${agent}` : ''}`,
         tooltip: [`${id}: ${task.title}`, `state: ${t.state} (${stateSource(t)})`,
           s.incomplete ? `incomplete: ${s.incomplete}` : undefined,
-          live(t) ? MID_TASK : undefined,
+          live(t) ? (full ? STATUS_NOTE : MID_TASK) : undefined,
           waitsForOrder(plan, t) ? `order it with: ${orderCommand(plan.id, id)}` : undefined].filter(Boolean).join('\n'),
         icon: STATE_ICON[t.state] ?? { codicon: 'question' },
         expanded: live(t),

@@ -27,7 +27,19 @@ export interface Gate {
   pass_count?: number;
   not_applicable_count?: number;
   blocking: GateRef[];
-  waived: GateRef[];
+  waived: WaivedGateRef[];
+}
+
+// A waived result of a gate, with the authorization that waived it (CLI 0.21 and later).
+export interface WaivedGateRef extends GateRef {
+  authorization: string;
+}
+
+// What a check covered (CLI 0.21 and later): the whole project, or some areas, or one rule.
+export interface Scope {
+  full: boolean;
+  areas: string[];
+  rule?: string | null;
 }
 
 export interface EvidenceItem {
@@ -36,6 +48,7 @@ export interface EvidenceItem {
 }
 
 export interface ResultItem {
+  area?: string | null;
   rule: string;
   name: string;
   rule_version: number;
@@ -57,6 +70,9 @@ export interface Verdict {
   project: string;
   config_profile: string;
   inputs_digest: string;
+  inputs?: EvidenceItem[] | null;
+  tree_digest?: string | null;
+  scope?: Scope | null;
   results: ResultItem[];
   summary: { counts: Counts; worst: Status };
   gates: Gate[];

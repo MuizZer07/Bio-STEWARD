@@ -1,7 +1,7 @@
 // T08: Copy for agent (S5, TOK-2), the scoped re-check builders (S8) and the skills install builders (S7).
 import { strict as assert } from 'node:assert';
 import { CHECK_AREAS, commands, isAllowed, isArea, skillsInstallCommands } from '../../src/cli/commands';
-import { agentText, recheckCommand } from '../../src/model/agent';
+import { agentText, boundedBrief, MAX_BRIEF_BYTES, recheckCommand } from '../../src/model/agent';
 
 describe('Copy for agent (S5)', () => {
   it('is the CLI summary unchanged, then the re-check command and the summary size in bytes', () => {
@@ -65,5 +65,27 @@ describe('Install Agent Skills builders (S7)', () => {
     assert.throws(() => skillsInstallCommands({ skills: [] }), /No skills folder/);
     assert.throws(() => skillsInstallCommands({ skills: ['--paper'] }), /Invalid CLI argument/);
     assert.throws(() => skillsInstallCommands({ skills: ['.agents/skills'], kits: ['all' as 'core'] }), /Unsupported CLI option/);
+  });
+});
+
+describe('E02 CLI briefs', () => {
+  it('builds read-only invocations for task and next-step briefs', () => {
+    const task = commands.taskBrief('development/tasks/task.md');
+    assert.deepEqual(task.args, ['task', 'brief', 'development/tasks/task.md', '--for', 'codex']);
+    assert.deepEqual(task.paths, [{ index: 2, use: 'projectInput' }]);
+    assert.equal(task.confirmation, false);
+    assert.throws(() => commands.taskBrief('--output'), /Invalid CLI argument/);
+    const next = commands.nextBrief();
+    assert.deepEqual(next.args, ['next', '--brief']);
+    assert.equal(next.confirmation, false);
+  });
+
+  it('keeps complete briefs verbatim and bounds truncated text in UTF-8 bytes', () => {
+    const brief = 'Agent brief · Context\n';
+    assert.equal(boundedBrief(brief), brief);
+    const cutoff = boundedBrief('🧪'.repeat(MAX_BRIEF_BYTES));
+    assert.ok(Buffer.byteLength(cutoff, 'utf8') <= MAX_BRIEF_BYTES);
+    assert.doesNotMatch(cutoff, /\uFFFD/);
+    assert.match(cutoff, /Brief truncated by Bio-STEWARD/);
   });
 });

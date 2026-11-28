@@ -60,7 +60,7 @@ export class ResultsView implements vscode.Disposable {
         files.push(anchor?.path);
       }
     }
-    if (generation === this.#generation) this.tree.set(resultsNodes(state, groupBy, files));
+    if (generation === this.#generation) this.tree.set(resultsNodes(state, groupBy, files), root);
   }
 
   // `bioSteward.results.groupBy`: with an argument (status, gate, file), or from a quick pick.

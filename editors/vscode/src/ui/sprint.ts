@@ -4,6 +4,7 @@
 // model. In an untrusted workspace it reads nothing.
 import * as vscode from 'vscode';
 import { isShown, notices, orderCommand, sprintNodes, sprintStatus, type Notice, type SprintSnapshot } from '../model/sprint';
+import type { SprintStatusDocument } from '../model/full';
 import type { ViewNode } from '../model/views';
 import { SprintReader } from '../sprints';
 import { copyText } from './clipboard';
@@ -14,6 +15,8 @@ export const SPRINT_REFRESH_COMMAND = 'bioSteward.sprint.refresh';
 export const SPRINT_COPY_ORDER_COMMAND = 'bioSteward.sprint.copyOrderCommand';
 export const SPRINT_SHOW_COMMAND = 'bioSteward.sprint.show';
 export const MIN_REFRESH_MS = 1000;
+// E04: the CLI's `sprint status` (which reads git) runs at most this often on file changes.
+export const STATUS_MS = 10_000;
 // The elapsed times move on without a read: the view is drawn again from what was last read.
 const TICK_MS = 30_000;
 
@@ -23,6 +26,8 @@ export interface LiveSprintOptions {
   log: vscode.LogOutputChannel;
   notify: (notice: Notice) => void;
   watch?: boolean;
+  // E04: `steward sprint status ID --format json` for a shown sprint, when the CLI offers it (undefined otherwise).
+  status?: (id: string) => Promise<SprintStatusDocument | undefined>;
 }
 
 export class LiveSprint implements vscode.Disposable {
@@ -65,6 +70,14 @@ export class LiveSprint implements vscode.Disposable {
     return this.#snapshots;
   }
 
+  // E04: the CLI's status document of each shown sprint, from the last read.
+  get statuses(): ReadonlyMap<string, SprintStatusDocument> {
+    return this.#statuses;
+  }
+
+  #statuses: ReadonlyMap<string, SprintStatusDocument> = new Map();
+  #lastStatus = 0;
+
   // Read again: now, or as soon as a second has passed since the last read; never two reads at once.
   schedule(): void {
     if (this.#disposed) return;
@@ -97,6 +110,19 @@ export class LiveSprint implements vscode.Disposable {
     return this.#reading;
   }
 
+  // The panel's refresh button (E01): read now, past the one-read-a-second pacing; after a read in progress ends,
+  // a new one starts at once.
+  async refreshNow(): Promise<void> {
+    if (this.#disposed) return;
+    if (this.#reading) await this.#reading;
+    if (this.#timer) clearTimeout(this.#timer);
+    this.#timer = undefined;
+    this.#again = false;
+    this.#lastRead = 0;
+    this.#lastStatus = 0;
+    return this.refresh();
+  }
+
   async #read(): Promise<void> {
     const wait = this.#lastRead + MIN_REFRESH_MS - Date.now();
     if (wait > 0) await new Promise((done) => setTimeout(done, wait));
@@ -124,6 +150,20 @@ export class LiveSprint implements vscode.Disposable {
     this.#snapshots = next.filter((s) => isShown(s, now));
     if (!first) for (const s of next) for (const n of notices(before.get(s.id), s)) this.options.notify(n);
     this.#changed.fire();
+    // The CLI's status reads git, so it runs at most every STATUS_MS while the ledgers change (and at once on the
+    // panel's refresh button).
+    const status = this.options.status;
+    if (status && this.#snapshots.length && Date.now() - this.#lastStatus < STATUS_MS) return;
+    if (status && this.#snapshots.length) {
+      const read = await Promise.all(this.#snapshots.filter((s) => s.plan).map(async (s) => [s.id, await status(s.id)] as const));
+      if (this.#disposed) return;
+      this.#statuses = new Map(read.filter((entry): entry is readonly [string, SprintStatusDocument] => entry[1] !== undefined));
+      // Paced only once the CLI answered (before its detection ends, the next read asks again).
+      if (this.#statuses.size) this.#lastStatus = Date.now();
+      this.#changed.fire();
+    } else {
+      this.#statuses = new Map();
+    }
   }
 
   dispose(): void {
@@ -144,8 +184,8 @@ export class SprintView implements vscode.Disposable {
 
   update(live: LiveSprint | undefined, trusted: boolean, description?: string, now = Date.now()): void {
     this.#view.description = description;
-    const nodes = live && trusted ? sprintNodes(live.snapshots, { now }) : [];
-    this.tree.set(nodes);
+    const nodes = live && trusted ? sprintNodes(live.snapshots, { now, statuses: live.statuses }) : [];
+    this.tree.set(nodes, live?.root);
     void vscode.commands.executeCommand('setContext', 'bioSteward.sprintEmpty', !trusted ? 'untrusted' : nodes.length ? '' : 'none');
   }
 

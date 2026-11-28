@@ -21,7 +21,7 @@ if (!existsSync(compiled)) {
   process.exit(2);
 }
 const views = require(compiled);
-// The cockpit panels' view models (0.2.0, reduced forms) and the signing command's builder; none imports `vscode`.
+// The cockpit panels' view models (0.2.0) and the signing command's builder; none imports `vscode`.
 const model = (name) => require(join(here, 'out', 'src', 'model', `${name}.js`));
 const today = model('today');
 const timeline = model('timeline');
@@ -30,12 +30,15 @@ const tasks = model('tasks');
 const drift = model('drift');
 const decisions = model('decisions');
 const approvals = model('approvals');
+const full = model('full');
+const notifications = model('notifications');
+const panelsModel = model('panels');
 const signing = require(join(here, 'out', 'src', 'cli', 'signing.js'));
 const outDir = join(here, 'media', 'readme');
 const verify = process.argv.includes('--verify');
 
 const report = (name) => JSON.parse(readFileSync(join(here, 'test', 'fixtures', 'reports', `${name}.json`), 'utf8'));
-const READY = { kind: 'ready', version: '0.20.6', mode: 'limited', newerThanTested: false };
+const READY = { kind: 'ready', version: '0.22.0', mode: 'full', newerThanTested: false };
 const ready = (extra = {}) => ({ ...views.initialState(true), cli: READY, ...extra });
 
 // ── Drawing ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -65,6 +68,9 @@ const ICON = {
   watch: '◷', edit: '✎', mail: '✉', 'comment-discussion': '❝', rocket: '↗', milestone: '◆', folder: '▣', book: '▤',
   bell: '!', 'arrow-right': '→', tasklist: '☰', 'file-text': '▫', gear: '⚙', graph: 'Σ', pulse: '∿',
   'symbol-numeric': '#', 'loading~spin': '↻',
+  // The full forms, notifications and Tokens of 0.3.0.
+  law: '§', calendar: '▦', 'list-unordered': '≔', 'arrow-swap': '⇄', 'git-commit': '◉', clock: '◷',
+  'folder-opened': '▣', lightbulb: '✦', trash: '⌫', 'arrow-circle-up': '⇧', 'debug-pause': '‖', 'bell-dot': '!',
 };
 // The Approvals cards' action icons (approvals.actionIcon) are colour emoji, which rsvg-convert cannot draw; the
 // drawing uses a plain stand-in for each.
@@ -112,7 +118,7 @@ function treeRows(nodes, { x, y, width, depth = 0, expand = () => false }, out =
     const room = x + width - tx - 10;
     const label = fit(node.label, room);
     const desc = node.description ? fit(node.description, Math.max(0, room - label.length * 6.9 - 8)) : '';
-    row += `<text x="${tx}" y="${ry + 15}" fill="${C.text}">${esc(label)}${desc ? `<tspan dx="7" fill="${C.dim}">${esc(desc)}</tspan>` : ''}</text>`;
+    row += `<text x="${tx}" y="${ry + 15}" fill="${node.dimmed ? C.disabled : C.text}">${esc(label)}${desc ? `<tspan dx="7" fill="${C.dim}">${esc(desc)}</tspan>` : ''}</text>`;
     out.push(row);
     if (open) treeRows(node.children, { x, y, width, depth: depth + 1, expand }, out);
   }
@@ -132,7 +138,8 @@ ${rows.join('\n')}`,
 }
 
 function statusItem(x, y, view, { width } = {}) {
-  const text = view.text.replace('$(shield)', '⛉').replace('$(sync~spin)', '↻').replace('$(watch)', '⌚');
+  const text = view.text.replace('$(shield)', '⛉').replace('$(sync~spin)', '↻').replace('$(watch)', '⌚')
+    .replace('$(bell-dot)', '(!)').replace('$(bell)', '( )');
   const w = width ?? Math.ceil(text.length * 6.6 + 20);
   const fill = view.tone === 'error' ? C.error : view.tone === 'warning' ? '#5a4500' : 'none';
   return `<rect x="${x}" y="${y}" width="${w}" height="22" fill="${fill}"/>
@@ -151,7 +158,7 @@ function activityBar(height) {
 function overview() {
   const state = views.withReport(ready(), report('geo-fail-date-symbol'));
   const width = 760;
-  const p = panel({ x: 48, y: 30, width: width - 48, title: 'OVERVIEW', nodes: views.overviewNodes(state), actions: '⛁  ↺  ▷' });
+  const p = panel({ x: 48, y: 30, width: width - 48, title: 'QUALITY · OVERVIEW', nodes: views.overviewNodes(state), actions: '⛁  ↺  ▷  ⟳' });
   const sb = views.statusBarView(state, 'default');
   const h = 30 + p.height + 22;
   const body = `${activityBar(h)}
@@ -167,7 +174,7 @@ function results() {
   const state = views.withReport(ready(), report('toy-unknown-contract'));
   const width = 760;
   const expand = (node) => node.kind === 'result' && node.id.startsWith('status:FAIL');
-  const p = panel({ x: 0, y: 0, width, title: 'RESULTS', nodes: views.resultsNodes(state, 'status'), expand, actions: '☰  ▷' });
+  const p = panel({ x: 0, y: 0, width, title: 'QUALITY · RESULTS', nodes: views.resultsNodes(state, 'status'), expand, actions: '☰  ▷  ⟳' });
   return svg(width, p.height, p.body.replace(`width="${width}" height="${p.height}" fill="${C.side}"`, `width="${width}" height="${p.height}" rx="10" fill="${C.side}"`),
     'Drawing of the Results view grouped by status, rendered by the extension\'s view model from the toy benchmark\'s fixture report with seeded faults (not a screenshot).');
 }
@@ -267,13 +274,12 @@ ${elbow([[400, 230], [400, 190], [150, 190], [150, 138]], 'Run Check')}
   return svg(width, 340, body, 'Freshness of the report the views show: three words, and what moves between them.');
 }
 
-// ── The cockpit (0.2.0, reduced forms) ──────────────────────────────────────────────────────────────────────
-// Drawn from the U01 corpus (test/fixtures/cockpit/, CLI 0.20.6 outputs of the geo-cockpit workspace) through the
+// ── The cockpit (0.2.0; panels grouped by job in 0.3.0) ─────────────────────────────────────────────────────
+// Drawn from the U01 corpus (test/fixtures/cockpit/, the pinned CLI's outputs of the geo-cockpit workspace) through the
 // panels' own view models, as the unit parity tests feed them.
 
 const cockpit = (name) => readFileSync(join(here, 'test', 'fixtures', 'cockpit', name), 'utf8');
 const corpus = JSON.parse(readFileSync(join(here, 'test', 'fixtures', 'manifest.json'), 'utf8')).cockpit;
-const geoTimeline = () => ({ kind: 'ready', rows: timeline.parseTimeline(cockpit('timeline/geo-cockpit.json')).milestones });
 const ROOT = '/home/you/geo-cockpit';
 
 // Word wrap to a number of characters.
@@ -287,41 +293,105 @@ function wrap(text, max) {
   return lines;
 }
 
-function todayFigure() {
-  const input = {
-    root: ROOT, name: 'geo-cockpit', trusted: true,
-    audit: { kind: 'ready', audit: today.parseAuditProgress(cockpit('audit-progress/geo-cockpit.json')) },
-    timeline: geoTimeline(), handoff: { kind: 'found', path: 'development/HANDOFF.md', text: '' },
+// The notifications of the figure: a sample document in the CLI's steward.notifications/0.1 shape, made from the
+// fixture's own waiting items (its payload, its exchange request, its sprint) with the CLI's wording for each kind.
+// The live document carries file times and paths of the machine it runs on, so no fixture of it is committed (S1
+// E03); the figure says so in its caption.
+function sampleNotifications() {
+  const next = full.parseNext(cockpit('full/next/geo-cockpit.json'));
+  const [payload, exchange, task] = next.waiting_on_human;
+  return {
+    schema: 'steward.notifications/0.1', tool_version: '0.22.0', now: '2026-11-27T12:00:00Z', days: 14, notes: [],
+    items: [
+      { id: `approval:${payload.id}`, kind: 'approval', time: '2026-11-27T09:12:00Z', source: payload.source,
+        title: 'spend waits for a signature (expires 2099-01-01T00:00:00Z)', command: payload.command, urgent: true },
+      { id: `exchange:${exchange.id}`, kind: 'exchange', time: '2026-11-26T16:40:00Z', source: exchange.source,
+        title: exchange.title, command: exchange.command, urgent: false },
+      { id: `task_waiting:${task.id}`, kind: 'task_waiting', time: '2026-11-25T08:30:00Z', source: task.source,
+        title: task.title, command: task.command, urgent: false },
+    ],
   };
+}
+
+function todayFigure() {
+  const document = sampleNotifications();
+  // The oldest item has been seen once (opened in the bell), so it is read: dimmed, under the unread ones.
+  const read = notifications.markNotificationsRead({}, [{ root: ROOT, item: document.items[2] }]).state;
+  const state = { kind: 'ready', document };
+  const input = {
+    root: ROOT, name: 'geo-cockpit', trusted: true, notifications: state, readNotifications: read,
+    next: { kind: 'ready', doc: full.parseNext(cockpit('full/next/geo-cockpit.json')) },
+  };
+  const nodes = today.todayNodes([input]).map((node) => (node.kind === 'today-notifications' ? { ...node, expanded: true } : node));
+  const expand = (node) => node.id.endsWith('/human') || node.kind === 'today-resume';
   const width = 760;
-  const p = panel({ x: 0, y: 0, width, title: 'TODAY', nodes: today.todayNodes([input]), actions: '⌖  ⎘  ↺  ?' });
-  return svg(width, p.height, p.body.replace(`width="${width}" height="${p.height}" fill="${C.side}"`, `width="${width}" height="${p.height}" rx="10" fill="${C.side}"`),
-    'Drawing of the Today panel (reduced form), rendered by its view model from the fixture outputs of steward audit progress, steward timeline and a session handoff (not a screenshot). Each row names the CLI output it comes from.');
+  const p = panel({ x: 0, y: 0, width, title: 'NOW · TODAY', nodes, expand, actions: '⌖  ⎘  ⟳  ?' });
+  const entries = notifications.collectNotifications([{ root: ROOT, name: 'geo-cockpit', trusted: true, state }], read);
+  const bell = notifications.bellStatusView(entries, { trusted: true, hasProjects: true, hasReady: true });
+  const h = p.height + 22;
+  const body = `<rect width="${width}" height="${h}" rx="10" fill="${C.side}"/>
+${p.body}
+<rect x="0" y="${p.height}" width="${width}" height="22" fill="${C.status}"/>
+${statusItem(width - 70, p.height, bell)}`;
+  return svg(width, h, body,
+    'Drawing of the Today panel and the status-bar bell on CLI 0.22, rendered by their view models (not a screenshot): Notifications at the top, unread first and the item seen once dimmed below, then the fixture\'s steward next output (Resume, the next milestone, what waits on you, what needs tidying). The notifications are a sample document in the CLI\'s shape, made from the fixture\'s own waiting items.');
+}
+
+// The ten panels by job, with the sentence each empty state and ? help opens with.
+function panelsFigure() {
+  const width = 860;
+  const out = [];
+  let y = 24;
+  out.push(`<text x="20" y="${y}" fill="${C.head}" font-size="11" font-weight="700">BIO-STEWARD · ONE CONTAINER, FIVE GROUPS, TEN PANELS</text>`);
+  y += 16;
+  const groups = [...new Set(Object.values(panelsModel.PANELS).map((p) => p.group))];
+  for (const group of groups) {
+    const rows = Object.values(panelsModel.PANELS).filter((p) => p.group === group);
+    const top = y;
+    y += 26;
+    out.push(`<text x="36" y="${y}" fill="#ffffff" font-size="14" font-weight="700">${esc(group)}</text>`);
+    for (const p of rows) {
+      y += 22;
+      out.push(`<text x="52" y="${y}" fill="${C.text}" font-size="12.5" font-weight="700">${esc(panelsModel.panelTitle(p))}</text>`);
+      out.push(`<text x="${width - 36}" y="${y}" fill="${C.dim}" font-size="12" text-anchor="end">⟳ ?</text>`);
+      wrap(p.helps, 80).forEach((line, i) => {
+        if (i) y += 17;
+        out.push(`<text x="270" y="${y}" fill="${C.dim}" font-size="12.5">${esc(line)}</text>`);
+      });
+    }
+    y += 14;
+    out.push(`<rect x="20" y="${top + 6}" width="${width - 40}" height="${y - top - 6}" rx="8" fill="none" stroke="${C.boxLine}" stroke-width="1.2"/>`);
+    y += 4;
+  }
+  return svg(width, y + 6, `<rect width="${width}" height="${y + 6}" rx="10" fill="${C.side}"/>\n${out.join('\n')}`,
+    'The ten panels grouped by the job they help with, each header named with its group, and the sentence each panel\'s empty state and ? help open with (from the extension\'s panel list). Every panel has a refresh button (⟳) and a ? help in its title bar.');
 }
 
 function cockpitFigure() {
   const width = 760;
-  const files = corpus.task_files.files.map((f) => ({ path: f.path, id: f.id, status: f.status ?? undefined }));
-  const taskSettings = tasks.taskSettings(`[tasks]\nspecs = ["${corpus.task_files.specs}"]\nboard = "${corpus.task_files.board}"\n`).settings;
   const decisionSettings = decisions.decisionsSettings('').settings;
-  const logs = { files: { claude: ['claude log 1'], codex: [], gemini: [] }, problems: [], capped: {} };
+  const logs = { files: { claude: ['claude-sprint.jsonl'], codex: [], gemini: [] }, problems: [], capped: {} };
+  const timelineText = cockpit('full/timeline/geo-cockpit.json');
+  const tokenNodes = tokens.tokensNodes([{ root: '/home/you/geo-sprint', name: 'geo-sprint', logs,
+    tokens: { kind: 'ready', report: tokens.parseTokensReport(cockpit('full/tokens-report/geo-sprint.json')) } }]);
   const panels = [
-    ['TASKS', tasks.tasksNodes([{ root: ROOT, name: 'geo-cockpit', tasks: { kind: 'ready', settings: taskSettings, files, more: 0 } }]), '↺  ?'],
-    ['TOKENS', tokens.tokensNodes([{ root: ROOT, name: 'geo-cockpit', logs,
-      tokens: { kind: 'ready', report: tokens.parseTokensReport(cockpit('tokens-report/claude-session.json')) } }]), '▷  ■  ↺  ?'],
-    ['DECISIONS', decisions.decisionsNodes([{ root: ROOT, name: 'geo-cockpit',
-      decisions: { kind: 'ready', settings: decisionSettings, logs: [{ path: 'development/DECISIONS.md', exists: true }], unmatched: [], more: 0 } }]), '▤  ↺  ?'],
-    ['DRIFT', drift.driftNodes([{ root: ROOT, name: 'geo-cockpit', timeline: geoTimeline() }]), '↺  ?'],
+    ['WORK · TASKS', tasks.tasksNodes([{ root: ROOT, name: 'geo-cockpit', board: { kind: 'ready', doc: full.parseBoard(cockpit('full/task-board/geo-cockpit.json')) } }]), '⟳  ?'],
+    ['WORK · TOKENS', tokenNodes, '▷  ■  ⟳  ?'],
+    ['DIRECTION · DECISIONS', decisions.decisionsNodes([{ root: ROOT, name: 'geo-cockpit',
+      decisions: { kind: 'ready', settings: decisionSettings, logs: [{ path: 'development/DECISIONS.md', exists: true }], unmatched: [], more: 0 },
+      doc: { kind: 'ready', doc: full.parseDecisions(cockpit('full/decisions/geo-cockpit.json')) } }]), '▤  ⟳  ?'],
+    ['DIRECTION · MILESTONES AND DRIFT', drift.driftNodes([{ root: ROOT, name: 'geo-cockpit',
+      timeline: { kind: 'ready', rows: timeline.parseTimeline(timelineText).milestones, drift: full.parseDrift(timelineText) } }]), '⟳  ?'],
   ];
   let y = 0;
   const bodies = [];
-  for (const [title, nodes, actions] of panels) {
-    const p = panel({ x: 0, y, width, title, nodes, actions });
+  for (const [title, nodes, actions, expand] of panels) {
+    const p = panel({ x: 0, y, width, title, nodes, actions, expand });
     bodies.push(p.body);
     y += p.height + 6;
   }
   return svg(width, y, `<rect width="${width}" height="${y}" rx="10" fill="${C.side}"/>\n${bodies.join('\n')}`,
-    'Drawing of the Tasks, Tokens, Decisions and Drift panels (reduced forms), rendered by their view models from the fixture task files and the fixture outputs of steward tokens report and steward timeline (not a screenshot).');
+    'Drawing of the Tasks, Tokens, Decisions, and Milestones and Drift panels in their full forms on CLI 0.22, rendered by their view models from the fixture outputs of steward task board, steward tokens report (a recorded sprint with stand-in agent logs: the tasks with counts show their tokens by model, the others say why they have none), steward decisions and steward timeline (not a screenshot).');
 }
 
 const unescape = (s) => s.replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&quot;', '"').replaceAll('&#39;', "'").replaceAll('&amp;', '&');
@@ -335,7 +405,8 @@ function approvalsFigure() {
   const lineOf = (nonce) => parsed.lines.find((line) => line.nonce === nonce.slice(0, 12));
   const payloads = new Map(Object.values(corpus.queue['geo-cockpit']).map((nonce) => [nonce.slice(0, 12),
     { kind: 'read', nonce, sha256: `‹the SHA-256 of .steward/pending/${nonce}.txt›`, binding: { kind: 'bound', line: lineOf(nonce), fields: {} } }]));
-  const html = approvals.approvalsHtml({ kind: 'ready', blocks: [{ root: ROOT, name: 'geo-cockpit', index: 0, approvals: parsed, payloads }] });
+  const pending = full.parsePending(cockpit('full/authorize-pending/geo-cockpit-all-projects.json'));
+  const html = approvals.approvalsHtml({ kind: 'ready', blocks: [{ root: ROOT, name: 'geo-cockpit', index: 0, approvals: parsed, payloads, pending }] });
   const body = html.slice(html.indexOf('<body>') + 7, html.indexOf('</body>')).trim();
   const width = 820;
   const out = [];
@@ -344,7 +415,7 @@ function approvalsFigure() {
     out.push(`<text x="${x}" y="${y}" fill="${fill}" font-size="${size}"${weight ? ` font-weight="${weight}"` : ''}` +
       `${mono ? ` font-family="${esc(MONO)}"` : ''}${underline ? ' text-decoration="underline"' : ''}>${esc(s)}</text>`);
   };
-  out.push(`<text x="20" y="${y + 4}" fill="${C.head}" font-size="11" font-weight="700">APPROVALS</text>`);
+  out.push(`<text x="20" y="${y + 4}" fill="${C.head}" font-size="11" font-weight="700">NOW · APPROVALS</text>`);
   out.push(`<text x="${width - 20}" y="${y + 4}" fill="${C.dim}" font-size="12" text-anchor="end">↺  ?</text>`);
   y += 30;
   for (const chunk of body.split('\n<hr>\n')) {
@@ -369,7 +440,7 @@ function approvalsFigure() {
           text(40, first, { fill: line.includes('✓') ? C.passed : line.includes('Expired') ? C.warning : C.text, weight: line.includes('✓') ? 700 : undefined });
           y += 20;
           for (const more of rest) {
-            text(40, more, { fill: C.dim, size: 11.5, mono: true });
+            text(40, fit(more, (width - 80) * 0.95), { fill: C.dim, size: 11.5, mono: true });
             y += 20;
           }
         }
@@ -385,7 +456,7 @@ function approvalsFigure() {
     }
   }
   return svg(width, y, `<rect width="${width}" height="${y}" rx="10" fill="${C.side}"/>\n${out.join('\n')}`,
-    'Drawing of the Approvals panel (reduced form): the page its view model builds from the fixture text of steward authorize pending --all-projects, one card per payload line (not a screenshot). The fixture has no payload files, so the hash is a placeholder naming the file the panel hashes; each action\'s colour icon is drawn as a plain mark (¤ for spend). The peer\'s payload has no buttons.');
+    'Drawing of the Approvals panel: the page its view model builds from the fixture text of steward authorize pending --all-projects, one card per payload line, with the fields of authorize pending --format json (not a screenshot). The baselines and the CLI\'s payload hashes are normalised to zeros in the fixture, which has no payload files, so the hash read from the file is a placeholder naming the file the panel hashes; each action\'s colour icon is drawn as a plain mark (¤ for spend). The peer\'s payload has no buttons.');
 }
 
 // ✍ Sign, step by step, with the modal dialog and the typed-name box as the view model words them.
@@ -478,7 +549,7 @@ function icon() {
 // name → [draw, SVG path, PNG path, zoom], paths relative to the extension folder.
 const FIGURES = {
   'how-it-works': [howItWorks], overview: [overview], results: [results], 'status-bar': [statusBar], freshness: [freshness],
-  today: [todayFigure], cockpit: [cockpitFigure], approvals: [approvalsFigure], 'sign-flow': [signFlowFigure],
+  panels: [panelsFigure], today: [todayFigure], cockpit: [cockpitFigure], approvals: [approvalsFigure], 'sign-flow': [signFlowFigure],
   icon: [icon, 'media/icon.svg', 'icon.png', 1],
 };
 

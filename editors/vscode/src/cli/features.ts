@@ -29,6 +29,37 @@ const validateInterface = ajv.compile<InterfaceDocument>({
   },
 });
 
+// The document CLI 0.21 and later publish (`steward interface`, schema steward.interface/1): `interface_version` and a
+// `commands` map from a command's words ("check", "skills list") to its JSON argv, instead of the drafted
+// `interface` and `json_commands` above. Both are read; the commands map is turned into the same argument lists.
+interface PublishedInterface {
+  schema: 'steward.interface/1';
+  interface_version: 1;
+  tool_version: string;
+  commands: Record<string, { argv?: string[] }>;
+}
+
+const validatePublishedInterface = ajv.compile<PublishedInterface>({
+  type: 'object',
+  required: ['schema', 'interface_version', 'tool_version', 'commands'],
+  properties: {
+    schema: { const: 'steward.interface/1' },
+    interface_version: { const: 1 },
+    tool_version: { type: 'string' },
+    commands: {
+      type: 'object',
+      additionalProperties: {
+        type: 'object',
+        properties: { argv: { type: 'array', items: { type: 'string', minLength: 1 } } },
+      },
+    },
+  },
+});
+
+function publishedCommands(document: PublishedInterface): string[][] {
+  return Object.entries(document.commands).map(([words, spec]) => [...words.split(' ').filter(Boolean), ...(spec.argv ?? [])]);
+}
+
 const validateNewerInterface = ajv.compile<{ schema: string; interface: number; tool_version: string }>({
   type: 'object',
   required: ['schema', 'interface', 'tool_version'],
@@ -74,9 +105,21 @@ const legacy = Object.freeze({
   digest: false,
   initPreviewJson: false,
   skillsInventory: false,
+  // E04, the full forms: each command's versioned document, as `steward interface` lists it (CLI 0.21 and later).
+  next: false,
+  taskBoard: false,
+  pendingJson: false,
+  decisionsJson: false,
+  timelineJson: false,
+  sprintStatusJson: false,
+  tokensJson: false,
+  notifications: false,
+  upgradeCheck: false,
+  nextBrief: false,
 });
 
-type Capabilities = Readonly<Record<keyof typeof legacy, boolean>>;
+export type Capabilities = Readonly<Record<keyof typeof legacy, boolean>>;
+export const NO_CAPABILITIES: Capabilities = legacy;
 type InterfaceFeatures =
   | { mode: 'limited' | 'newer-interface' | 'full'; capabilities: Capabilities }
   | { mode: 'unreadable'; probe: 'interface' };
@@ -97,6 +140,11 @@ export class FeatureDetector {
   readonly #cache = new Map<string, Promise<InterfaceFeatures | Exclude<RunResult, { kind: 'completed' }>>>();
 
   constructor(private readonly versions: CliVersions) {}
+
+  // Clear cached interface probes so a post-upgrade detection re-runs `steward interface --format json`.
+  clear(): void {
+    this.#cache.clear();
+  }
 
   async detect(runner: ProbeRunner, signal?: AbortSignal): Promise<Detection> {
     const path = runner.cliPath;
@@ -129,19 +177,35 @@ export class FeatureDetector {
     if (result.kind === 'completed' && result.exitCode === 64) return { mode: 'limited', capabilities: legacy };
     if (result.kind !== 'completed' && result.kind !== 'unreadable') return result;
     if (result.kind === 'completed' && result.exitCode === 0) {
-      const parsed = parseJson(result.stdout, validateInterface);
-      if (parsed.kind === 'valid' && parsed.value.tool_version === version) {
-        const offers = (...prefix: string[]) => parsed.value.json_commands.some((args) =>
+      const drafted = parseJson(result.stdout, validateInterface);
+      const published = drafted.kind === 'valid' ? undefined : parseJson(result.stdout, validatePublishedInterface);
+      const parsed = drafted.kind === 'valid'
+        ? { tool_version: drafted.value.tool_version, json_commands: drafted.value.json_commands }
+        : published?.kind === 'valid'
+          ? { tool_version: published.value.tool_version, json_commands: publishedCommands(published.value) }
+          : undefined;
+      if (parsed && parsed.tool_version === version) {
+        const offers = (...prefix: string[]) => parsed.json_commands.some((args) =>
           args.length >= prefix.length && prefix.every((arg, index) => args[index] === arg));
         return {
           mode: 'full',
           capabilities: Object.freeze({
-            checkReport: parsed.value.json_commands.some(([command, ...flags]) =>
+            checkReport: parsed.json_commands.some(([command, ...flags]) =>
               command === 'check' && !flags.includes('--digest-only')),
             explainJson: offers('explain'),
             digest: offers('check', '--digest-only'),
             initPreviewJson: offers('init', '--dry-run'),
             skillsInventory: offers('skills', 'list'),
+            next: offers('next', '--format', 'json'),
+            taskBoard: offers('task', 'board', '--format', 'json'),
+            pendingJson: offers('authorize', 'pending', '--format', 'json'),
+            decisionsJson: offers('decisions', '--format', 'json'),
+            timelineJson: offers('timeline', '--format', 'json'),
+            sprintStatusJson: offers('sprint', 'status', '--format', 'json'),
+            tokensJson: offers('tokens', 'report', '--format', 'json'),
+            notifications: offers('notifications'),
+            upgradeCheck: offers('upgrade', '--check'),
+            nextBrief: offers('next'),
           }),
         };
       }

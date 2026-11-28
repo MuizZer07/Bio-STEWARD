@@ -48,11 +48,19 @@ if (example === 'restricted') {
         else await vscode.commands.executeCommand(command, arg);
       }
       await vscode.commands.executeCommand('bioSteward.showOverview');
+      // E01: every panel's refresh button was among those commands; in Restricted Mode none of them ran.
+      assert.deepEqual(api.refreshes, [], 'no panel refresh ran');
+      // E03: notifications bell and Upgrade CLI run nothing and show no toast or bell in Restricted Mode.
+      assert.equal(api.notifications.bell.view.visible, false, 'bell is hidden in Restricted Mode');
+      assert.deepEqual(api.notifications.bell.shownToasts, [], 'no notification toast in Restricted Mode');
+      assert.equal(api.upgrade.lastContractCheck, undefined, 'no upgrade contract check ran');
       // U04b: ✍ Sign and View open nothing in Restricted Mode, and the Approvals page has no card and no link.
       for (const command of ['bioSteward.approvals.sign', 'bioSteward.approvals.viewPayload']) {
         await vscode.commands.executeCommand(command, 'd3e83e998137', 0);
       }
       assert.equal(vscode.window.terminals.length, 0, 'no terminal was opened');
+      // The panels are drawn after a short debounce (the refresh commands above return at once in Restricted Mode).
+      for (let i = 0; i < 100 && !/Restricted Mode/.test(api.approvals.view.html); i++) await new Promise((done) => setTimeout(done, 50));
       assert.match(api.approvals.view.html, /Restricted Mode/);
       assert.doesNotMatch(api.approvals.view.html, /href=/);
       // U05: Decisions and Drift show nothing, read nothing and open no file in Restricted Mode.
@@ -144,7 +152,7 @@ if (example?.startsWith('offline-')) {
           await new Promise((done) => setTimeout(done, 25));
         }
         const cli = api.project.state.cli;
-        assert.equal(cli.kind === 'ready' && cli.version, '0.20.6');
+        assert.equal(cli.kind === 'ready' && cli.version, ext.packageJSON.bioSteward.testedWithCli);
         const checkStart = performance.now();
         await vscode.commands.executeCommand('bioSteward.runCheck');
         const checkMs = performance.now() - checkStart;

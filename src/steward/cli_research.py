@@ -426,6 +426,8 @@ def _dispatch(args: argparse.Namespace) -> int:
         git["branch"] = b.stdout.strip()
     if h.returncode == 0:
         git["commit"] = h.stdout.strip()
+    if args.agent == "auto":
+        return _dispatch_auto(args, root)
     agent_key = "codex" if args.agent == "codex" else "gemini"
     prompt = br.brief(task_text, agent_key, root, git)
     prompt = prompt.rsplit("\n---\nHow to run:", 1)[0] + "\n"  # the footer is for a human; the dispatch runs it
@@ -439,6 +441,7 @@ def _dispatch(args: argparse.Namespace) -> int:
     name = re.sub(r"[^A-Za-z0-9_.-]+", "-", br.parse_task(task_text)["fields"].get("ID") or src.stem).strip("-") or "task"
     stamp = _dt.date.today().isoformat()
     report = args.output or root / dp.DIR / f"{stamp}-{name}-{args.agent}.md"
+    args.report_path = report  # D02: where `--to auto` reads this run's ending
     try:
         cwd = root if args.dry_run else dp.checkout(root, name) if args.implement else dp.review_clone(root, name)
         cmd = dp.command(args.agent, prompt, cwd, root, args.implement, args.model, args.inline)
@@ -472,6 +475,72 @@ def _dispatch(args: argparse.Namespace) -> int:
     where = f" (its checkout: {cwd}; nothing committed)" if args.implement else ""
     print(f"{report}: the {args.agent} report{where}. Read it, then record it in development/assessment/.")
     return EXIT_OK
+
+
+HEADLESS = ("codex", "antigravity")  # the agents `steward task dispatch` can run headless
+
+
+def _dispatch_auto(args: argparse.Namespace, root: Path) -> int:
+    """0.23.0 (STW-061 D02): `steward task dispatch TASK --to auto`. The first available worker of [delegation] with a
+    headless dispatch runs it; a run that ends in "cannot run" is recorded in the availability ledger and the next
+    worker runs it. When none can, the command says who (the master) or until when (on_limit = wait), and exits 75."""
+    import copy
+    import datetime as _dt
+
+    from pydantic import ValidationError
+
+    from . import delegation as dg
+    from .models import load_config
+
+    try:
+        cfg = load_config(root)
+    except (OSError, ValueError, ValidationError) as e:
+        print(f"steward: --to auto needs a valid steward.toml ({str(e).splitlines()[0][:160]})", file=sys.stderr)
+        return EXIT_USAGE
+    if cfg is None or cfg.delegation is None:
+        print("steward: --to auto needs [delegation] in steward.toml (steward agents setup writes it)", file=sys.stderr)
+        return EXIT_USAGE
+    d = cfg.delegation
+    tried: list[str] = []
+    while True:
+        now = _dt.datetime.now(_dt.timezone.utc)
+        try:
+            c = dg.choose(root, cfg, [], now, tried, only=HEADLESS)
+        except ValueError as e:
+            print(f"steward: {e}", file=sys.stderr)
+            return EXIT_DATAERR
+        if c.agent is None or c.role == "master":  # the master is the caller here: it is named, never run
+            brief = {"claude-code": "claude", "codex": "codex"}.get(d.master, "gemini")
+            what = (f"try again after {c.until}, or " if c.until else "") + (
+                f"the master {d.master} does it itself (steward task brief {args.task} --for {brief})")
+            print(f"steward: no worker can run this dispatch ({c.why}); {what}", file=sys.stderr)
+            return 75
+        print(f"delegation: {c.agent} takes it ({c.why})")
+        one = copy.copy(args)
+        one.agent, one.model = c.agent, args.model or d.models.get(c.agent)
+        code = _dispatch(one)
+        report = getattr(one, "report_path", None)
+        if code == EXIT_OK or args.dry_run or report is None:
+            return code
+        texts = []
+        for p in (report, report.with_suffix(".err")):
+            try:
+                texts.append(p.read_text(encoding="utf-8", errors="replace"))
+            except OSError:
+                pass
+        end = dg.ending(c.agent, "\n".join(texts), now)
+        if end is None:  # a task failure, not "cannot run": said by the dispatch above
+            return code
+        try:
+            src = report.with_suffix(".err").resolve().relative_to(root.resolve()).as_posix()
+        except ValueError:
+            src = report.with_suffix(".err").name
+        try:
+            dg.record_ending(root, cfg.steward.repo_id, end, src)
+        except Exception as e:  # noqa: BLE001 - the next worker still runs; the ledger problem is said
+            print(f"warning: the availability ledger was not written ({type(e).__name__})", file=sys.stderr)
+        print(f"redelegated: {c.agent} cannot run ({end.kind}" + (f", resets {end.reset}" if end.reset else "") + ")")
+        tried.append(c.agent)
 
 
 def cmd_task(args: argparse.Namespace) -> int:
